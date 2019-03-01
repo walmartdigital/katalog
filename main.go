@@ -5,16 +5,15 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/golang/glog"
 	"github.com/seadiaz/katalog/k8s-driver"
 	"github.com/seadiaz/katalog/publishers"
 )
 
 var consulAddress = flag.String("consul-addr", "127.0.0.1:8500", "consul address")
+var excludeSysmteNamespace = flag.Bool("exclude-sysmte-namespace", false, "exclude all services from kube-system namespace")
 
 func main() {
 	flag.Parse()
-	glog.Info("[main] starging...")
 
 	kubeconfig := filepath.Join(
 		os.Getenv("HOME"), ".kube", "config",
@@ -25,7 +24,7 @@ func main() {
 
 func mainCollector(kubeconfig string) {
 	serviceEvents := make(chan interface{})
-	k8sDriver := k8sdriver.BuildDriver(kubeconfig)
+	k8sDriver := k8sdriver.BuildDriver(kubeconfig, *excludeSysmteNamespace)
 	publisher := publishers.Create(*consulAddress)
 	go k8sDriver.StartWatchingServices(serviceEvents)
 	for {

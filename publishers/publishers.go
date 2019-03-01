@@ -15,7 +15,6 @@ type ConsulPublisher struct {
 
 // Create ...
 func Create(addr string) ConsulPublisher {
-	glog.Info("[publishers] starging...")
 	client, _ := api.NewClient(&api.Config{Address: addr})
 	return ConsulPublisher{client: *client}
 }

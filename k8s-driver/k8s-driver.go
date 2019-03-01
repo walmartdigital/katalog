@@ -15,13 +15,15 @@ const resyncPeriod = 0
 
 // Driver ...
 type Driver struct {
-	clientSet *kubernetes.Clientset
+	clientSet              *kubernetes.Clientset
+	excludeSysmteNamespace bool
 }
 
 // BuildDriver ...
-func BuildDriver(kubeconfigPath string) *Driver {
+func BuildDriver(kubeconfigPath string, excludeSysmteNamespace bool) *Driver {
 	return &Driver{
-		clientSet: buildClientSet(kubeconfigPath),
+		clientSet:              buildClientSet(kubeconfigPath),
+		excludeSysmteNamespace: excludeSysmteNamespace,
 	}
 }
 
@@ -80,6 +82,10 @@ func (d *Driver) createDeleteHandler(channel chan interface{}) func(interface{})
 func (d *Driver) createAddHandler(channel chan interface{}) func(interface{}) {
 	return func(obj interface{}) {
 		k8sService := obj.(*v1.Service)
+		if d.excludeSysmteNamespace && k8sService.Namespace == "kube-system" {
+			glog.Infof("%s excluded because belongs to kube-system namespace", k8sService.Name)
+			return
+		}
 		endpoints, _ := d.clientSet.CoreV1().Endpoints(k8sService.Namespace).Get(k8sService.Name, metav1.GetOptions{})
 		service := buildOperationFromK8sService(domain.OperationTypeAdd, k8sService, *endpoints)
 		channel <- service
