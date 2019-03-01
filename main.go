@@ -5,10 +5,14 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/golang/glog"
 	"github.com/seadiaz/katalog/k8s-driver"
 	"github.com/seadiaz/katalog/publishers"
 )
 
+const roleCollector = "collector"
+
+var role = flag.String("role", "collector", "collector or server")
 var consulAddress = flag.String("consul-addr", "127.0.0.1:8500", "consul address")
 var excludeSysmteNamespace = flag.Bool("exclude-sysmte-namespace", false, "exclude all services from kube-system namespace")
 
@@ -19,7 +23,12 @@ func main() {
 		os.Getenv("HOME"), ".kube", "config",
 	)
 
-	mainCollector(kubeconfig)
+	switch *role {
+	case roleCollector:
+		mainCollector(kubeconfig)
+	default:
+		glog.Warning("role not found")
+	}
 }
 
 func mainCollector(kubeconfig string) {
