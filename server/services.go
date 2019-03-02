@@ -7,6 +7,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
+	"github.com/seadiaz/katalog/domain"
 )
 
 func getAllServices(w http.ResponseWriter, r *http.Request) {
@@ -22,8 +23,10 @@ func getAllServices(w http.ResponseWriter, r *http.Request) {
 func createService(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	key := vars["id"]
+	var service domain.Service
+	json.NewDecoder(r.Body).Decode(&service)
 
-	glog.Info(key)
+	glog.Info(service)
 
 	fmt.Fprintf(w, "Key: "+key)
 }

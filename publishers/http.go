@@ -33,7 +33,9 @@ func (c *HTTPPublisher) Publish(obj interface{}) {
 func (c *HTTPPublisher) put(service domain.Service) {
 	reqBodyBytes := new(bytes.Buffer)
 	json.NewEncoder(reqBodyBytes).Encode(service)
+	glog.Info(reqBodyBytes)
 	req, _ := http.NewRequest(http.MethodPut, c.url+"/services/"+service.ID, reqBodyBytes)
+	req.Header.Add("Content-Type", "application/json")
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		glog.Error(err)
