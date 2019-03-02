@@ -8,13 +8,20 @@ import (
 	"github.com/golang/glog"
 	"github.com/seadiaz/katalog/k8s-driver"
 	"github.com/seadiaz/katalog/publishers"
+	"github.com/seadiaz/katalog/server"
 )
 
 const roleCollector = "collector"
+const roleServer = "server"
 
-var role = flag.String("role", "collector", "collector or server")
+const publisherHTTP = "http"
+const publisherConsul = "consul"
+
+var role = flag.String("role", roleCollector, "collector or server")
 var consulAddress = flag.String("consul-addr", "127.0.0.1:8500", "consul address")
+var httpUlr = flag.String("http-url", "http://127.0.0.1:10000", "http url")
 var excludeSysmteNamespace = flag.Bool("exclude-sysmte-namespace", false, "exclude all services from kube-system namespace")
+var publisher = flag.String("publisher", publisherHTTP, "select where to publis: http, consul")
 
 func main() {
 	flag.Parse()
@@ -26,15 +33,18 @@ func main() {
 	switch *role {
 	case roleCollector:
 		mainCollector(kubeconfig)
+	case roleServer:
+		mainServer()
 	default:
 		glog.Warning("role not found")
 	}
 }
 
 func mainCollector(kubeconfig string) {
+	glog.Info("collector starting...")
 	serviceEvents := make(chan interface{})
 	k8sDriver := k8sdriver.BuildDriver(kubeconfig, *excludeSysmteNamespace)
-	publisher := publishers.Create(*consulAddress)
+	publisher := resolvePublisher()
 	go k8sDriver.StartWatchingServices(serviceEvents)
 	for {
 		select {
@@ -42,4 +52,19 @@ func mainCollector(kubeconfig string) {
 			publisher.Publish(event)
 		}
 	}
+}
+
+func resolvePublisher() publishers.Publisher {
+	switch *publisher {
+	case publisherHTTP:
+		return publishers.CreateHTTPPublisher(*httpUlr)
+	case publisherConsul:
+		return publishers.CreateConsulPublisher(*consulAddress)
+	default:
+		return nil
+	}
+}
+
+func mainServer() {
+	server.Run()
 }
