@@ -6,9 +6,10 @@ import (
 	"path/filepath"
 
 	"github.com/golang/glog"
-	"github.com/seadiaz/katalog/k8s-driver"
-	"github.com/seadiaz/katalog/publishers"
-	"github.com/seadiaz/katalog/server"
+	"github.com/seadiaz/katalog/src/k8s-driver"
+	"github.com/seadiaz/katalog/src/persistence"
+	"github.com/seadiaz/katalog/src/publishers"
+	"github.com/seadiaz/katalog/src/server"
 )
 
 const roleCollector = "collector"
@@ -66,5 +67,7 @@ func resolvePublisher() publishers.Publisher {
 }
 
 func mainServer() {
+	persistence := persistence.CreateBoltDriver()
+	server := server.CreateServer(persistence)
 	server.Run()
 }

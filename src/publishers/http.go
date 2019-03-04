@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/golang/glog"
-	"github.com/seadiaz/katalog/domain"
+	"github.com/seadiaz/katalog/src/domain"
 )
 
 // HTTPPublisher ...
