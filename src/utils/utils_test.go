@@ -19,6 +19,25 @@ var _ = Describe("Utils | Serialize", func() {
 
 		output := utils.Serialize(input)
 
-		Expect(output).To(Equal("alksdjfbakljsdfbasdkljfb"))
+		Expect(output).To(Equal("\"dummy text\""))
+	})
+
+	It("should encode a object", func() {
+		type DummyObject struct {
+			Key string
+		}
+		input := DummyObject{Key: "dummy text"}
+
+		output := utils.Serialize(input)
+
+		Expect(output).To(Equal("{\"Key\":\"dummy text\"}"))
+	})
+
+	It("shlud return empty string on encoding error", func() {
+		input := func() {}
+
+		output := utils.Serialize(input)
+
+		Expect(output).To(Equal(""))
 	})
 })

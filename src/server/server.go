@@ -30,6 +30,7 @@ func (s *Server) Run() {
 func (s *Server) handleRequests() {
 	myRouter := mux.NewRouter().StrictSlash(true)
 	myRouter.HandleFunc("/services", s.getAllServices).Methods("GET")
+	myRouter.HandleFunc("/services/_count", s.countServices).Methods("GET")
 	myRouter.HandleFunc("/services/{id}", s.createService).Methods("PUT")
 	log.Fatal(http.ListenAndServe(":10000", myRouter))
 }

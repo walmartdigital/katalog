@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/golang/glog"
 	"github.com/gorilla/mux"
 	"github.com/seadiaz/katalog/src/domain"
 )
@@ -19,6 +18,10 @@ type Service struct {
 // Services ...
 type Services []Service
 
+type genericResponse struct {
+	Count int `json:",omitempty"`
+}
+
 func (s *Server) getAllServices(w http.ResponseWriter, r *http.Request) {
 	services := s.persistence.GetAll("services")
 	json.NewEncoder(w).Encode(services)
@@ -29,8 +32,11 @@ func (s *Server) createService(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&service)
 	vars := mux.Vars(r)
 	service.ID = vars["id"]
-
-	glog.Info(service)
 	s.persistence.Create("services", service.ID, service)
 	json.NewEncoder(w).Encode(service)
+}
+
+func (s *Server) countServices(w http.ResponseWriter, r *http.Request) {
+	services := s.persistence.GetAll("services")
+	json.NewEncoder(w).Encode(genericResponse{Count: len(services)})
 }

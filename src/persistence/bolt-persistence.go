@@ -26,7 +26,6 @@ func (p *BoltPersistence) Create(kind string, id string, obj interface{}) {
 			return err
 		}
 		b.Put([]byte(id), objJSON)
-		glog.Infof("%s id %s created", kind, id)
 		return nil
 	})
 	if err != nil {
@@ -41,14 +40,11 @@ func (p *BoltPersistence) GetAll(kind string) []interface{} {
 	err := db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(kind))
 		b.ForEach(func(k, v []byte) error {
-			glog.Infof("%s: %s", k, v)
 			var obj domain.Service
 			json.Unmarshal(v, &obj)
-			glog.Infof("%s", obj.Name)
 			list.Add(obj)
 			return nil
 		})
-		glog.Infof("%s id %s created", kind, list)
 		return nil
 	})
 	if err != nil {
