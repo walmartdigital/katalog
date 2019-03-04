@@ -43,7 +43,7 @@ func (p *BoltPersistence) GetAll(kind string) []interface{} {
 		b.ForEach(func(k, v []byte) error {
 			glog.Infof("%s: %s", k, v)
 			var obj domain.Service
-			json.Unmarshal(v, obj)
+			json.Unmarshal(v, &obj)
 			glog.Infof("%s", obj.Name)
 			list.Add(obj)
 			return nil
