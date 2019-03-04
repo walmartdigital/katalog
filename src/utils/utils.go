@@ -15,3 +15,14 @@ func Serialize(input interface{}) string {
 	}
 	return string(serial)
 }
+
+// Deserialize ...
+func Deserialize(input string) interface{} {
+	output := make(map[string]interface{})
+	err := json.Unmarshal([]byte(input), &output)
+	if err != nil {
+		glog.Error(err)
+		return ""
+	}
+	return output
+}
