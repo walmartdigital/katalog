@@ -6,6 +6,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/seadiaz/katalog/src/domain"
+	"github.com/seadiaz/katalog/src/utils"
 
 	"github.com/emirpasic/gods/lists/arraylist"
 )
@@ -20,12 +21,8 @@ func (p *BoltPersistence) Create(kind string, id string, obj interface{}) {
 	db := p.driver.(*bolt.DB)
 	err := db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(kind))
-		objJSON, err := json.Marshal(obj)
-		if err != nil {
-			glog.Error(err)
-			return err
-		}
-		b.Put([]byte(id), objJSON)
+		objJSON := utils.Serialize(obj)
+		b.Put([]byte(id), []byte(objJSON))
 		return nil
 	})
 	if err != nil {
