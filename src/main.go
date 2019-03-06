@@ -5,11 +5,13 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/seadiaz/katalog/src/collector/k8s-driver"
 	"github.com/seadiaz/katalog/src/collector/publishers"
 	"github.com/seadiaz/katalog/src/server"
 	"github.com/seadiaz/katalog/src/server/persistence"
+	"github.com/seadiaz/katalog/src/server/repositories"
 )
 
 const roleCollector = "collector"
@@ -67,7 +69,12 @@ func resolvePublisher() publishers.Publisher {
 }
 
 func mainServer() {
-	persistence := persistence.CreateBoltDriver()
-	server := server.CreateServer(persistence)
+	db, err := bolt.Open("bolt.db", 0600, nil)
+	if err != nil {
+		glog.Error(err)
+	}
+	persistence := persistence.CreateBoltDriver(db)
+	serviceRepository := repositories.CreateServiceRepository(persistence)
+	server := server.CreateServer(serviceRepository)
 	server.Run()
 }

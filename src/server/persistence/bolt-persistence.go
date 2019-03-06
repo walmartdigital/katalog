@@ -1,15 +1,23 @@
 package persistence
 
 import (
-	"encoding/json"
+	"os"
 
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
-	"github.com/seadiaz/katalog/src/domain"
 	"github.com/seadiaz/katalog/src/utils"
 
 	"github.com/emirpasic/gods/lists/arraylist"
 )
+
+// BoltDriverInterface ...
+type BoltDriverInterface interface {
+	Open(path string, mode os.FileMode, options interface{}) (boltDBInterface, error)
+}
+
+type boltDBInterface interface {
+	Update(fn func(*bolt.Tx) error) error
+}
 
 // BoltPersistence ...
 type BoltPersistence struct {
@@ -32,14 +40,17 @@ func (p *BoltPersistence) Create(kind string, id string, obj interface{}) {
 
 // GetAll ...
 func (p *BoltPersistence) GetAll(kind string) []interface{} {
+	glog.Info("get all called")
 	db := p.driver.(*bolt.DB)
 	list := arraylist.New()
 	err := db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(kind))
+		glog.Info("get all called")
 		b.ForEach(func(k, v []byte) error {
-			var obj domain.Service
-			json.Unmarshal(v, &obj)
-			list.Add(obj)
+			glog.Info("get all called")
+			// var obj map[string]interface{}
+			// json.Unmarshal(v, &obj)
+			list.Add(v)
 			return nil
 		})
 		return nil
@@ -57,13 +68,9 @@ func (p *BoltPersistence) Close() {
 }
 
 // CreateBoltDriver ...
-func CreateBoltDriver() Persistence {
-	db, err := bolt.Open("bolt.db", 0600, nil)
-	if err != nil {
-		glog.Error(err)
-	}
-	err = db.Update(func(tx *bolt.Tx) error {
-		_, err = tx.CreateBucketIfNotExists([]byte("services"))
+func CreateBoltDriver(db *bolt.DB) Persistence {
+	err := db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists([]byte("services"))
 		if err != nil {
 			glog.Error(err)
 			return err

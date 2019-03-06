@@ -6,18 +6,18 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
-	"github.com/seadiaz/katalog/src/server/persistence"
+	"github.com/seadiaz/katalog/src/server/repositories"
 )
 
 // Server ...
 type Server struct {
-	persistence persistence.Persistence
+	serviceRepository repositories.Repository
 }
 
 // CreateServer ...
-func CreateServer(persistence persistence.Persistence) Server {
+func CreateServer(repository repositories.Repository) Server {
 	return Server{
-		persistence: persistence,
+		serviceRepository: repository,
 	}
 }
 
