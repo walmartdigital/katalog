@@ -1,19 +1,15 @@
 package persistence
 
 import (
-	"os"
+	"encoding/json"
 
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
+	"github.com/mitchellh/mapstructure"
 	"github.com/seadiaz/katalog/src/utils"
 
 	"github.com/emirpasic/gods/lists/arraylist"
 )
-
-// BoltDriverInterface ...
-type BoltDriverInterface interface {
-	Open(path string, mode os.FileMode, options interface{}) (boltDBInterface, error)
-}
 
 type boltDBInterface interface {
 	Update(fn func(*bolt.Tx) error) error
@@ -29,7 +25,9 @@ func (p *BoltPersistence) Create(kind string, id string, obj interface{}) {
 	db := p.driver.(*bolt.DB)
 	err := db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(kind))
-		objJSON := utils.Serialize(obj)
+		var generic map[string]interface{}
+		mapstructure.Decode(obj, &generic)
+		objJSON := utils.Serialize(generic)
 		b.Put([]byte(id), []byte(objJSON))
 		return nil
 	})
@@ -45,12 +43,10 @@ func (p *BoltPersistence) GetAll(kind string) []interface{} {
 	list := arraylist.New()
 	err := db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(kind))
-		glog.Info("get all called")
 		b.ForEach(func(k, v []byte) error {
-			glog.Info("get all called")
-			// var obj map[string]interface{}
-			// json.Unmarshal(v, &obj)
-			list.Add(v)
+			var obj map[string]interface{}
+			json.Unmarshal(v, &obj)
+			list.Add(obj)
 			return nil
 		})
 		return nil
@@ -68,7 +64,7 @@ func (p *BoltPersistence) Close() {
 }
 
 // CreateBoltDriver ...
-func CreateBoltDriver(db *bolt.DB) Persistence {
+func CreateBoltDriver(db boltDBInterface) Persistence {
 	err := db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists([]byte("services"))
 		if err != nil {

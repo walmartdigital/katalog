@@ -1,13 +1,14 @@
 package repositories
 
 import (
-  "github.com/golang/glog"
+	"github.com/emirpasic/gods/lists/arraylist"
+	"github.com/golang/glog"
+	"github.com/mitchellh/mapstructure"
 	"github.com/seadiaz/katalog/src/domain"
 	"github.com/seadiaz/katalog/src/server/persistence"
-  "github.com/emirpasic/gods/lists/arraylist"
 )
 
-const kind = "service"
+const kind = "services"
 
 // ServiceRepository ...
 type ServiceRepository struct {
@@ -29,13 +30,14 @@ func (r *ServiceRepository) CreateService(obj interface{}) {
 
 // GetAllServices ...
 func (r *ServiceRepository) GetAllServices() []interface{} {
-  glog.Info("get all services called")
-  list := arraylist.New()
-  services := r.persistence.GetAll(kind)
-  for _, item := range services {
-    service := item.(domain.Service)
-    list.Add(service)
-  }
+	glog.Info("get all services called")
+	list := arraylist.New()
+	services := r.persistence.GetAll(kind)
+	for _, item := range services {
+		var service domain.Service
+		mapstructure.Decode(item, &service)
+		list.Add(service)
+	}
 
-  return list.Values()
+	return list.Values()
 }
