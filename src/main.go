@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 
 	"github.com/golang/glog"
-	"github.com/seadiaz/katalog/src/k8s-driver"
-	"github.com/seadiaz/katalog/src/persistence"
-	"github.com/seadiaz/katalog/src/publishers"
+	"github.com/seadiaz/katalog/src/collector/k8s-driver"
+	"github.com/seadiaz/katalog/src/collector/publishers"
 	"github.com/seadiaz/katalog/src/server"
+	"github.com/seadiaz/katalog/src/server/persistence"
 )
 
 const roleCollector = "collector"

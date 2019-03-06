@@ -6,7 +6,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
-	"github.com/seadiaz/katalog/src/persistence"
+	"github.com/seadiaz/katalog/src/server/persistence"
 )
 
 // Server ...
