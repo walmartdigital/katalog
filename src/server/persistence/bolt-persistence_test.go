@@ -1,6 +1,7 @@
 package persistence_test
 
 import (
+	"errors"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -16,6 +17,10 @@ func (d *dummyDriver) Update(fn func(persistence.BoltTxInterface) error) error {
 }
 
 func (d *dummyDriver) View(fn func(persistence.BoltTxInterface) error) error {
+	return errors.New("Dummy Error")
+}
+
+func (d *dummyDriver) Close() error {
 	return nil
 }
 
@@ -26,14 +31,14 @@ func TestAll(t *testing.T) {
 
 var _ = Describe("Persistence | Bolt Persistence", func() {
 	Describe("GetAll", func() {
-		It("should encode a string", func() {
+		It("should got empty list on error", func() {
 			kind := "services"
 			driver := &dummyDriver{}
 			persistence := persistence.CreateBoltDriver(driver)
 
 			output := persistence.GetAll(kind)
 
-			Expect(output).To(Equal(`"dummy text"`))
+			Expect(output).To(BeEmpty())
 		})
 	})
 })

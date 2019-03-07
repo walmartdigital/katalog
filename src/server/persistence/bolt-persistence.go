@@ -30,10 +30,17 @@ func (b BoltWrapper) View(fn func(BoltTxInterface) error) error {
 	return nil
 }
 
+// Close ...
+func (b BoltWrapper) Close() error {
+	b.DB.Close()
+	return nil
+}
+
 // BoltDBInterface ...
 type BoltDBInterface interface {
 	Update(fn func(BoltTxInterface) error) error
 	View(fn func(BoltTxInterface) error) error
+	Close() error
 }
 
 // BoltTxInterface ..
@@ -44,7 +51,7 @@ type BoltTxInterface interface {
 
 // BoltPersistence ...
 type BoltPersistence struct {
-	driver interface{}
+	driver BoltDBInterface
 }
 
 // CreateBoltDriver ...
@@ -94,9 +101,8 @@ func (p *BoltPersistence) Create(kind string, id string, obj interface{}) {
 // GetAll ...
 func (p *BoltPersistence) GetAll(kind string) []interface{} {
 	glog.Info("get all called")
-	db := p.driver.(*BoltWrapper)
 	list := arraylist.New()
-	err := db.View(func(tx BoltTxInterface) error {
+	err := p.driver.View(func(tx BoltTxInterface) error {
 		b := tx.Bucket([]byte(kind))
 		b.ForEach(func(k, v []byte) error {
 			obj := utils.Deserialize(string(v))
@@ -113,6 +119,5 @@ func (p *BoltPersistence) GetAll(kind string) []interface{} {
 
 // Close ...
 func (p *BoltPersistence) Close() {
-	db := p.driver.(*bolt.DB)
-	db.Close()
+	p.driver.Close()
 }
