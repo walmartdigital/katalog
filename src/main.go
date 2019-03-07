@@ -73,7 +73,7 @@ func mainServer() {
 	if err != nil {
 		glog.Error(err)
 	}
-	persistence := persistence.CreateBoltDriver(db)
+	persistence := persistence.CreateBoltDriver(&persistence.BoltWrapper{DB: db})
 	serviceRepository := repositories.CreateServiceRepository(persistence)
 	server := server.CreateServer(serviceRepository)
 	server.Run()

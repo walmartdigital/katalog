@@ -1,7 +1,6 @@
 package persistence_test
 
 import (
-	"os"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -12,8 +11,12 @@ import (
 type dummyDriver struct {
 }
 
-func (d *dummyDriver) Open(path string, mode os.FileMode, options interface{}) (interface{}, error) {
-	return nil, nil
+func (d *dummyDriver) Update(fn func(persistence.BoltTxInterface) error) error {
+	return nil
+}
+
+func (d *dummyDriver) View(fn func(persistence.BoltTxInterface) error) error {
+	return nil
 }
 
 func TestAll(t *testing.T) {
@@ -23,14 +26,14 @@ func TestAll(t *testing.T) {
 
 var _ = Describe("Persistence | Bolt Persistence", func() {
 	Describe("GetAll", func() {
-		XIt("should encode a string", func() {
+		It("should encode a string", func() {
 			kind := "services"
 			driver := &dummyDriver{}
 			persistence := persistence.CreateBoltDriver(driver)
-			//
-			// output := persistence.GetAll(kind)
-			//
-			// Expect(output).To(Equal(`"dummy text"`))
+
+			output := persistence.GetAll(kind)
+
+			Expect(output).To(Equal(`"dummy text"`))
 		})
 	})
 })

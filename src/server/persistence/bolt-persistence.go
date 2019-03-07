@@ -1,8 +1,6 @@
 package persistence
 
 import (
-	"encoding/json"
-
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/mitchellh/mapstructure"
@@ -11,8 +9,37 @@ import (
 	"github.com/emirpasic/gods/lists/arraylist"
 )
 
-type boltDBInterface interface {
-	Update(fn func(*bolt.Tx) error) error
+// BoltWrapper ...
+type BoltWrapper struct {
+	DB *bolt.DB
+}
+
+// Update ...
+func (b BoltWrapper) Update(fn func(BoltTxInterface) error) error {
+	b.DB.Update(func(tx *bolt.Tx) error {
+		return fn(tx)
+	})
+	return nil
+}
+
+// View ...
+func (b BoltWrapper) View(fn func(BoltTxInterface) error) error {
+	b.DB.View(func(tx *bolt.Tx) error {
+		return fn(tx)
+	})
+	return nil
+}
+
+// BoltDBInterface ...
+type BoltDBInterface interface {
+	Update(fn func(BoltTxInterface) error) error
+	View(fn func(BoltTxInterface) error) error
+}
+
+// BoltTxInterface ..
+type BoltTxInterface interface {
+	CreateBucketIfNotExists([]byte) (*bolt.Bucket, error)
+	Bucket(name []byte) *bolt.Bucket
 }
 
 // BoltPersistence ...
@@ -20,10 +47,38 @@ type BoltPersistence struct {
 	driver interface{}
 }
 
+// CreateBoltDriver ...
+func CreateBoltDriver(db BoltDBInterface) Persistence {
+	err := db.Update(initCollections)
+	if err != nil {
+		glog.Error(err)
+	}
+	return &BoltPersistence{driver: db}
+}
+
+func initCollections(tx BoltTxInterface) error {
+	_, err := tx.CreateBucketIfNotExists([]byte("services"))
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+	_, err = tx.CreateBucketIfNotExists([]byte("operations"))
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+	_, err = tx.CreateBucketIfNotExists([]byte("endpoints"))
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+	return nil
+}
+
 // Create ...
 func (p *BoltPersistence) Create(kind string, id string, obj interface{}) {
-	db := p.driver.(*bolt.DB)
-	err := db.Update(func(tx *bolt.Tx) error {
+	db := p.driver.(*BoltWrapper)
+	err := db.Update(func(tx BoltTxInterface) error {
 		b := tx.Bucket([]byte(kind))
 		var generic map[string]interface{}
 		mapstructure.Decode(obj, &generic)
@@ -39,13 +94,12 @@ func (p *BoltPersistence) Create(kind string, id string, obj interface{}) {
 // GetAll ...
 func (p *BoltPersistence) GetAll(kind string) []interface{} {
 	glog.Info("get all called")
-	db := p.driver.(*bolt.DB)
+	db := p.driver.(*BoltWrapper)
 	list := arraylist.New()
-	err := db.View(func(tx *bolt.Tx) error {
+	err := db.View(func(tx BoltTxInterface) error {
 		b := tx.Bucket([]byte(kind))
 		b.ForEach(func(k, v []byte) error {
-			var obj map[string]interface{}
-			json.Unmarshal(v, &obj)
+			obj := utils.Deserialize(string(v))
 			list.Add(obj)
 			return nil
 		})
@@ -61,30 +115,4 @@ func (p *BoltPersistence) GetAll(kind string) []interface{} {
 func (p *BoltPersistence) Close() {
 	db := p.driver.(*bolt.DB)
 	db.Close()
-}
-
-// CreateBoltDriver ...
-func CreateBoltDriver(db boltDBInterface) Persistence {
-	err := db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte("services"))
-		if err != nil {
-			glog.Error(err)
-			return err
-		}
-		_, err = tx.CreateBucketIfNotExists([]byte("operations"))
-		if err != nil {
-			glog.Error(err)
-			return err
-		}
-		_, err = tx.CreateBucketIfNotExists([]byte("endpoints"))
-		if err != nil {
-			glog.Error(err)
-			return err
-		}
-		return nil
-	})
-	if err != nil {
-		glog.Error(err)
-	}
-	return &BoltPersistence{driver: db}
 }
