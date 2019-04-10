@@ -70,15 +70,6 @@ func (d *Driver) buildController(watchList *cache.ListWatch, addFunc func(obj in
 	return controller
 }
 
-func (d *Driver) createDeleteHandler(channel chan interface{}) func(interface{}) {
-	return func(obj interface{}) {
-		k8sService := obj.(*v1.Service)
-		endpoints, _ := d.clientSet.CoreV1().Endpoints(k8sService.Namespace).Get(k8sService.Name, metav1.GetOptions{})
-		service := buildOperationFromK8sService(domain.OperationTypeDelete, k8sService, *endpoints)
-		channel <- service
-	}
-}
-
 func (d *Driver) createAddHandler(channel chan interface{}) func(interface{}) {
 	return func(obj interface{}) {
 		k8sService := obj.(*v1.Service)
@@ -88,6 +79,15 @@ func (d *Driver) createAddHandler(channel chan interface{}) func(interface{}) {
 		}
 		endpoints, _ := d.clientSet.CoreV1().Endpoints(k8sService.Namespace).Get(k8sService.Name, metav1.GetOptions{})
 		service := buildOperationFromK8sService(domain.OperationTypeAdd, k8sService, *endpoints)
+		channel <- service
+	}
+}
+
+func (d *Driver) createDeleteHandler(channel chan interface{}) func(interface{}) {
+	return func(obj interface{}) {
+		k8sService := obj.(*v1.Service)
+		endpoints, _ := d.clientSet.CoreV1().Endpoints(k8sService.Namespace).Get(k8sService.Name, metav1.GetOptions{})
+		service := buildOperationFromK8sService(domain.OperationTypeDelete, k8sService, *endpoints)
 		channel <- service
 	}
 }

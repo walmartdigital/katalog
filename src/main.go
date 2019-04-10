@@ -22,8 +22,8 @@ const publisherConsul = "consul"
 
 var role = flag.String("role", roleCollector, "collector or server")
 var consulAddress = flag.String("consul-addr", "127.0.0.1:8500", "consul address")
-var httpUlr = flag.String("http-url", "http://127.0.0.1:10000", "http url")
-var excludeSysmteNamespace = flag.Bool("exclude-sysmte-namespace", false, "exclude all services from kube-system namespace")
+var httpURL = flag.String("http-url", "http://127.0.0.1:10000", "http url")
+var excludeSysmteNamespace = flag.Bool("exclude-system-namespace", false, "exclude all services from kube-system namespace")
 var publisher = flag.String("publisher", publisherHTTP, "select where to publis: http, consul")
 
 func main() {
@@ -33,6 +33,10 @@ func main() {
 		os.Getenv("HOME"), ".kube", "config",
 	)
 
+	if !areArgumentsValid() {
+		glog.Fatal("arguments invalids")
+	}
+
 	switch *role {
 	case roleCollector:
 		mainCollector(kubeconfig)
@@ -41,6 +45,14 @@ func main() {
 	default:
 		glog.Warning("role not found")
 	}
+}
+
+func areArgumentsValid() bool {
+	if *role != roleCollector && *role != roleServer {
+		return false
+	}
+
+	return true
 }
 
 func mainCollector(kubeconfig string) {
@@ -60,7 +72,7 @@ func mainCollector(kubeconfig string) {
 func resolvePublisher() publishers.Publisher {
 	switch *publisher {
 	case publisherHTTP:
-		return publishers.CreateHTTPPublisher(*httpUlr)
+		return publishers.CreateHTTPPublisher(*httpURL)
 	case publisherConsul:
 		return publishers.CreateConsulPublisher(*consulAddress)
 	default:
@@ -69,6 +81,7 @@ func resolvePublisher() publishers.Publisher {
 }
 
 func mainServer() {
+	glog.Info("server starting...")
 	db, err := bolt.Open("bolt.db", 0600, nil)
 	if err != nil {
 		glog.Error(err)

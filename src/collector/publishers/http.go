@@ -27,6 +27,7 @@ func (c *HTTPPublisher) Publish(obj interface{}) {
 	case (domain.OperationTypeAdd):
 		c.put(operation.Service)
 	case (domain.OperationTypeDelete):
+		c.delete(operation.Service)
 	}
 }
 
@@ -43,5 +44,16 @@ func (c *HTTPPublisher) put(service domain.Service) {
 	defer res.Body.Close()
 	body, _ := ioutil.ReadAll(res.Body)
 	glog.Info(string(body))
+}
 
+func (c *HTTPPublisher) delete(service domain.Service) {
+	req, _ := http.NewRequest(http.MethodDelete, c.url+"/services/"+service.ID, nil)
+	req.Header.Add("Content-Type", "application/json")
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		glog.Error(err)
+	}
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+	glog.Info(string(body))
 }
