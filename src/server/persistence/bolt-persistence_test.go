@@ -6,7 +6,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/seadiaz/katalog/src/server/persistence"
+	"github.com/walmartdigital/katalog/src/server/persistence"
 )
 
 type dummyDriver struct {

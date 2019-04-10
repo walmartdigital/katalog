@@ -7,11 +7,11 @@ import (
 
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
-	"github.com/seadiaz/katalog/src/collector/k8s-driver"
-	"github.com/seadiaz/katalog/src/collector/publishers"
-	"github.com/seadiaz/katalog/src/server"
-	"github.com/seadiaz/katalog/src/server/persistence"
-	"github.com/seadiaz/katalog/src/server/repositories"
+	"github.com/walmartdigital/katalog/src/collector/k8s-driver"
+	"github.com/walmartdigital/katalog/src/collector/publishers"
+	"github.com/walmartdigital/katalog/src/server"
+	"github.com/walmartdigital/katalog/src/server/persistence"
+	"github.com/walmartdigital/katalog/src/server/repositories"
 )
 
 const roleCollector = "collector"

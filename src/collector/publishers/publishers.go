@@ -2,7 +2,7 @@ package publishers
 
 import (
 	"github.com/hashicorp/consul/api"
-	"github.com/seadiaz/katalog/src/domain"
+	"github.com/walmartdigital/katalog/src/domain"
 )
 
 // Publisher ...

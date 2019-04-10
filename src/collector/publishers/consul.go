@@ -5,7 +5,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/hashicorp/consul/api"
-	"github.com/seadiaz/katalog/src/domain"
+	"github.com/walmartdigital/katalog/src/domain"
 )
 
 // ConsulPublisher ...

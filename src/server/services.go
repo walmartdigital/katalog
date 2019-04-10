@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/seadiaz/katalog/src/domain"
+	"github.com/walmartdigital/katalog/src/domain"
 )
 
 // Service ...

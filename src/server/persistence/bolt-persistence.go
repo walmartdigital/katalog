@@ -4,7 +4,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/mitchellh/mapstructure"
-	"github.com/seadiaz/katalog/src/utils"
+	"github.com/walmartdigital/katalog/src/utils"
 
 	"github.com/emirpasic/gods/lists/arraylist"
 )

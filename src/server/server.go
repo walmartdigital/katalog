@@ -6,7 +6,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
-	"github.com/seadiaz/katalog/src/server/repositories"
+	"github.com/walmartdigital/katalog/src/server/repositories"
 )
 
 // Server ...

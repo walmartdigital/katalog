@@ -4,8 +4,8 @@ import (
 	"github.com/emirpasic/gods/lists/arraylist"
 	"github.com/golang/glog"
 	"github.com/mitchellh/mapstructure"
-	"github.com/seadiaz/katalog/src/domain"
-	"github.com/seadiaz/katalog/src/server/persistence"
+	"github.com/walmartdigital/katalog/src/domain"
+	"github.com/walmartdigital/katalog/src/server/persistence"
 )
 
 const kind = "services"

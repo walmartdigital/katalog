@@ -1,7 +1,7 @@
 package k8sdriver
 
 import (
-	"github.com/seadiaz/katalog/src/domain"
+	"github.com/walmartdigital/katalog/src/domain"
 	"k8s.io/api/core/v1"
 )
 

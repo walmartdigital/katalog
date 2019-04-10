@@ -6,7 +6,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/seadiaz/katalog/src/utils"
+	"github.com/walmartdigital/katalog/src/utils"
 )
 
 type DummyObject struct {
