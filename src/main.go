@@ -27,6 +27,7 @@ var excludeSysmteNamespace = flag.Bool("exclude-system-namespace", false, "exclu
 var publisher = flag.String("publisher", publisherHTTP, "select where to publis: http, consul")
 
 func main() {
+	flag.Set("logtostderr", "true")
 	flag.Parse()
 
 	kubeconfig := filepath.Join(
