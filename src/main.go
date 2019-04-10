@@ -34,26 +34,14 @@ func main() {
 		os.Getenv("HOME"), ".kube", "config",
 	)
 
-	if !areArgumentsValid() {
-		glog.Fatal("arguments invalids")
-	}
-
 	switch *role {
 	case roleCollector:
 		mainCollector(kubeconfig)
 	case roleServer:
 		mainServer()
 	default:
-		glog.Warning("role not found")
+		glog.Warning("role should be server or collector")
 	}
-}
-
-func areArgumentsValid() bool {
-	if *role != roleCollector && *role != roleServer {
-		return false
-	}
-
-	return true
 }
 
 func mainCollector(kubeconfig string) {
