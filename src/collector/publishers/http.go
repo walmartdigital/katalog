@@ -25,6 +25,7 @@ func (c *HTTPPublisher) Publish(obj interface{}) {
 	operation := obj.(domain.Operation)
 	switch operation.Kind {
 	case (domain.OperationTypeAdd):
+	case (domain.OperationTypeUpdate):
 		c.put(operation.Service)
 	case (domain.OperationTypeDelete):
 		c.delete(operation.Service)
