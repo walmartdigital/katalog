@@ -23,13 +23,23 @@ const publisherConsul = "consul"
 var role = flag.String("role", roleCollector, "collector or server")
 var consulAddress = flag.String("consul-addr", "127.0.0.1:8500", "consul address")
 var httpURL = flag.String("http-url", "http://127.0.0.1:10000", "http url")
-var excludeSysmteNamespace = flag.Bool("exclude-system-namespace", false, "exclude all services from kube-system namespace")
+var excludeSystemNamespace = flag.Bool("exclude-system-namespace", false, "exclude all services from kube-system namespace")
 var publisher = flag.String("publisher", publisherHTTP, "select where to publis: http, consul")
 
-func main() {
-	flag.Set("logtostderr", "true")
-	flag.Parse()
+func usage() {
+	flag.PrintDefaults()
+	os.Exit(2)
+}
 
+func init() {
+	flag.Usage = usage
+	flag.Set("logtostderr", "true")
+	flag.Set("stderrthreshold", "WARNING")
+	flag.Set("v", "2")
+	flag.Parse()
+}
+
+func main() {
 	kubeconfig := filepath.Join(
 		os.Getenv("HOME"), ".kube", "config",
 	)
@@ -47,7 +57,7 @@ func main() {
 func mainCollector(kubeconfig string) {
 	glog.Info("collector starting...")
 	serviceEvents := make(chan interface{})
-	k8sDriver := k8sdriver.BuildDriver(kubeconfig, *excludeSysmteNamespace)
+	k8sDriver := k8sdriver.BuildDriver(kubeconfig, *excludeSystemNamespace)
 	publisher := resolvePublisher()
 	go k8sDriver.StartWatchingServices(serviceEvents)
 	for {
