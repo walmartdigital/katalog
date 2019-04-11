@@ -26,9 +26,20 @@ var httpURL = flag.String("http-url", "http://127.0.0.1:10000", "http url")
 var excludeSysmteNamespace = flag.Bool("exclude-system-namespace", false, "exclude all services from kube-system namespace")
 var publisher = flag.String("publisher", publisherHTTP, "select where to publis: http, consul")
 
-func main() {
+func usage() {
+	flag.PrintDefaults()
+	os.Exit(2)
+}
+
+func init() {
+	flag.Usage = usage
 	flag.Set("logtostderr", "true")
+	flag.Set("stderrthreshold", "WARNING")
+	flag.Set("v", "2")
 	flag.Parse()
+}
+
+func main() {
 
 	kubeconfig := filepath.Join(
 		os.Getenv("HOME"), ".kube", "config",

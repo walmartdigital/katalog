@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/golang/glog"
 	"github.com/gorilla/mux"
 	"github.com/walmartdigital/katalog/src/server/repositories"
 )
@@ -23,7 +22,6 @@ func CreateServer(repository repositories.Repository) Server {
 
 // Run ...
 func (s *Server) Run() {
-	glog.Info("server starging...")
 	s.handleRequests()
 }
 
