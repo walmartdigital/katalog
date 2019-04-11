@@ -40,9 +40,6 @@ func init() {
 }
 
 func main() {
-	// flag.Set("logtostderr", "true")
-	// flag.Parse()
-
 	kubeconfig := filepath.Join(
 		os.Getenv("HOME"), ".kube", "config",
 	)
