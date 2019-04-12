@@ -6,15 +6,10 @@ type Service struct {
 	Name      string `json:",omitempty"`
 	Port      int    `json:",omitempty"`
 	Address   string `json:",omitempty"`
-	Endpoints []Endpoint
+	Instances []Instance
 }
 
-// AddEndpoint ...
-func (s *Service) AddEndpoint(endpoint Endpoint) {
-	s.Endpoints = append(s.Endpoints, endpoint)
-}
-
-// Endpoint ...
-type Endpoint struct {
-	Address string `json:",omitempty"`
+// AddInstance ...
+func (s *Service) AddInstance(endpoint Instance) {
+	s.Instances = append(s.Instances, endpoint)
 }

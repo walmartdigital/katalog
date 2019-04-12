@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	retry "github.com/avast/retry-go"
 	"github.com/golang/glog"
 	"github.com/walmartdigital/katalog/src/domain"
 )
@@ -25,7 +26,7 @@ func (c *HTTPPublisher) Publish(obj interface{}) {
 	operation := obj.(domain.Operation)
 	switch operation.Kind {
 	case (domain.OperationTypeAdd):
-		c.put(operation.Service)
+		retry.Do(c.put(operation.Service))
 	case (domain.OperationTypeDelete):
 		c.delete(operation.Service)
 	}
@@ -40,6 +41,7 @@ func (c *HTTPPublisher) put(service domain.Service) {
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		glog.Error(err)
+		return
 	}
 	defer res.Body.Close()
 	body, _ := ioutil.ReadAll(res.Body)

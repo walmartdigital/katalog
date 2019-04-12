@@ -38,7 +38,7 @@ func (c *ConsulPublisher) consulCreate(service domain.Service) {
 			glog.Errorln(err)
 		}
 	}
-	fmt.Printf("service %s registered with %d endpoints\n", service.Name, len(service.Endpoints))
+	fmt.Printf("service %s registered with %d endpoints\n", service.Name, len(service.Instances))
 }
 
 func (c *ConsulPublisher) consulDelete(service domain.Service) {
