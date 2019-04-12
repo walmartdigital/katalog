@@ -16,11 +16,11 @@ you wan to monitor
 ### Run The Server
 
 ```
-go run main.go -role server
+go run src/main.go -role server
 ```
 
 ### Run The Collector
 
 ```
-go run main.go -role collector
+go run src/main.go -role collector
 ```

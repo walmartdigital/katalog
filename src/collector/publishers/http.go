@@ -3,6 +3,7 @@ package publishers
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 
@@ -26,7 +27,11 @@ func (c *HTTPPublisher) Publish(obj interface{}) {
 	operation := obj.(domain.Operation)
 	switch operation.Kind {
 	case (domain.OperationTypeAdd):
-		retry.Do(c.put(operation.Service))
+	case (domain.OperationTypeUpdate):
+		retry.Do(func() error {
+			c.put(operation.Service)
+			return errors.New("some error")
+		})
 	case (domain.OperationTypeDelete):
 		c.delete(operation.Service)
 	}
