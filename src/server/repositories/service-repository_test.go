@@ -34,7 +34,7 @@ func TestAll(t *testing.T) {
 
 var _ = Describe("create service", func() {
 	It("should persist a service", func() {
-		service := domain.Service{ID: "xxx"}
+		service := domain.Service{}
 		memory := make(map[string]interface{})
 		fake := fakePersistence{memory: memory}
 		serviceRepository := repositories.CreateServiceRepository(&fake)
@@ -42,5 +42,34 @@ var _ = Describe("create service", func() {
 		serviceRepository.CreateService(service)
 
 		Expect(fake.GetAll("services")[0]).To(Equal(service))
+	})
+})
+
+var _ = Describe("delete service", func() {
+	It("should delete a given service", func() {
+		service := domain.Service{}
+		memory := make(map[string]interface{})
+		fake := fakePersistence{memory: memory}
+		serviceRepository := repositories.CreateServiceRepository(&fake)
+		serviceRepository.CreateService(service)
+
+		serviceRepository.DeleteService(service)
+
+		Expect(len(memory)).To(Equal(0))
+		Expect(fake.GetAll("services")[0]).To(BeNil())
+	})
+})
+
+var _ = Describe("get all services", func() {
+	It("should return all values", func() {
+		service := domain.Service{}
+		memory := make(map[string]interface{})
+		fake := fakePersistence{memory: memory}
+		serviceRepository := repositories.CreateServiceRepository(&fake)
+		serviceRepository.CreateService(service)
+
+		results := serviceRepository.GetAllServices()
+
+		Expect(fake.GetAll("services")).To(Equal(results))
 	})
 })
