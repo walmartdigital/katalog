@@ -21,7 +21,7 @@ func (p *MemoryPersistence) Create(kind string, id string, obj interface{}) {
 
 // Delete ...
 func (p *MemoryPersistence) Delete(kind string, id string) {
-
+	delete(p.memory, kind+"-"+id)
 }
 
 // GetAll ...
