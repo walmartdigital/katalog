@@ -45,3 +45,18 @@ var _ = Describe("get all", func() {
 		Expect(results).To(Equal(expected))
 	})
 })
+
+var _ = Describe("delete", func() {
+	It("should remove one item", func() {
+		memory := make(map[string]interface{})
+		persistence := BuildMemoryPersistence(memory)
+		value := struct{ name string }{"max"}
+		memory["dummy-myid"] = value
+		expected := make([]interface{}, 1)
+		expected[0] = value
+
+		persistence.Delete("dummy", "myid")
+
+		Expect(len(memory)).To(Equal(0))
+	})
+})

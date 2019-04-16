@@ -16,12 +16,16 @@ func BuildMemoryPersistence(memory map[string]interface{}) Persistence {
 
 // Create ...
 func (p *MemoryPersistence) Create(kind string, id string, obj interface{}) {
-	p.memory[kind+"-"+id] = obj
+	p.memory[createComposedID(kind, id)] = obj
+}
+
+func createComposedID(kind string, id string) string {
+	return kind + "-" + id
 }
 
 // Delete ...
 func (p *MemoryPersistence) Delete(kind string, id string) {
-
+	delete(p.memory, createComposedID(kind, id))
 }
 
 // GetAll ...
