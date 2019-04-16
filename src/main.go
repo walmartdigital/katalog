@@ -5,9 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
-	"github.com/walmartdigital/katalog/src/collector/k8s-driver"
+	k8sdriver "github.com/walmartdigital/katalog/src/collector/k8s-driver"
 	"github.com/walmartdigital/katalog/src/collector/publishers"
 	"github.com/walmartdigital/katalog/src/server"
 	"github.com/walmartdigital/katalog/src/server/persistence"
@@ -81,11 +80,8 @@ func resolvePublisher() publishers.Publisher {
 
 func mainServer() {
 	glog.Info("server starting...")
-	db, err := bolt.Open("bolt.db", 0600, nil)
-	if err != nil {
-		glog.Error(err)
-	}
-	persistence := persistence.CreateBoltDriver(&persistence.BoltWrapper{DB: db})
+	memory := make(map[string]interface{})
+	persistence := persistence.BuildMemoryPersistence(memory)
 	serviceRepository := repositories.CreateServiceRepository(persistence)
 	server := server.CreateServer(serviceRepository)
 	server.Run()

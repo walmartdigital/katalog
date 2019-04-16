@@ -27,6 +27,7 @@ func (c *HTTPPublisher) Publish(obj interface{}) {
 	operation := obj.(domain.Operation)
 	switch operation.Kind {
 	case (domain.OperationTypeAdd):
+		c.put(operation.Service)
 	case (domain.OperationTypeUpdate):
 		retry.Do(func() error {
 			c.put(operation.Service)
