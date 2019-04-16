@@ -28,6 +28,12 @@ func (r *ServiceRepository) CreateService(obj interface{}) {
 	r.persistence.Create(kind, service.ID, service)
 }
 
+// DeleteService ...
+func (r *ServiceRepository) DeleteService(obj interface{}) {
+	service := obj.(domain.Service)
+	r.persistence.Delete(kind, service.ID)
+}
+
 // GetAllServices ...
 func (r *ServiceRepository) GetAllServices() []interface{} {
 	glog.Info("get all services called")

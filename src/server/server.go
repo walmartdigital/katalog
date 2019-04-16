@@ -30,5 +30,6 @@ func (s *Server) handleRequests() {
 	myRouter.HandleFunc("/services", s.getAllServices).Methods("GET")
 	myRouter.HandleFunc("/services/_count", s.countServices).Methods("GET")
 	myRouter.HandleFunc("/services/{id}", s.createService).Methods("PUT")
+	myRouter.HandleFunc("/services/{id}", s.deleteService).Methods("DELETE")
 	log.Fatal(http.ListenAndServe(":10000", myRouter))
 }

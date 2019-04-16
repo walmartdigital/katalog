@@ -1,4 +1,4 @@
-package persistence
+package persistence_test
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/walmartdigital/katalog/src/server/persistence"
 )
 
 type DummyMemory struct{}
@@ -22,8 +23,8 @@ func TestAll(t *testing.T) {
 var _ = Describe("create", func() {
 	It("should add a single struct", func() {
 		memory := make(map[string]interface{})
-		persistence := BuildMemoryPersistence(memory)
-		value := struct{ name string }{"seba"}
+		persistence := persistence.BuildMemoryPersistence(memory)
+		value := struct{ name string }{"deadpool"}
 
 		persistence.Create("dummy", "myid", value)
 
@@ -34,8 +35,8 @@ var _ = Describe("create", func() {
 var _ = Describe("get all", func() {
 	It("should return all values", func() {
 		memory := make(map[string]interface{})
-		persistence := BuildMemoryPersistence(memory)
-		value := struct{ name string }{"max"}
+		persistence := persistence.BuildMemoryPersistence(memory)
+		value := struct{ name string }{"deadpool"}
 		memory["dummy-myid"] = value
 		expected := make([]interface{}, 1)
 		expected[0] = value
@@ -49,7 +50,7 @@ var _ = Describe("get all", func() {
 var _ = Describe("delete", func() {
 	It("should remove one item", func() {
 		memory := make(map[string]interface{})
-		persistence := BuildMemoryPersistence(memory)
+		persistence := persistence.BuildMemoryPersistence(memory)
 		value := struct{ name string }{"max"}
 		memory["dummy-myid"] = value
 		expected := make([]interface{}, 1)
@@ -58,5 +59,6 @@ var _ = Describe("delete", func() {
 		persistence.Delete("dummy", "myid")
 
 		Expect(len(memory)).To(Equal(0))
+		Expect(memory["dummy-myid"]).To(BeNil())
 	})
 })
