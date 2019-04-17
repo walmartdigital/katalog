@@ -70,7 +70,7 @@ func mainCollector(kubeconfig string) {
 func resolvePublisher() publishers.Publisher {
 	switch *publisher {
 	case publisherHTTP:
-		return publishers.CreateHTTPPublisher(*httpURL)
+		return publishers.CreateHTTPPublisher(*httpURL, http)
 	case publisherConsul:
 		return publishers.CreateConsulPublisher(*consulAddress)
 	default:

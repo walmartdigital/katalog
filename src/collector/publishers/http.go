@@ -12,13 +12,16 @@ import (
 	"github.com/walmartdigital/katalog/src/domain"
 )
 
+type httpClient interface {
+}
+
 // HTTPPublisher ...
 type HTTPPublisher struct {
 	url string
 }
 
-// CreateHTTPPublisher ...
-func CreateHTTPPublisher(url string) Publisher {
+// BuildHTTPPublisher ...
+func BuildHTTPPublisher(url string) Publisher {
 	return &HTTPPublisher{url: url}
 }
 
