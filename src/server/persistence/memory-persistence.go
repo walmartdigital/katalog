@@ -19,10 +19,6 @@ func (p *MemoryPersistence) Create(kind string, id string, obj interface{}) {
 	p.memory[createComposedID(kind, id)] = obj
 }
 
-func createComposedID(kind string, id string) string {
-	return kind + "-" + id
-}
-
 // Delete ...
 func (p *MemoryPersistence) Delete(kind string, id string) {
 	delete(p.memory, createComposedID(kind, id))
@@ -35,4 +31,8 @@ func (p *MemoryPersistence) GetAll(kind string) []interface{} {
 		list.Add(value)
 	}
 	return list.Values()
+}
+
+func createComposedID(kind string, id string) string {
+	return kind + "-" + id
 }

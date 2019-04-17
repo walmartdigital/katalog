@@ -1,19 +1,12 @@
 package persistence_test
 
 import (
-	"fmt"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/walmartdigital/katalog/src/server/persistence"
 )
-
-type DummyMemory struct{}
-
-func (m *DummyMemory) Add(values ...interface{}) {
-	fmt.Println("oh yeah!")
-}
 
 func TestAll(t *testing.T) {
 	RegisterFailHandler(Fail)
