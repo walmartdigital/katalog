@@ -7,20 +7,6 @@ import (
 	"github.com/walmartdigital/katalog/src/domain"
 )
 
-// Service ...
-type Service struct {
-	Title   string `json:"Title"`
-	Desc    string `json:"desc"`
-	Content string `json:"content"`
-}
-
-// Services ...
-type Services []Service
-
-type genericResponse struct {
-	Count int `json:",omitempty"`
-}
-
 func (s *Server) createService(w http.ResponseWriter, r *http.Request) {
 	var service domain.Service
 	json.NewDecoder(r.Body).Decode(&service)
@@ -42,5 +28,5 @@ func (s *Server) getAllServices(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) countServices(w http.ResponseWriter, r *http.Request) {
 	services := s.serviceRepository.GetAllServices()
-	json.NewEncoder(w).Encode(genericResponse{Count: len(services)})
+	json.NewEncoder(w).Encode(struct{ Count int }{len(services)})
 }
