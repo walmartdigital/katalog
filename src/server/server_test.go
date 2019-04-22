@@ -32,7 +32,12 @@ func (r *dummyRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	fmt.Println("***")
 }
 
-// var router = mux.NewRouter().StrictSlash(true)
+type dummyHTTPServer struct{}
+
+func (s *dummyHTTPServer) ListenAndServe() error {
+	return nil
+}
+
 var routes = make(map[string]func(http.ResponseWriter, *http.Request))
 
 func (r *dummyRouter) HandleFunc(path string, f func(http.ResponseWriter, *http.Request)) *mux.Route {
@@ -51,14 +56,13 @@ var _ = Describe("run server", func() {
 	It("should receive status code 200", func() {
 		repository := &dummyRepository{}
 		router := &dummyRouter{}
-		server := server.CreateServer(repository, router)
+		httpServer := &dummyHTTPServer{}
+		server := server.CreateServer(httpServer, repository, router)
 		server.Run()
 		path := "/services"
-		req, _ := http.NewRequest(http.MethodGet, "http://127.0.0.1:10000"+path, nil)
 		rec := httptest.NewRecorder()
 
-		// routes[path](rec, req)
-		router.ServeHTTP(rec, req)
+		routes[path](rec, nil)
 
 		res := rec.Result()
 		defer res.Body.Close()

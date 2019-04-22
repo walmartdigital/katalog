@@ -1,15 +1,20 @@
 package server
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
 	"github.com/walmartdigital/katalog/src/server/repositories"
 )
 
+// HTTPServer ...
+type HTTPServer interface {
+	ListenAndServe() error
+}
+
 // Server ...
 type Server struct {
+	httpServer        HTTPServer
 	serviceRepository repositories.Repository
 	router            Router
 }
@@ -21,8 +26,9 @@ type Router interface {
 }
 
 // CreateServer ...
-func CreateServer(repository repositories.Repository, router Router) Server {
+func CreateServer(server HTTPServer, repository repositories.Repository, router Router) Server {
 	return Server{
+		httpServer:        server,
 		serviceRepository: repository,
 		router:            router,
 	}
@@ -38,5 +44,5 @@ func (s *Server) handleRequests() {
 	s.router.HandleFunc("/services/_count", s.countServices).Methods("GET")
 	s.router.HandleFunc("/services/{id}", s.createService).Methods("PUT")
 	s.router.HandleFunc("/services/{id}", s.deleteService).Methods("DELETE")
-	log.Fatal(http.ListenAndServe(":10000", s.router))
+	s.httpServer.ListenAndServe()
 }

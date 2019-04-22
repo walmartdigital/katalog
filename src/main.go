@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"net/http"
 	"os"
 	"path/filepath"
 
@@ -82,6 +83,7 @@ func mainServer() {
 	persistence := persistence.BuildMemoryPersistence(memory)
 	serviceRepository := repositories.CreateServiceRepository(persistence)
 	router := mux.NewRouter().StrictSlash(true)
-	server := server.CreateServer(serviceRepository, router)
+	httpServer := &http.Server{Addr: ":10000", Handler: router}
+	server := server.CreateServer(httpServer, serviceRepository, router)
 	server.Run()
 }
