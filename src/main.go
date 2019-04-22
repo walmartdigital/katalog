@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/golang/glog"
+	"github.com/gorilla/mux"
 	k8sdriver "github.com/walmartdigital/katalog/src/collector/k8s-driver"
 	"github.com/walmartdigital/katalog/src/collector/publishers"
 	"github.com/walmartdigital/katalog/src/server"
@@ -17,7 +18,6 @@ const roleCollector = "collector"
 const roleServer = "server"
 
 const publisherHTTP = "http"
-const publisherConsul = "consul"
 
 var role = flag.String("role", roleCollector, "collector or server")
 var consulAddress = flag.String("consul-addr", "127.0.0.1:8500", "consul address")
@@ -70,9 +70,7 @@ func mainCollector(kubeconfig string) {
 func resolvePublisher() publishers.Publisher {
 	switch *publisher {
 	case publisherHTTP:
-		return publishers.CreateHTTPPublisher(*httpURL, http)
-	case publisherConsul:
-		return publishers.CreateConsulPublisher(*consulAddress)
+		return publishers.BuildHTTPPublisher(*httpURL)
 	default:
 		return nil
 	}
@@ -83,6 +81,7 @@ func mainServer() {
 	memory := make(map[string]interface{})
 	persistence := persistence.BuildMemoryPersistence(memory)
 	serviceRepository := repositories.CreateServiceRepository(persistence)
-	server := server.CreateServer(serviceRepository)
+	router := mux.NewRouter().StrictSlash(true)
+	server := server.CreateServer(serviceRepository, router)
 	server.Run()
 }
