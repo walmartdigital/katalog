@@ -1,12 +1,9 @@
 package publishers_test
 
 import (
-	"fmt"
-	"io"
-	"net/http"
-	"net/http/httptest"
 	"testing"
 
+	"github.com/maxcnunes/httpfake"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -20,18 +17,24 @@ func TestAll(t *testing.T) {
 }
 
 var _ = Describe("create", func() {
-	It("should add a single struct", func() {
-		handler := func(w http.ResponseWriter, r *http.Request) {
-			fmt.Println("**")
-			io.WriteString(w, "<html><body>Hello World!</body></html>")
-		}
+	It("should add a service", func() {
+		fakeService := httpfake.New()
+		defer fakeService.Server.Close()
+		serviceID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		fakeService.NewHandler().
+			Put("/services/" + serviceID).
+			Reply(200).
+			BodyString(`{"ID": "` + serviceID + `"}`)
+		url := fakeService.ResolveURL("")
+		publisher := publishers.BuildHTTPPublisher(url)
 
-		req := httptest.NewRequest("GET", "http://example.com/foo", nil)
-		w := httptest.NewRecorder()
-		handler(w, req)
+		output := publisher.Publish(domain.Operation{
+			Kind: domain.OperationTypeAdd,
+			Service: domain.Service{
+				ID: serviceID,
+			},
+		})
 
-		publisher := publishers.BuildHTTPPublisher("http://localhost")
-
-		publisher.Publish(domain.Operation{Kind: domain.OperationTypeAdd})
+		Expect(output).To(BeNil())
 	})
 })

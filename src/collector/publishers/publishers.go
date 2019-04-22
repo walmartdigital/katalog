@@ -7,7 +7,7 @@ import (
 
 // Publisher ...
 type Publisher interface {
-	Publish(obj interface{})
+	Publish(obj interface{}) error
 }
 
 func createService(service domain.Service) []api.AgentServiceRegistration {

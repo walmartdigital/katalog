@@ -25,14 +25,6 @@
   version = "v0.5.0"
 
 [[projects]]
-  digest = "1:0f98f59e9a2f4070d66f0c9c39561f68fcd1dc837b22a852d28d0003aebd1b1e"
-  name = "github.com/boltdb/bolt"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "2f1ce7a837dcb8da3ec595b1dac9d0632f0f99e8"
-  version = "v1.3.1"
-
-[[projects]]
   digest = "1:6b21090f60571b20b3ddc2c8e48547dffcf409498ed6002c2cada023725ed377"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
@@ -199,6 +191,14 @@
   pruneopts = "UT"
   revision = "ab8a2e0c74be9d3be70b3184d9acc634935ded82"
   version = "1.1.4"
+
+[[projects]]
+  digest = "1:97b97098a6d93a5e8e7f149665a1b016cff2d8dd334a9d54c83f3c42ba551a52"
+  name = "github.com/maxcnunes/httpfake"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "e90b23bf97fe0e119160bc7cce6f1f4d628b73c3"
+  version = "v1.0.1"
 
 [[projects]]
   digest = "1:5d231480e1c64a726869bc4142d270184c419749d34f167646baa21008eb0a79"
@@ -634,11 +634,11 @@
   analyzer-version = 1
   input-imports = [
     "github.com/avast/retry-go",
-    "github.com/boltdb/bolt",
     "github.com/emirpasic/gods/lists/arraylist",
     "github.com/golang/glog",
     "github.com/gorilla/mux",
     "github.com/hashicorp/consul/api",
+    "github.com/maxcnunes/httpfake",
     "github.com/mitchellh/mapstructure",
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",

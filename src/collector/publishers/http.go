@@ -26,22 +26,24 @@ func BuildHTTPPublisher(url string) Publisher {
 }
 
 // Publish ...
-func (c *HTTPPublisher) Publish(obj interface{}) {
+func (c *HTTPPublisher) Publish(obj interface{}) error {
 	operation := obj.(domain.Operation)
 	switch operation.Kind {
 	case (domain.OperationTypeAdd):
-		c.put(operation.Service)
+		return c.put(operation.Service)
 	case (domain.OperationTypeUpdate):
-		retry.Do(func() error {
+		return retry.Do(func() error {
 			c.put(operation.Service)
 			return errors.New("some error")
 		})
 	case (domain.OperationTypeDelete):
-		c.delete(operation.Service)
+		return c.delete(operation.Service)
+	default:
+		return nil
 	}
 }
 
-func (c *HTTPPublisher) put(service domain.Service) {
+func (c *HTTPPublisher) put(service domain.Service) error {
 	reqBodyBytes := new(bytes.Buffer)
 	json.NewEncoder(reqBodyBytes).Encode(service)
 	req, _ := http.NewRequest(http.MethodPut, c.url+"/services/"+service.ID, reqBodyBytes)
@@ -49,14 +51,15 @@ func (c *HTTPPublisher) put(service domain.Service) {
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		glog.Error(err)
-		return
+		return errors.New("put service failed")
 	}
 	defer res.Body.Close()
 	body, _ := ioutil.ReadAll(res.Body)
 	glog.Info(string(body))
+	return nil
 }
 
-func (c *HTTPPublisher) delete(service domain.Service) {
+func (c *HTTPPublisher) delete(service domain.Service) error {
 	reqBodyBytes := new(bytes.Buffer)
 	json.NewEncoder(reqBodyBytes).Encode(service)
 	req, _ := http.NewRequest(http.MethodDelete, c.url+"/services/"+service.ID, reqBodyBytes)
@@ -64,8 +67,10 @@ func (c *HTTPPublisher) delete(service domain.Service) {
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		glog.Error(err)
+		return errors.New("delete service failed")
 	}
 	defer res.Body.Close()
 	body, _ := ioutil.ReadAll(res.Body)
 	glog.Info(string(body))
+	return nil
 }
