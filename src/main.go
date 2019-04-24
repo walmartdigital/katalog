@@ -32,10 +32,7 @@ func usage() {
 }
 
 func init() {
-	flag.Usage = usage
 	flag.Set("logtostderr", "true")
-	flag.Set("stderrthreshold", "WARNING")
-	flag.Set("v", "2")
 	flag.Parse()
 }
 
