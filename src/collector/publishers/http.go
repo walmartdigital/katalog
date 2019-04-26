@@ -39,7 +39,7 @@ func (c *HTTPPublisher) Publish(obj interface{}) error {
 	case (domain.OperationTypeDelete):
 		return c.delete(operation.Service)
 	default:
-		return nil
+		return errors.New("operation unknown")
 	}
 }
 
@@ -49,7 +49,7 @@ func (c *HTTPPublisher) put(service domain.Service) error {
 	req, _ := http.NewRequest(http.MethodPut, c.url+"/services/"+service.ID, reqBodyBytes)
 	req.Header.Add("Content-Type", "application/json")
 	res, err := http.DefaultClient.Do(req)
-	if err != nil {
+	if err != nil || res.StatusCode != 200 {
 		glog.Error(err)
 		return errors.New("put service failed")
 	}
@@ -60,12 +60,10 @@ func (c *HTTPPublisher) put(service domain.Service) error {
 }
 
 func (c *HTTPPublisher) delete(service domain.Service) error {
-	reqBodyBytes := new(bytes.Buffer)
-	json.NewEncoder(reqBodyBytes).Encode(service)
-	req, _ := http.NewRequest(http.MethodDelete, c.url+"/services/"+service.ID, reqBodyBytes)
+	req, _ := http.NewRequest(http.MethodDelete, c.url+"/services/"+service.ID, nil)
 	req.Header.Add("Content-Type", "application/json")
 	res, err := http.DefaultClient.Do(req)
-	if err != nil {
+	if err != nil || res.StatusCode != 200 {
 		glog.Error(err)
 		return errors.New("delete service failed")
 	}
