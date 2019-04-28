@@ -23,22 +23,28 @@ func CreateServiceRepository(persistence persistence.Persistence) *ServiceReposi
 }
 
 // CreateService ...
-func (r *ServiceRepository) CreateService(obj interface{}) {
+func (r *ServiceRepository) CreateService(obj interface{}) error {
 	service := obj.(domain.Service)
-	r.persistence.Create(kind, service.ID, service)
+	if err := r.persistence.Create(service.ID, service); err != nil {
+		return err
+	}
+	return nil
 }
 
 // DeleteService ...
-func (r *ServiceRepository) DeleteService(obj interface{}) {
-	service := obj.(domain.Service)
-	r.persistence.Delete(kind, service.ID)
+func (r *ServiceRepository) DeleteService(obj interface{}) error {
+	id := obj.(string)
+	if err := r.persistence.Delete(id); err != nil {
+		return err
+	}
+	return nil
 }
 
 // GetAllServices ...
 func (r *ServiceRepository) GetAllServices() []interface{} {
 	glog.Info("get all services called")
 	list := arraylist.New()
-	services := r.persistence.GetAll(kind)
+	services := r.persistence.GetAll()
 	for _, item := range services {
 		var service domain.Service
 		mapstructure.Decode(item, &service)
