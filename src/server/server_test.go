@@ -3,7 +3,7 @@ package server_test
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -11,24 +11,32 @@ import (
 
 	"github.com/emirpasic/gods/lists/arraylist"
 	"github.com/gorilla/mux"
-	"github.com/maxcnunes/httpfake"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/walmartdigital/katalog/src/domain"
 	"github.com/walmartdigital/katalog/src/server"
 )
-
-const kind = "services"
 
 type fakeRepository struct {
 	persistence map[string]interface{}
 }
 
-func (r *fakeRepository) CreateService(obj interface{}) {
-	r.persistence[kind] = obj
+func (r *fakeRepository) CreateService(obj interface{}) error {
+	service := obj.(domain.Service)
+	if service.ID == "" {
+		return errors.New("")
+	}
+	r.persistence[service.ID] = obj
+	return nil
 }
 
-func (r *fakeRepository) DeleteService(obj interface{}) {
-	r.persistence[kind] = nil
+func (r *fakeRepository) DeleteService(obj interface{}) error {
+	id := obj.(string)
+	if id == "" {
+		return errors.New("")
+	}
+	r.persistence[id] = nil
+	return nil
 }
 
 func (r *fakeRepository) GetAllServices() []interface{} {
@@ -63,7 +71,6 @@ func TestAll(t *testing.T) {
 
 var _ = Describe("run server", func() {
 	var (
-		path        string
 		persistence map[string]interface{}
 		repository  fakeRepository
 		router      fakeRouter
@@ -71,7 +78,6 @@ var _ = Describe("run server", func() {
 	)
 
 	BeforeEach(func() {
-		path = "/services"
 		persistence = make(map[string]interface{})
 		repository = fakeRepository{persistence: persistence}
 		router = fakeRouter{}
@@ -80,39 +86,62 @@ var _ = Describe("run server", func() {
 		server.Run()
 	})
 
-	It("should list all services", func() {
-		rec := httptest.NewRecorder()
-		repository.persistence[kind] = struct{ ID string }{"c3642c80-b6cd-4e5c-ab9a-64ce340a8c83"}
-
-		routes[path](rec, nil)
-
-		res := rec.Result()
-		defer res.Body.Close()
-		body, err := ioutil.ReadAll(res.Body)
-		Expect(err).To(BeNil())
-		var services []struct{ ID string }
-		Expect(json.Unmarshal(body, &services)).To(BeNil())
-		Expect(services[0]).To(Equal(repository.persistence[kind]))
-	})
-
 	It("should create a service", func() {
-		fakeService := httpfake.New()
-		defer fakeService.Server.Close()
-		serviceID := "22d080de-4138-446f-acd4-d4c13fe77912"
-		fakeService.NewHandler().
-			Put("/services/" + serviceID).
-			Reply(200).
-			BodyString(`{"ID": "` + serviceID + `"}`)
-		url := fakeService.ResolveURL("")
-		path = fmt.Sprintf("%s/%s", path, serviceID)
-		reqBodyBytes := new(bytes.Buffer)
-		json.NewEncoder(reqBodyBytes).Encode(struct{ ID string }{ID: serviceID})
-		req, _ := http.NewRequest(http.MethodPut, url, reqBodyBytes)
-		req.Header.Add("Content-Type", "application/json")
+		id := "22d080de-4138-446f-acd4-d4c13fe77912"
+		service := domain.Service{ID: id}
+		body := new(bytes.Buffer)
+		json.NewEncoder(body).Encode(service)
+		path := "/services/{service}"
+		req, _ := http.NewRequest(http.MethodPut, "", body)
 		rec := httptest.NewRecorder()
 
 		routes[path](rec, req)
 
-		Expect(repository.persistence[kind]).To(Equal(struct{ ID string }{ID: serviceID}))
+		b, _ := ioutil.ReadAll(rec.Body)
+		var srv domain.Service
+		json.Unmarshal(b, &srv)
+		Expect(srv).To(Equal(repository.persistence[id]))
+	})
+
+	It("should delete a service", func() {
+		id := "22d080de-4138-446f-acd4-d4c13fe77912"
+		service := domain.Service{ID: id}
+		repository.persistence[id] = service
+		path := "/services/{id}"
+		req, _ := http.NewRequest(http.MethodDelete, "", nil)
+		rec := httptest.NewRecorder()
+
+		routes[path](rec, req)
+
+		Expect(repository.persistence[id]).To(BeNil())
+	})
+
+	It("should list all services", func() {
+		id := "22d080de-4138-446f-acd4-d4c13fe77912"
+		service := domain.Service{ID: id}
+		repository.persistence[id] = service
+		path := "/services"
+		rec := httptest.NewRecorder()
+
+		routes[path](rec, nil)
+
+		b, _ := ioutil.ReadAll(rec.Body)
+		json.Unmarshal(b, &service)
+		Expect(service).To(Equal(repository.persistence[id]))
+	})
+
+	It("should count amount of services", func() {
+		id := "22d080de-4138-446f-acd4-d4c13fe77912"
+		service := domain.Service{ID: id}
+		repository.persistence[id] = service
+		path := "/services/_count"
+		rec := httptest.NewRecorder()
+
+		routes[path](rec, nil)
+
+		b, _ := ioutil.ReadAll(rec.Body)
+		var m struct{ Count int }
+		json.Unmarshal(b, &m)
+		Expect(m.Count).To(Equal(1))
 	})
 })

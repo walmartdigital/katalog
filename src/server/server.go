@@ -42,7 +42,7 @@ func (s *Server) Run() {
 func (s *Server) handleRequests() {
 	s.router.HandleFunc("/services", s.getAllServices).Methods("GET")
 	s.router.HandleFunc("/services/_count", s.countServices).Methods("GET")
-	s.router.HandleFunc("/services/{id}", s.createService).Methods("PUT")
+	s.router.HandleFunc("/services/{service}", s.createService).Methods("PUT")
 	s.router.HandleFunc("/services/{id}", s.deleteService).Methods("DELETE")
 	s.httpServer.ListenAndServe()
 }
