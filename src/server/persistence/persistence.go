@@ -2,7 +2,7 @@ package persistence
 
 // Persistence ...
 type Persistence interface {
-	Create(kind string, id string, obj interface{})
-	Delete(kind string, id string)
-	GetAll(kind string) []interface{}
+	Create(id string, obj interface{}) error
+	Delete(id string) error
+	GetAll() []interface{}
 }

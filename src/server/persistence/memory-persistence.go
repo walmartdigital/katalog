@@ -1,6 +1,10 @@
 package persistence
 
-import "github.com/emirpasic/gods/lists/arraylist"
+import (
+	"errors"
+
+	"github.com/emirpasic/gods/lists/arraylist"
+)
 
 // MemoryPersistence is a memory implementantion of persistence
 type MemoryPersistence struct {
@@ -15,21 +19,25 @@ func BuildMemoryPersistence(memory map[string]interface{}) Persistence {
 }
 
 // Create ...
-func (p *MemoryPersistence) Create(kind string, id string, obj interface{}) {
-	p.memory[createComposedID(kind, id)] = obj
-}
-
-func createComposedID(kind string, id string) string {
-	return kind + "-" + id
+func (p *MemoryPersistence) Create(id string, obj interface{}) error {
+	if id == "" {
+		return errors.New("you must provide an id")
+	}
+	p.memory[id] = obj
+	return nil
 }
 
 // Delete ...
-func (p *MemoryPersistence) Delete(kind string, id string) {
-	delete(p.memory, createComposedID(kind, id))
+func (p *MemoryPersistence) Delete(id string) error {
+	if id == "" {
+		return errors.New("you must provide an id")
+	}
+	delete(p.memory, id)
+	return nil
 }
 
 // GetAll ...
-func (p *MemoryPersistence) GetAll(kind string) []interface{} {
+func (p *MemoryPersistence) GetAll() []interface{} {
 	list := arraylist.New()
 	for _, value := range p.memory {
 		list.Add(value)
