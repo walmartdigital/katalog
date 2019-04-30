@@ -3,7 +3,6 @@ package server
 import (
 	"net/http"
 
-	"github.com/gorilla/mux"
 	"github.com/walmartdigital/katalog/src/server/repositories"
 )
 
@@ -21,8 +20,13 @@ type Server struct {
 
 // Router ...
 type Router interface {
-	HandleFunc(path string, f func(http.ResponseWriter, *http.Request)) *mux.Route
+	HandleFunc(path string, f func(http.ResponseWriter, *http.Request)) Route
 	ServeHTTP(http.ResponseWriter, *http.Request)
+}
+
+// Route ...
+type Route interface {
+	Methods(methods ...string) Route
 }
 
 // CreateServer ...

@@ -80,7 +80,30 @@ func mainServer() {
 	persistence := persistence.BuildMemoryPersistence(memory)
 	serviceRepository := repositories.CreateServiceRepository(persistence)
 	router := mux.NewRouter().StrictSlash(true)
+	routerWrapper := &routerWrapper{router: router}
 	httpServer := &http.Server{Addr: ":10000", Handler: router}
-	server := server.CreateServer(httpServer, serviceRepository, router)
+	server := server.CreateServer(httpServer, serviceRepository, routerWrapper)
+
 	server.Run()
+}
+
+type routerWrapper struct {
+	router *mux.Router
+}
+
+func (r *routerWrapper) HandleFunc(path string, f func(http.ResponseWriter, *http.Request)) server.Route {
+	return &routeWrapper{route: r.router.HandleFunc(path, f)}
+}
+
+func (r *routerWrapper) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	r.router.ServeHTTP(w, req)
+}
+
+type routeWrapper struct {
+	route *mux.Route
+}
+
+func (r *routeWrapper) Methods(methods ...string) server.Route {
+	r.route.Methods(methods[0])
+	return r
 }

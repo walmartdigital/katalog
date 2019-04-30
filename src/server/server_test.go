@@ -51,6 +51,12 @@ type fakeRouter struct{}
 
 func (r *fakeRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {}
 
+type fakeRoute struct{}
+
+func (r *fakeRoute) Methods(methods ...string) server.Route {
+	return r
+}
+
 type fakeHTTPServer struct{}
 
 func (s *fakeHTTPServer) ListenAndServe() error {
@@ -59,9 +65,9 @@ func (s *fakeHTTPServer) ListenAndServe() error {
 
 var routes = make(map[string]func(http.ResponseWriter, *http.Request))
 
-func (r *fakeRouter) HandleFunc(path string, f func(http.ResponseWriter, *http.Request)) *mux.Route {
+func (r *fakeRouter) HandleFunc(path string, f func(http.ResponseWriter, *http.Request)) server.Route {
 	routes[path] = f
-	return &mux.Route{}
+	return &fakeRoute{}
 }
 
 func TestAll(t *testing.T) {
