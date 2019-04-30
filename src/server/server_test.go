@@ -108,7 +108,8 @@ var _ = Describe("run server", func() {
 		service := domain.Service{ID: id}
 		repository.persistence[id] = service
 		path := "/services/{id}"
-		req, _ := http.NewRequest(http.MethodDelete, "", nil)
+		req, _ := http.NewRequest(http.MethodDelete, "/services/"+id, nil)
+		req = mux.SetURLVars(req, map[string]string{"id": id})
 		rec := httptest.NewRecorder()
 
 		routes[path](rec, req)
