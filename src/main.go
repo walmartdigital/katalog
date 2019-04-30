@@ -95,9 +95,6 @@ func (r *routerWrapper) HandleFunc(path string, f func(http.ResponseWriter, *htt
 	return &routeWrapper{route: r.router.HandleFunc(path, f)}
 }
 
-func (r *routerWrapper) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	r.router.ServeHTTP(w, req)
-}
 
 type routeWrapper struct {
 	route *mux.Route

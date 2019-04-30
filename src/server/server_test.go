@@ -49,11 +49,19 @@ func (r *fakeRepository) GetAllServices() []interface{} {
 
 type fakeRouter struct{}
 
-func (r *fakeRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {}
+var routes = make(map[string]func(http.ResponseWriter, *http.Request))
 
-type fakeRoute struct{}
+func (r *fakeRouter) HandleFunc(path string, f func(http.ResponseWriter, *http.Request)) server.Route {
+	routes[path] = f
+	return &fakeRoute{path}
+}
+
+type fakeRoute struct {
+	path string
+}
 
 func (r *fakeRoute) Methods(methods ...string) server.Route {
+	routes[r.path+"@"+methods[0]] = routes[r.path]
 	return r
 }
 
@@ -61,13 +69,6 @@ type fakeHTTPServer struct{}
 
 func (s *fakeHTTPServer) ListenAndServe() error {
 	return nil
-}
-
-var routes = make(map[string]func(http.ResponseWriter, *http.Request))
-
-func (r *fakeRouter) HandleFunc(path string, f func(http.ResponseWriter, *http.Request)) server.Route {
-	routes[path] = f
-	return &fakeRoute{}
 }
 
 func TestAll(t *testing.T) {
@@ -97,11 +98,11 @@ var _ = Describe("run server", func() {
 		service := domain.Service{ID: id}
 		body := new(bytes.Buffer)
 		json.NewEncoder(body).Encode(service)
-		path := "/services/{service}"
+		path := "/services/{id}"
 		req, _ := http.NewRequest(http.MethodPut, "", body)
 		rec := httptest.NewRecorder()
 
-		routes[path](rec, req)
+		routes[path+"@PUT"](rec, req)
 
 		b, _ := ioutil.ReadAll(rec.Body)
 		var srv domain.Service
@@ -118,7 +119,7 @@ var _ = Describe("run server", func() {
 		req = mux.SetURLVars(req, map[string]string{"id": id})
 		rec := httptest.NewRecorder()
 
-		routes[path](rec, req)
+		routes[path+"@DELETE"](rec, req)
 
 		Expect(repository.persistence[id]).To(BeNil())
 	})
