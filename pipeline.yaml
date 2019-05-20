@@ -14,12 +14,14 @@ resources:
       tag: 1.11-stretch
 
 jobs:
-- name: job-1
+- name: build
+  serial: true
   plan:
-  - get: katalog-git
-    trigger: true
-  - get: golang-1.11.x-image
-    trigger: true
-  - task: task-1
+  - aggregate:
+    - get: katalog-git
+      trigger: true
+    - get: golang-1.11.x-image
+      trigger: true
+  - task: unit-testing
     image: golang-1.11.x-image
     file: katalog-git/concourse/build.yaml
