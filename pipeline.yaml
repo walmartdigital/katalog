@@ -1,0 +1,25 @@
+---
+resources:
+  - name: katalog-git
+    type: git
+    icon: github-circle
+    source:
+      uri: https://github.com/walmartdigital/katalog
+
+  - name: golang-1.11.x-image
+    type: registry-image
+    icon: docker
+    source:
+      repository: golang
+      tag: 1.11-stretch
+
+jobs:
+- name: job-1
+  plan:
+  - get: katalog-git
+    trigger: true
+  - get: golang-1.11.x-image
+    trigger: true
+  - task: task-1
+    image: golang-1.11.x-image
+    file: katalog-git/concourse/build.yaml
