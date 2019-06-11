@@ -3,6 +3,7 @@ package publishers_test
 import (
 	"testing"
 
+	"github.com/avast/retry-go"
 	"github.com/maxcnunes/httpfake"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -10,6 +11,10 @@ import (
 	"github.com/walmartdigital/katalog/src/collector/publishers"
 	"github.com/walmartdigital/katalog/src/domain"
 )
+
+func retryDoDouble(retryableFunc retry.RetryableFunc, opts ...retry.Option) error {
+	return retryableFunc()
+}
 
 func TestAll(t *testing.T) {
 	RegisterFailHandler(Fail)
@@ -25,7 +30,7 @@ var _ = Describe("create", func() {
 		fakeService := createFakeServer(path, statusCode, body)
 		defer fakeService.Server.Close()
 		url := fakeService.ResolveURL("")
-		publisher := publishers.BuildHTTPPublisher(url)
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
 
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeAdd,
@@ -45,7 +50,7 @@ var _ = Describe("create", func() {
 		fakeService := createFakeServer(path, statusCode, body)
 		defer fakeService.Server.Close()
 		url := "localhost:5000"
-		publisher := publishers.BuildHTTPPublisher(url)
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
 
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeAdd,
@@ -66,7 +71,7 @@ var _ = Describe("create", func() {
 		fakeService := createFakeServer(path, statusCode, body)
 		defer fakeService.Server.Close()
 		url := fakeService.ResolveURL("")
-		publisher := publishers.BuildHTTPPublisher(url)
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
 
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeAdd,
@@ -98,7 +103,7 @@ var _ = Describe("delete", func() {
 		fakeService := createDeleteFakeServer(path, statusCode)
 		defer fakeService.Server.Close()
 		url := fakeService.ResolveURL("")
-		publisher := publishers.BuildHTTPPublisher(url)
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
 
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeDelete,
@@ -117,7 +122,7 @@ var _ = Describe("delete", func() {
 		fakeService := createDeleteFakeServer(path, statusCode)
 		defer fakeService.Server.Close()
 		url := fakeService.ResolveURL("")
-		publisher := publishers.BuildHTTPPublisher(url)
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
 
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeDelete,
@@ -137,7 +142,7 @@ var _ = Describe("delete", func() {
 		fakeService := createDeleteFakeServer(path, statusCode)
 		defer fakeService.Server.Close()
 		url := fakeService.ResolveURL("")
-		publisher := publishers.BuildHTTPPublisher(url)
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
 
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeDelete,
@@ -161,6 +166,28 @@ func createDeleteFakeServer(path string, statusCode int) *httpfake.HTTPFake {
 	return output
 }
 
+var _ = Describe("update", func() {
+	It("should return nil error when request succeed", func() {
+		serviceID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/services/" + serviceID
+		statusCode := 200
+		body := `{"ID": "` + serviceID + `"}`
+		fakeService := createFakeServer(path, statusCode, body)
+		defer fakeService.Server.Close()
+		url := fakeService.ResolveURL("")
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
+
+		output := publisher.Publish(domain.Operation{
+			Kind: domain.OperationTypeUpdate,
+			Service: domain.Service{
+				ID: serviceID,
+			},
+		})
+
+		Expect(output).To(BeNil())
+	})
+})
+
 var _ = Describe("unknown", func() {
 	It("should return error when operation is unknown", func() {
 		serviceID := "6425377e-badd-4c46-828a-00c9afa7a156"
@@ -169,7 +196,7 @@ var _ = Describe("unknown", func() {
 		fakeService := createDeleteFakeServer(path, statusCode)
 		defer fakeService.Server.Close()
 		url := fakeService.ResolveURL("")
-		publisher := publishers.BuildHTTPPublisher(url)
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
 
 		output := publisher.Publish(domain.Operation{
 			Kind: "unknown",

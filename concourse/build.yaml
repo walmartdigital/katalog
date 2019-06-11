@@ -1,0 +1,15 @@
+---
+platform: linux
+inputs:
+- name: katalog-git
+  path: /go/src/github.com/walmartdigital/katalog
+run:
+  path: /bin/sh
+  args:
+    - -c
+    - |
+      SRCPATH=$PWD/go/src/github.com/walmartdigital/katalog
+      GOPATH=$PWD/go
+      cd $SRCPATH
+      go get -t -v ./...
+      go test -v ./...

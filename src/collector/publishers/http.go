@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	retry "github.com/avast/retry-go"
+	"github.com/avast/retry-go"
 	"github.com/golang/glog"
 	"github.com/walmartdigital/katalog/src/domain"
 )
@@ -17,12 +17,13 @@ type httpClient interface {
 
 // HTTPPublisher ...
 type HTTPPublisher struct {
-	url string
+	url   string
+	retry func(retry.RetryableFunc, ...retry.Option) error
 }
 
 // BuildHTTPPublisher ...
-func BuildHTTPPublisher(url string) Publisher {
-	return &HTTPPublisher{url: url}
+func BuildHTTPPublisher(url string, retry func(retry.RetryableFunc, ...retry.Option) error) Publisher {
+	return &HTTPPublisher{url: url, retry: retry}
 }
 
 // Publish ...
@@ -30,11 +31,12 @@ func (c *HTTPPublisher) Publish(obj interface{}) error {
 	operation := obj.(domain.Operation)
 	switch operation.Kind {
 	case (domain.OperationTypeAdd):
-		return c.put(operation.Service)
+		return c.retry(func() error {
+			return c.put(operation.Service)
+		})
 	case (domain.OperationTypeUpdate):
-		return retry.Do(func() error {
-			c.put(operation.Service)
-			return errors.New("some error")
+		return c.retry(func() error {
+			return c.put(operation.Service)
 		})
 	case (domain.OperationTypeDelete):
 		return c.delete(operation.Service)
@@ -54,8 +56,7 @@ func (c *HTTPPublisher) put(service domain.Service) error {
 		return errors.New("put service failed")
 	}
 	defer res.Body.Close()
-	body, _ := ioutil.ReadAll(res.Body)
-	glog.Info(string(body))
+	glog.Info("service " + service.Name + "(id: " + service.ID + ") saved successfully")
 	return nil
 }
 

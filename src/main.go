@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/avast/retry-go"
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
 	k8sdriver "github.com/walmartdigital/katalog/src/collector/k8s-driver"
@@ -68,7 +69,7 @@ func mainCollector(kubeconfig string) {
 func resolvePublisher() publishers.Publisher {
 	switch *publisher {
 	case publisherHTTP:
-		return publishers.BuildHTTPPublisher(*httpURL)
+		return publishers.BuildHTTPPublisher(*httpURL, retry.Do)
 	default:
 		return nil
 	}
@@ -94,7 +95,6 @@ type routerWrapper struct {
 func (r *routerWrapper) HandleFunc(path string, f func(http.ResponseWriter, *http.Request)) server.Route {
 	return &routeWrapper{route: r.router.HandleFunc(path, f)}
 }
-
 
 type routeWrapper struct {
 	route *mux.Route
