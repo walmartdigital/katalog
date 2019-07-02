@@ -1,0 +1,31 @@
+---
+kind: pipeline
+name: default
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: publish
+  pull: default
+  image: plugins/docker
+  settings:
+    registry: walmartdigital.azurecr.io
+    repo: walmartdigital.azurecr.io/katalog
+    tags:
+    - latest
+    - c-${DRONE_COMMIT_SHA}
+    - b-${DRONE_BUILD_NUMBER}
+  environment:
+    DOCKER_PASSWORD:
+      from_secret: docker_password
+    DOCKER_USERNAME:
+      from_secret: docker_username
+  when:
+    branch:
+    - master
+    event:
+    - push
+    - pull_request
+    - tag
