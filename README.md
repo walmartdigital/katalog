@@ -1,4 +1,5 @@
 # katalog
+
 Catalog all your kubernetes services in order to understand what is running and where is running
 
 ## Roles
@@ -15,12 +16,12 @@ you wan to monitor
 
 ### Run The Server
 
-```
+```bash
 go run src/main.go -role server
 ```
 
 ### Run The Collector
 
-```
+```bash
 go run src/main.go -role collector
 ```
