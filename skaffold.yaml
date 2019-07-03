@@ -1,0 +1,11 @@
+apiVersion: skaffold/v1beta7
+kind: Config
+build:
+  artifacts:
+  - image: walmartdigital.azurecr.io/katalog
+    docker:
+      dockerfile: ./Dockerfile_dev
+deploy:
+  kubectl:
+    manifests:
+    - deploy/skaffold/dev/*
