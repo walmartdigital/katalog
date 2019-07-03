@@ -6,14 +6,22 @@ const (
 	// OperationTypeDelete ...
 	OperationTypeDelete OperationType = "delete"
 	// OperationTypeUpdate ...
-	OperationTypeUpdate OperationType = "update"
+	OperationTypeUpdate     OperationType = "update"
+	ResourceKTypeService    ResourceType  = "Service"
+	ResourceKTypeDeployment ResourceType  = "Deployment"
 )
 
 // OperationType ...
 type OperationType string
+type ResourceType string
 
 // Operation ...
 type Operation struct {
-	Kind    OperationType `json:",omitempty"`
-	Service Service
+	Kind     OperationType `json:"kind"`
+	Resource Resource      `json:"resource"`
+}
+
+type Resource struct {
+	Type   ResourceType `json:"type"`
+	Object interface{}
 }
