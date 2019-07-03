@@ -3,10 +3,11 @@ package k8sdriver
 import (
 	"github.com/golang/glog"
 	"github.com/walmartdigital/katalog/src/domain"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -35,13 +36,24 @@ func (d *Driver) StartWatchingServices(events chan interface{}) {
 }
 
 func buildClientSet(kubeconfigPath string) *kubernetes.Clientset {
-	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
-	if err != nil {
-		glog.Errorln(err)
+	var config *rest.Config
+	var err error
+	if kubeconfigPath != "" {
+		config, err = clientcmd.BuildConfigFromFlags("", kubeconfigPath)
+		if err != nil {
+			glog.Errorln(err)
+		}
+	} else {
+		config, err = rest.InClusterConfig()
+		if err != nil {
+			glog.Errorln(err)
+		}
 	}
+
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		glog.Errorln(err)
+		panic(err)
 	}
 	return clientset
 }

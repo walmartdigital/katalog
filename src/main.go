@@ -26,6 +26,7 @@ var consulAddress = flag.String("consul-addr", "127.0.0.1:8500", "consul address
 var httpURL = flag.String("http-url", "http://127.0.0.1:10000", "http url")
 var excludeSystemNamespace = flag.Bool("exclude-system-namespace", false, "exclude all services from kube-system namespace")
 var publisher = flag.String("publisher", publisherHTTP, "select where to publis: http, consul")
+var configfile = flag.Bool("kubeconfig", false, "true if a $HOME/.kube/config file exists")
 
 func usage() {
 	flag.PrintDefaults()
@@ -38,9 +39,15 @@ func init() {
 }
 
 func main() {
-	kubeconfig := filepath.Join(
-		os.Getenv("HOME"), ".kube", "config",
-	)
+	var kubeconfig string
+
+	if *configfile {
+		kubeconfig = filepath.Join(
+			os.Getenv("HOME"), ".kube", "config",
+		)
+	} else {
+		kubeconfig = ""
+	}
 
 	switch *role {
 	case roleCollector:
