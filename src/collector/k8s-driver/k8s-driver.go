@@ -31,10 +31,10 @@ func BuildDriver(kubeconfigPath string, excludeSystemNamespace bool) *Driver {
 	}
 }
 
-// StartWatchingServices ...
-func (d *Driver) StartWatchingServices(events chan interface{}, resourceType runtime.Object) {
-	watchList := d.buildWatchListForServices(corev1.ResourceServices)
-	controller := d.buildController(watchList, resourceType, d.createAddHandler(events, resourceType), d.createUpdateHandler(events, resourceType), d.createDeleteHandler(events, resourceType))
+// StartWatchingResources ...
+func (d *Driver) StartWatchingResources(events chan interface{}, resourceType runtime.Object, resource string) {
+	listWatch := d.buildListWatchForResources(resource)
+	controller := d.buildController(listWatch, resourceType, d.createAddHandler(events, resourceType), d.createUpdateHandler(events, resourceType), d.createDeleteHandler(events, resourceType))
 	controller.Run(make(chan struct{}))
 }
 
@@ -50,19 +50,19 @@ func buildClientSet(kubeconfigPath string) *kubernetes.Clientset {
 	return clientset
 }
 
-func (d *Driver) buildWatchListForServices(resource corev1.ResourceName) *cache.ListWatch {
-	watchlist := cache.NewListWatchFromClient(
+func (d *Driver) buildListWatchForResources(resource string) *cache.ListWatch {
+	listWatch := cache.NewListWatchFromClient(
 		d.clientSet.CoreV1().RESTClient(),
-		string(resource),
+		resource,
 		corev1.NamespaceAll,
 		fields.Everything(),
 	)
-	return watchlist
+	return listWatch
 }
 
-func (d *Driver) buildController(watchList *cache.ListWatch, resourceType runtime.Object, addFunc func(obj interface{}), updateFunc func(oldObj, newObj interface{}), deleteFunc func(obj interface{})) cache.Controller {
+func (d *Driver) buildController(listWatch *cache.ListWatch, resourceType runtime.Object, addFunc func(obj interface{}), updateFunc func(oldObj, newObj interface{}), deleteFunc func(obj interface{})) cache.Controller {
 	_, controller := cache.NewInformer(
-		watchList,
+		listWatch,
 		resourceType,
 		resyncPeriod,
 		cache.ResourceEventHandlerFuncs{
@@ -93,7 +93,7 @@ func (d *Driver) createAddHandler(channel chan interface{}, resourceType runtime
 				glog.Infof("%s excluded because belongs to kube-system namespace", k8sDeployment.Name)
 				return
 			}
-			deployment := buildOperationFromK8sDeployment(domain.OperationTypeAdd, resourceType)
+			deployment := buildOperationFromK8sDeployment(domain.OperationTypeAdd, k8sDeployment)
 			channel <- deployment
 		}
 	}

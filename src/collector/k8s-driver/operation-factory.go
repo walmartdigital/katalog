@@ -6,29 +6,31 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-func buildOperationFromK8sService(kind domain.OperationType, sourceService *corev1.Service, endpoints v1.Endpoints) domain.Operation {
+func buildOperationFromK8sService(kind domain.OperationType, sourceService *corev1.Service, endpoints corev1.Endpoints) domain.Operation {
 	destinationService := buildServiceFromK8sService(sourceService)
 	for _, endpoint := range buildEndpointFromK8sEndpoints(endpoints) {
 		destinationService.AddInstance(endpoint)
 	}
-	operation := &domain.Operation{
-		Kind:    kind,
-		Service: destinationService,
+	resource := &domain.Resource{
+		Type:   "Service",
+		Object: destinationService,
 	}
-
+	operation := &domain.Operation{
+		Kind:     kind,
+		Resource: *resource,
+	}
 	return *operation
 }
 
 func buildOperationFromK8sDeployment(kind domain.OperationType, sourceDeployment *appsv1.Deployment) domain.Operation {
 	destinationDeployment := buildDeploymentFromK8sDeployment(sourceDeployment)
-
-	operation := &domain.Operation{
-		Kind: kind,
-		Resource: &domain.Resource{
-			Type:   "Deployment",
-			Object: destinationDeployment.(*interface{}),
-		},
+	resource := &domain.Resource{
+		Type:   "Deployment",
+		Object: destinationDeployment,
 	}
-
+	operation := &domain.Operation{
+		Kind:     kind,
+		Resource: *resource,
+	}
 	return *operation
 }

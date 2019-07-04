@@ -22,7 +22,7 @@ func TestAll(t *testing.T) {
 }
 
 var _ = Describe("create", func() {
-	It("should return nil error when request succeed", func() {
+	It("should return nil error when service request succeed", func() {
 		serviceID := "6425377e-badd-4c46-828a-00c9afa7a156"
 		path := "/services/" + serviceID
 		statusCode := 200
@@ -34,15 +34,18 @@ var _ = Describe("create", func() {
 
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeAdd,
-			Service: domain.Service{
-				ID: serviceID,
+			Resource: domain.Resource{
+				Type: "Service",
+				Object: domain.Service{
+					ID: serviceID,
+				},
 			},
 		})
 
 		Expect(output).To(BeNil())
 	})
 
-	It("should return an error when request failed", func() {
+	It("should return an error when service request failed", func() {
 		serviceID := "6425377e-badd-4c46-828a-00c9afa7a156"
 		path := "/services/" + serviceID
 		statusCode := 500
@@ -54,8 +57,11 @@ var _ = Describe("create", func() {
 
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeAdd,
-			Service: domain.Service{
-				ID: serviceID,
+			Resource: domain.Resource{
+				Type: "Service",
+				Object: domain.Service{
+					ID: serviceID,
+				},
 			},
 		})
 
@@ -63,7 +69,7 @@ var _ = Describe("create", func() {
 		Expect(output.Error()).To(Equal("put service failed"))
 	})
 
-	It("should return an error when request respond 500", func() {
+	It("should return an error when service request respond 500", func() {
 		serviceID := "6425377e-badd-4c46-828a-00c9afa7a156"
 		path := "/services/" + serviceID
 		statusCode := 500
@@ -75,13 +81,108 @@ var _ = Describe("create", func() {
 
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeAdd,
-			Service: domain.Service{
-				ID: serviceID,
+			Resource: domain.Resource{
+				Type: "Service",
+				Object: domain.Service{
+					ID: serviceID,
+				},
 			},
 		})
 
 		Expect(output).ToNot(BeNil())
 		Expect(output.Error()).To(Equal("put service failed"))
+	})
+
+	It("should return nil error when deployment request succeed", func() {
+		deploymentID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/deployments/" + deploymentID
+		statusCode := 200
+		body := `{"ID": "` + deploymentID + `"}`
+		fakeDeployment := createFakeServer(path, statusCode, body)
+		defer fakeDeployment.Server.Close()
+		url := fakeDeployment.ResolveURL("")
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
+
+		output := publisher.Publish(domain.Operation{
+			Kind: domain.OperationTypeAdd,
+			Resource: domain.Resource{
+				Type: "Deployment",
+				Object: domain.Deployment{
+					ID: deploymentID,
+				},
+			},
+		})
+
+		Expect(output).To(BeNil())
+	})
+
+	It("should return an error when deployment request failed", func() {
+		deploymentID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/deployments/" + deploymentID
+		statusCode := 500
+		body := `{"status": "fail"}`
+		fakeDeployment := createFakeServer(path, statusCode, body)
+		defer fakeDeployment.Server.Close()
+		url := "localhost:5000"
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
+
+		output := publisher.Publish(domain.Operation{
+			Kind: domain.OperationTypeAdd,
+			Resource: domain.Resource{
+				Type: "Deployment",
+				Object: domain.Deployment{
+					ID: deploymentID,
+				},
+			},
+		})
+
+		Expect(output).ToNot(BeNil())
+		Expect(output.Error()).To(Equal("put deployment failed"))
+	})
+
+	It("should return an error when deployment request respond 500", func() {
+		deploymentID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/deployments/" + deploymentID
+		statusCode := 500
+		body := `{"status": "fail"}`
+		fakeDeployment := createFakeServer(path, statusCode, body)
+		defer fakeDeployment.Server.Close()
+		url := fakeDeployment.ResolveURL("")
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
+
+		output := publisher.Publish(domain.Operation{
+			Kind: domain.OperationTypeAdd,
+			Resource: domain.Resource{
+				Type: "Deployment",
+				Object: domain.Deployment{
+					ID: deploymentID,
+				},
+			},
+		})
+
+		Expect(output).ToNot(BeNil())
+		Expect(output.Error()).To(Equal("put deployment failed"))
+	})
+
+	It("should return nil if resource Type is not handled", func() {
+		serviceID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/services/" + serviceID
+		statusCode := 500
+		body := `{"status": "fail"}`
+		fakeService := createFakeServer(path, statusCode, body)
+		defer fakeService.Server.Close()
+		url := fakeService.ResolveURL("")
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
+
+		output := publisher.Publish(domain.Operation{
+			Kind: domain.OperationTypeAdd,
+			Resource: domain.Resource{
+				Type:   "XXXX",
+				Object: domain.Service{},
+			},
+		})
+
+		Expect(output).To(BeNil())
 	})
 })
 
@@ -96,7 +197,7 @@ func createFakeServer(path string, statusCode int, body string) *httpfake.HTTPFa
 }
 
 var _ = Describe("delete", func() {
-	It("should return nil error when request succeed", func() {
+	It("should return nil error when service request succeed", func() {
 		serviceID := "6425377e-badd-4c46-828a-00c9afa7a156"
 		path := "/services/" + serviceID
 		statusCode := 200
@@ -107,15 +208,18 @@ var _ = Describe("delete", func() {
 
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeDelete,
-			Service: domain.Service{
-				ID: serviceID,
+			Resource: domain.Resource{
+				Type: "Service",
+				Object: domain.Service{
+					ID: serviceID,
+				},
 			},
 		})
 
 		Expect(output).To(BeNil())
 	})
 
-	It("should return an error when request fail with status code 404", func() {
+	It("should return an error when service request fail with status code 404", func() {
 		serviceID := "6425377e-badd-4c46-828a-00c9afa7a156"
 		path := "/services/" + serviceID
 		statusCode := 404
@@ -126,8 +230,11 @@ var _ = Describe("delete", func() {
 
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeDelete,
-			Service: domain.Service{
-				ID: serviceID,
+			Resource: domain.Resource{
+				Type: "Service",
+				Object: domain.Service{
+					ID: serviceID,
+				},
 			},
 		})
 
@@ -135,7 +242,7 @@ var _ = Describe("delete", func() {
 		Expect(output.Error()).To(Equal("delete service failed"))
 	})
 
-	It("should return an error when request fail with status code 500", func() {
+	It("should return an error when service request fail with status code 500", func() {
 		serviceID := "6425377e-badd-4c46-828a-00c9afa7a156"
 		path := "/services/" + serviceID
 		statusCode := 500
@@ -146,13 +253,152 @@ var _ = Describe("delete", func() {
 
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeDelete,
-			Service: domain.Service{
-				ID: serviceID,
+			Resource: domain.Resource{
+				Type: "Service",
+				Object: domain.Service{
+					ID: serviceID,
+				},
 			},
 		})
 
 		Expect(output).ToNot(BeNil())
 		Expect(output.Error()).To(Equal("delete service failed"))
+	})
+
+	It("should return an error when service request fail with status code 500", func() {
+		serviceID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/services/" + serviceID
+		statusCode := 500
+		fakeService := createDeleteFakeServer(path, statusCode)
+		defer fakeService.Server.Close()
+		url := fakeService.ResolveURL("")
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
+
+		output := publisher.Publish(domain.Operation{
+			Kind: domain.OperationTypeDelete,
+			Resource: domain.Resource{
+				Type: "Service",
+				Object: domain.Service{
+					ID: serviceID,
+				},
+			},
+		})
+
+		Expect(output).ToNot(BeNil())
+		Expect(output.Error()).To(Equal("delete service failed"))
+	})
+
+	It("should return nil error when deployment request succeed", func() {
+		deploymentID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/deployments/" + deploymentID
+		statusCode := 200
+		fakeDeployment := createDeleteFakeServer(path, statusCode)
+		defer fakeDeployment.Server.Close()
+		url := fakeDeployment.ResolveURL("")
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
+
+		output := publisher.Publish(domain.Operation{
+			Kind: domain.OperationTypeDelete,
+			Resource: domain.Resource{
+				Type: "Deployment",
+				Object: domain.Deployment{
+					ID: deploymentID,
+				},
+			},
+		})
+
+		Expect(output).To(BeNil())
+	})
+
+	It("should return an error when deployment request fail with status code 404", func() {
+		deploymentID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/deployments/" + deploymentID
+		statusCode := 404
+		fakeDeployment := createDeleteFakeServer(path, statusCode)
+		defer fakeDeployment.Server.Close()
+		url := fakeDeployment.ResolveURL("")
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
+
+		output := publisher.Publish(domain.Operation{
+			Kind: domain.OperationTypeDelete,
+			Resource: domain.Resource{
+				Type: "Deployment",
+				Object: domain.Deployment{
+					ID: deploymentID,
+				},
+			},
+		})
+
+		Expect(output).ToNot(BeNil())
+		Expect(output.Error()).To(Equal("delete deployment failed"))
+	})
+
+	It("should return an error when deployment request fail with status code 500", func() {
+		deploymentID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/deployments/" + deploymentID
+		statusCode := 500
+		fakeDeployment := createDeleteFakeServer(path, statusCode)
+		defer fakeDeployment.Server.Close()
+		url := fakeDeployment.ResolveURL("")
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
+
+		output := publisher.Publish(domain.Operation{
+			Kind: domain.OperationTypeDelete,
+			Resource: domain.Resource{
+				Type: "Deployment",
+				Object: domain.Deployment{
+					ID: deploymentID,
+				},
+			},
+		})
+
+		Expect(output).ToNot(BeNil())
+		Expect(output.Error()).To(Equal("delete deployment failed"))
+	})
+
+	It("should return an error when deployment request fail with status code 500", func() {
+		deploymentID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/deployments/" + deploymentID
+		statusCode := 500
+		fakeDeployment := createDeleteFakeServer(path, statusCode)
+		defer fakeDeployment.Server.Close()
+		url := fakeDeployment.ResolveURL("")
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
+
+		output := publisher.Publish(domain.Operation{
+			Kind: domain.OperationTypeDelete,
+			Resource: domain.Resource{
+				Type: "Deployment",
+				Object: domain.Deployment{
+					ID: deploymentID,
+				},
+			},
+		})
+
+		Expect(output).ToNot(BeNil())
+		Expect(output.Error()).To(Equal("delete deployment failed"))
+	})
+
+	It("should return nil if resource Type is not handled", func() {
+		serviceID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/services/" + serviceID
+		statusCode := 500
+		fakeService := createDeleteFakeServer(path, statusCode)
+		defer fakeService.Server.Close()
+		url := fakeService.ResolveURL("")
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
+
+		output := publisher.Publish(domain.Operation{
+			Kind: domain.OperationTypeDelete,
+			Resource: domain.Resource{
+				Type: "XXXX",
+				Object: domain.Service{
+					ID: serviceID,
+				},
+			},
+		})
+
+		Expect(output).To(BeNil())
 	})
 })
 
@@ -179,8 +425,11 @@ var _ = Describe("update", func() {
 
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeUpdate,
-			Service: domain.Service{
-				ID: serviceID,
+			Resource: domain.Resource{
+				Type: "Service",
+				Object: domain.Service{
+					ID: serviceID,
+				},
 			},
 		})
 
@@ -200,8 +449,11 @@ var _ = Describe("unknown", func() {
 
 		output := publisher.Publish(domain.Operation{
 			Kind: "unknown",
-			Service: domain.Service{
-				ID: serviceID,
+			Resource: domain.Resource{
+				Type: "Service",
+				Object: domain.Service{
+					ID: serviceID,
+				},
 			},
 		})
 

@@ -14,7 +14,7 @@ import (
 	"github.com/walmartdigital/katalog/src/server"
 	"github.com/walmartdigital/katalog/src/server/persistence"
 	"github.com/walmartdigital/katalog/src/server/repositories"
-	"k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 const roleCollector = "collector"
@@ -62,13 +62,17 @@ func main() {
 func mainCollector(kubeconfig string) {
 	glog.Info("collector starting...")
 	serviceEvents := make(chan interface{})
+	// deploymentEvents := make(chan interface{})
 	k8sDriver := k8sdriver.BuildDriver(kubeconfig, *excludeSystemNamespace)
 	publisher := resolvePublisher()
-	go k8sDriver.StartWatchingServices(serviceEvents, &v1.Service{})
+	go k8sDriver.StartWatchingResources(serviceEvents, &corev1.Service{}, "services")
+	// go k8sDriver.StartWatchingResources(deploymentEvents, &appsv1.Deployment{}, "deployments")
 	for {
 		select {
 		case event := <-serviceEvents:
 			publisher.Publish(event)
+			// case event := <-deploymentEvents:
+			// 	publisher.Publish(event)
 		}
 	}
 }

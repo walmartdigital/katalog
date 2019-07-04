@@ -32,44 +32,83 @@ func (c *HTTPPublisher) Publish(obj interface{}) error {
 	switch operation.Kind {
 	case (domain.OperationTypeAdd):
 		return c.retry(func() error {
-			return c.put(operation.Service)
+			return c.put(operation.Resource)
 		})
 	case (domain.OperationTypeUpdate):
 		return c.retry(func() error {
-			return c.put(operation.Service)
+			return c.put(operation.Resource)
 		})
 	case (domain.OperationTypeDelete):
-		return c.delete(operation.Service)
+		return c.delete(operation.Resource)
 	default:
 		return errors.New("operation unknown")
 	}
 }
 
-func (c *HTTPPublisher) put(service domain.Service) error {
+func (c *HTTPPublisher) put(resource domain.Resource) error {
 	reqBodyBytes := new(bytes.Buffer)
-	json.NewEncoder(reqBodyBytes).Encode(service)
-	req, _ := http.NewRequest(http.MethodPut, c.url+"/services/"+service.ID, reqBodyBytes)
-	req.Header.Add("Content-Type", "application/json")
-	res, err := http.DefaultClient.Do(req)
-	if err != nil || res.StatusCode != 200 {
-		glog.Error(err)
-		return errors.New("put service failed")
+
+	if resource.Type == "Service" {
+		service := resource.Object.(domain.Service)
+		json.NewEncoder(reqBodyBytes).Encode(service)
+		req, _ := http.NewRequest(http.MethodPut, c.url+"/services/"+service.ID, reqBodyBytes)
+		req.Header.Add("Content-Type", "application/json")
+		res, err := http.DefaultClient.Do(req)
+		if err != nil || res.StatusCode != 200 {
+			glog.Error(err)
+			return errors.New("put service failed")
+		}
+		defer res.Body.Close()
+		glog.Info("service " + service.Name + "(id: " + service.ID + ") saved successfully")
+		return nil
 	}
-	defer res.Body.Close()
-	glog.Info("service " + service.Name + "(id: " + service.ID + ") saved successfully")
+
+	if resource.Type == "Deployment" {
+		deployment := resource.Object.(domain.Deployment)
+		json.NewEncoder(reqBodyBytes).Encode(deployment)
+		req, _ := http.NewRequest(http.MethodPut, c.url+"/deployments/"+deployment.ID, reqBodyBytes)
+		req.Header.Add("Content-Type", "application/json")
+		res, err := http.DefaultClient.Do(req)
+		if err != nil || res.StatusCode != 200 {
+			glog.Error(err)
+			return errors.New("put deployment failed")
+		}
+		defer res.Body.Close()
+		glog.Info("deployment " + deployment.Name + "(id: " + deployment.ID + ") saved successfully")
+		return nil
+	}
+
 	return nil
 }
 
-func (c *HTTPPublisher) delete(service domain.Service) error {
-	req, _ := http.NewRequest(http.MethodDelete, c.url+"/services/"+service.ID, nil)
-	req.Header.Add("Content-Type", "application/json")
-	res, err := http.DefaultClient.Do(req)
-	if err != nil || res.StatusCode != 200 {
-		glog.Error(err)
-		return errors.New("delete service failed")
+func (c *HTTPPublisher) delete(resource domain.Resource) error {
+	if resource.Type == "Service" {
+		service := resource.Object.(domain.Service)
+		req, _ := http.NewRequest(http.MethodDelete, c.url+"/services/"+service.ID, nil)
+		req.Header.Add("Content-Type", "application/json")
+		res, err := http.DefaultClient.Do(req)
+		if err != nil || res.StatusCode != 200 {
+			glog.Error(err)
+			return errors.New("delete service failed")
+		}
+		defer res.Body.Close()
+		body, _ := ioutil.ReadAll(res.Body)
+		glog.Info(string(body))
+		return nil
 	}
-	defer res.Body.Close()
-	body, _ := ioutil.ReadAll(res.Body)
-	glog.Info(string(body))
+	if resource.Type == "Deployment" {
+		deployment := resource.Object.(domain.Deployment)
+		req, _ := http.NewRequest(http.MethodDelete, c.url+"/deployments/"+deployment.ID, nil)
+		req.Header.Add("Content-Type", "application/json")
+		res, err := http.DefaultClient.Do(req)
+		if err != nil || res.StatusCode != 200 {
+			glog.Error(err)
+			return errors.New("delete deployment failed")
+		}
+		defer res.Body.Close()
+		body, _ := ioutil.ReadAll(res.Body)
+		glog.Info(string(body))
+		return nil
+	}
 	return nil
 }

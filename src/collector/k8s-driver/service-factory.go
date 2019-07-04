@@ -2,10 +2,10 @@ package k8sdriver
 
 import (
 	"github.com/walmartdigital/katalog/src/domain"
-	appsv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
-func buildDeploymentFromK8sService(sourceService *appsv1.Deployment) domain.Deployment {
+func buildServiceFromK8sService(sourceService *corev1.Service) domain.Service {
 	destinationService := &domain.Service{
 		ID:      string(sourceService.GetUID()),
 		Name:    sourceService.GetName(),
