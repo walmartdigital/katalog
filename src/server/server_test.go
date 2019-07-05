@@ -11,6 +11,7 @@ import (
 
 	"github.com/emirpasic/gods/lists/arraylist"
 	"github.com/gorilla/mux"
+	"github.com/mitchellh/mapstructure"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/walmartdigital/katalog/src/domain"
@@ -23,10 +24,18 @@ type fakeRepository struct {
 
 func (r *fakeRepository) CreateResource(obj interface{}) error {
 	resource := obj.(domain.Resource)
-	if resource.Object.(domain.Service).ID == "" {
-		return errors.New("")
+	if resource.Type == "Service" {
+		if resource.Object.(domain.Service).ID == "" {
+			return errors.New("")
+		}
+		r.persistence[resource.Object.(domain.Service).ID] = resource
 	}
-	r.persistence[resource.Object.(domain.Service).ID] = resource
+	if resource.Type == "Deployment" {
+		if resource.Object.(domain.Deployment).ID == "" {
+			return errors.New("")
+		}
+		r.persistence[resource.Object.(domain.Deployment).ID] = resource
+	}
 	return nil
 }
 
@@ -127,41 +136,22 @@ var _ = Describe("run server", func() {
 	})
 
 	It("should list all services", func() {
-		srvid1 := "22d080de-4138-446f-acd4-d4c13fe77912"
-		srvid2 := "22d080de-ffff-446f-acd4-d4c13fe77912"
-		service1 := domain.Service{ID: srvid1}
-		service2 := domain.Service{ID: srvid2}
-
-		inputsrvres1 := domain.Resource{
+		inputResource1 := domain.Resource{
 			Type:   "Service",
-			Object: service1,
+			Object: domain.Service{ID: "22d080de-4138-446f-acd4-d4c13fe77912"},
 		}
-
-		inputsrvres2 := domain.Resource{
+		inputResource2 := domain.Resource{
 			Type:   "Service",
-			Object: service2,
+			Object: domain.Service{ID: "22d080de-ffff-446f-acd4-d4c13fe77912"},
+		}
+		inputResource3 := domain.Resource{
+			Type:   "Service",
+			Object: domain.Service{ID: "22d080de-xxxx-446f-acd4-d4c13fe77912"},
 		}
 
-		repository.persistence[srvid1] = inputsrvres1
-		repository.persistence[srvid2] = inputsrvres2
-
-		depid1 := "33d080de-4138-446f-acd4-d4c13fe77912"
-		depid2 := "66d080de-ffff-446f-acd4-d4c13fe77912"
-		dep1 := domain.Deployment{ID: depid1}
-		dep2 := domain.Deployment{ID: depid2}
-
-		inputdepres1 := domain.Resource{
-			Type:   "Deployment",
-			Object: dep1,
-		}
-
-		inputdepres2 := domain.Resource{
-			Type:   "Deployment",
-			Object: dep2,
-		}
-
-		repository.persistence[depid1] = inputdepres1
-		repository.persistence[depid2] = inputdepres2
+		repository.persistence["22d080de-4138-446f-acd4-d4c13fe77912"] = inputResource1
+		repository.persistence["22d080de-ffff-446f-acd4-d4c13fe77912"] = inputResource2
+		repository.persistence["22d080de-xxxx-446f-acd4-d4c13fe77912"] = inputResource3
 
 		path := "/services"
 		rec := httptest.NewRecorder()
@@ -169,16 +159,17 @@ var _ = Describe("run server", func() {
 		routes[path](rec, nil)
 
 		b, _ := ioutil.ReadAll(rec.Body)
-		var srv []interface{}
-		var d []interface{}
-		json.Unmarshal(b, &srv)
-		json.NewDecoder(b).Decode(&d)
 
-		for _, r := range srv {
-			i := r.(map[string]interface{})["Object"].(domain.Service).ID
+		var resources []domain.Resource
+		var d map[string]interface{}
+		json.Unmarshal(b, &d)
+		mapstructure.Decode(resources, &d)
+
+		for _, r := range resources {
+			i := r.Object.(domain.Service).ID
 			resource := repository.persistence[i].(domain.Resource)
 			output := resource.Object.(domain.Service)
-			Expect(r.(map[string]interface{})["Object"].(domain.Service)).To(Equal(output))
+			Expect(r.Object.(domain.Service)).To(Equal(output))
 		}
 	})
 
@@ -187,6 +178,94 @@ var _ = Describe("run server", func() {
 		service := domain.Service{ID: id}
 		repository.persistence[id] = service
 		path := "/services/_count"
+		rec := httptest.NewRecorder()
+
+		routes[path](rec, nil)
+
+		b, _ := ioutil.ReadAll(rec.Body)
+		var m struct{ Count int }
+		json.Unmarshal(b, &m)
+		Expect(m.Count).To(Equal(1))
+	})
+
+	It("should create a deployment", func() {
+		id := "22d080de-4138-446f-acd4-d4c13fe77912"
+		deployment := domain.Deployment{ID: id}
+		body := new(bytes.Buffer)
+		json.NewEncoder(body).Encode(deployment)
+		path := "/deployments/{id}"
+		req, _ := http.NewRequest(http.MethodPut, "", body)
+		rec := httptest.NewRecorder()
+
+		routes[path+"@PUT"](rec, req)
+
+		b, _ := ioutil.ReadAll(rec.Body)
+		var srv domain.Deployment
+		json.Unmarshal(b, &srv)
+		resource := repository.persistence[id].(domain.Resource)
+		output := resource.Object.(domain.Deployment)
+		Expect(srv).To(Equal(output))
+	})
+
+	It("should delete a deployment", func() {
+		id := "22d080de-4138-446f-acd4-d4c13fe77912"
+		deployment := domain.Deployment{ID: id}
+		repository.persistence[id] = deployment
+		path := "/deployments/{id}"
+		req, _ := http.NewRequest(http.MethodDelete, "/deployments/"+id, nil)
+		req = mux.SetURLVars(req, map[string]string{"id": id})
+		rec := httptest.NewRecorder()
+
+		routes[path+"@DELETE"](rec, req)
+
+		Expect(repository.persistence[id]).To(BeNil())
+	})
+
+	It("should list all deployments", func() {
+		inputResource1 := domain.Resource{
+			Type:   "Deployment",
+			Object: domain.Deployment{ID: "22d080de-4138-446f-acd4-d4c13fe77912"},
+		}
+
+		inputResource2 := domain.Resource{
+			Type:   "Service",
+			Object: domain.Service{ID: "22d080de-ffff-446f-acd4-d4c13fe77912"},
+		}
+
+		inputResource3 := domain.Resource{
+			Type:   "Deployment",
+			Object: domain.Deployment{ID: "22d080de-xxxx-446f-acd4-d4c13fe77912"},
+		}
+
+		repository.persistence["22d080de-4138-446f-acd4-d4c13fe77912"] = inputResource1
+		repository.persistence["22d080de-ffff-446f-acd4-d4c13fe77912"] = inputResource2
+		repository.persistence["22d080de-xxxx-446f-acd4-d4c13fe77912"] = inputResource3
+
+		path := "/deployments"
+		rec := httptest.NewRecorder()
+
+		routes[path](rec, nil)
+
+		b, _ := ioutil.ReadAll(rec.Body)
+
+		var resources []domain.Resource
+		var d map[string]interface{}
+		json.Unmarshal(b, &d)
+		mapstructure.Decode(resources, &d)
+
+		for _, r := range resources {
+			i := r.Object.(domain.Deployment).ID
+			resource := repository.persistence[i].(domain.Resource)
+			output := resource.Object.(domain.Deployment)
+			Expect(r.Object.(domain.Deployment)).To(Equal(output))
+		}
+	})
+
+	It("should count amount of deployments", func() {
+		id := "22d080de-4138-446f-acd4-d4c13fe77912"
+		service := domain.Service{ID: id}
+		repository.persistence[id] = service
+		path := "/deployments/_count"
 		rec := httptest.NewRecorder()
 
 		routes[path](rec, nil)
