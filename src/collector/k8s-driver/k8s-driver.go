@@ -51,12 +51,26 @@ func buildClientSet(kubeconfigPath string) *kubernetes.Clientset {
 }
 
 func (d *Driver) buildListWatchForResources(resource string) *cache.ListWatch {
-	listWatch := cache.NewListWatchFromClient(
-		d.clientSet.CoreV1().RESTClient(),
-		resource,
-		corev1.NamespaceAll,
-		fields.Everything(),
-	)
+	var listWatch *cache.ListWatch
+
+	if resource == "services" {
+		listWatch = cache.NewListWatchFromClient(
+			d.clientSet.CoreV1().RESTClient(),
+			resource,
+			corev1.NamespaceAll,
+			fields.Everything(),
+		)
+	}
+
+	if resource == "deployments" {
+		listWatch = cache.NewListWatchFromClient(
+			d.clientSet.AppsV1().RESTClient(),
+			resource,
+			corev1.NamespaceAll,
+			fields.Everything(),
+		)
+	}
+
 	return listWatch
 }
 

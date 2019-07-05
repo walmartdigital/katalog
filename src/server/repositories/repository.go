@@ -2,7 +2,7 @@ package repositories
 
 // Repository ...
 type Repository interface {
-	CreateService(obj interface{}) error
-	DeleteService(obj interface{}) error
-	GetAllServices() []interface{}
+	CreateResource(obj interface{}) error
+	DeleteResource(obj interface{}) error
+	GetAllResources() []interface{}
 }

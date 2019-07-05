@@ -14,6 +14,7 @@ import (
 	"github.com/walmartdigital/katalog/src/server"
 	"github.com/walmartdigital/katalog/src/server/persistence"
 	"github.com/walmartdigital/katalog/src/server/repositories"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -62,17 +63,17 @@ func main() {
 func mainCollector(kubeconfig string) {
 	glog.Info("collector starting...")
 	serviceEvents := make(chan interface{})
-	// deploymentEvents := make(chan interface{})
+	deploymentEvents := make(chan interface{})
 	k8sDriver := k8sdriver.BuildDriver(kubeconfig, *excludeSystemNamespace)
 	publisher := resolvePublisher()
 	go k8sDriver.StartWatchingResources(serviceEvents, &corev1.Service{}, "services")
-	// go k8sDriver.StartWatchingResources(deploymentEvents, &appsv1.Deployment{}, "deployments")
+	go k8sDriver.StartWatchingResources(deploymentEvents, &appsv1.Deployment{}, "deployments")
 	for {
 		select {
 		case event := <-serviceEvents:
 			publisher.Publish(event)
-			// case event := <-deploymentEvents:
-			// 	publisher.Publish(event)
+		case event := <-deploymentEvents:
+			publisher.Publish(event)
 		}
 	}
 }
@@ -90,11 +91,11 @@ func mainServer() {
 	glog.Info("server starting...")
 	memory := make(map[string]interface{})
 	persistence := persistence.BuildMemoryPersistence(memory)
-	serviceRepository := repositories.CreateServiceRepository(persistence)
+	resourceRepository := repositories.CreateResourceRepository(persistence)
 	router := mux.NewRouter().StrictSlash(true)
 	routerWrapper := &routerWrapper{router: router}
 	httpServer := &http.Server{Addr: ":10000", Handler: router}
-	server := server.CreateServer(httpServer, serviceRepository, routerWrapper)
+	server := server.CreateServer(httpServer, resourceRepository, routerWrapper)
 
 	server.Run()
 }

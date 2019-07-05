@@ -13,9 +13,9 @@ type HTTPServer interface {
 
 // Server ...
 type Server struct {
-	httpServer        HTTPServer
-	serviceRepository repositories.Repository
-	router            Router
+	httpServer          HTTPServer
+	resourcesRepository repositories.Repository
+	router              Router
 }
 
 // Router ...
@@ -31,9 +31,9 @@ type Route interface {
 // CreateServer ...
 func CreateServer(server HTTPServer, repository repositories.Repository, router Router) Server {
 	return Server{
-		httpServer:        server,
-		serviceRepository: repository,
-		router:            router,
+		httpServer:          server,
+		resourcesRepository: repository,
+		router:              router,
 	}
 }
 
@@ -47,5 +47,9 @@ func (s *Server) handleRequests() {
 	s.router.HandleFunc("/services/_count", s.countServices).Methods("GET")
 	s.router.HandleFunc("/services/{id}", s.createService).Methods("PUT")
 	s.router.HandleFunc("/services/{id}", s.deleteService).Methods("DELETE")
+	s.router.HandleFunc("/deployments", s.getAllDeployments).Methods("GET")
+	s.router.HandleFunc("/deployments/_count", s.countDeployments).Methods("GET")
+	s.router.HandleFunc("/deployments/{id}", s.createDeployment).Methods("PUT")
+	s.router.HandleFunc("/deployments/{id}", s.deleteDeployment).Methods("DELETE")
 	s.httpServer.ListenAndServe()
 }
