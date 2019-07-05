@@ -127,9 +127,42 @@ var _ = Describe("run server", func() {
 	})
 
 	It("should list all services", func() {
-		id := "22d080de-4138-446f-acd4-d4c13fe77912"
-		service := domain.Service{ID: id}
-		repository.persistence[id] = service
+		srvid1 := "22d080de-4138-446f-acd4-d4c13fe77912"
+		srvid2 := "22d080de-ffff-446f-acd4-d4c13fe77912"
+		service1 := domain.Service{ID: srvid1}
+		service2 := domain.Service{ID: srvid2}
+
+		inputsrvres1 := domain.Resource{
+			Type:   "Service",
+			Object: service1,
+		}
+
+		inputsrvres2 := domain.Resource{
+			Type:   "Service",
+			Object: service2,
+		}
+
+		repository.persistence[srvid1] = inputsrvres1
+		repository.persistence[srvid2] = inputsrvres2
+
+		depid1 := "33d080de-4138-446f-acd4-d4c13fe77912"
+		depid2 := "66d080de-ffff-446f-acd4-d4c13fe77912"
+		dep1 := domain.Deployment{ID: depid1}
+		dep2 := domain.Deployment{ID: depid2}
+
+		inputdepres1 := domain.Resource{
+			Type:   "Deployment",
+			Object: dep1,
+		}
+
+		inputdepres2 := domain.Resource{
+			Type:   "Deployment",
+			Object: dep2,
+		}
+
+		repository.persistence[depid1] = inputdepres1
+		repository.persistence[depid2] = inputdepres2
+
 		path := "/services"
 		rec := httptest.NewRecorder()
 
@@ -137,24 +170,30 @@ var _ = Describe("run server", func() {
 
 		b, _ := ioutil.ReadAll(rec.Body)
 		var srv []interface{}
+		var d []interface{}
 		json.Unmarshal(b, &srv)
-		resource := repository.persistence[id].(domain.Resource)
-		output := resource.Object.(domain.Service)
-		Expect(srv).To(Equal(output))
+		json.NewDecoder(b).Decode(&d)
+
+		for _, r := range srv {
+			i := r.(map[string]interface{})["Object"].(domain.Service).ID
+			resource := repository.persistence[i].(domain.Resource)
+			output := resource.Object.(domain.Service)
+			Expect(r.(map[string]interface{})["Object"].(domain.Service)).To(Equal(output))
+		}
 	})
 
-	// It("should count amount of services", func() {
-	// 	id := "22d080de-4138-446f-acd4-d4c13fe77912"
-	// 	service := domain.Service{ID: id}
-	// 	repository.persistence[id] = service
-	// 	path := "/services/_count"
-	// 	rec := httptest.NewRecorder()
+	It("should count amount of services", func() {
+		id := "22d080de-4138-446f-acd4-d4c13fe77912"
+		service := domain.Service{ID: id}
+		repository.persistence[id] = service
+		path := "/services/_count"
+		rec := httptest.NewRecorder()
 
-	// 	routes[path](rec, nil)
+		routes[path](rec, nil)
 
-	// 	b, _ := ioutil.ReadAll(rec.Body)
-	// 	var m struct{ Count int }
-	// 	json.Unmarshal(b, &m)
-	// 	Expect(m.Count).To(Equal(1))
-	// })
+		b, _ := ioutil.ReadAll(rec.Body)
+		var m struct{ Count int }
+		json.Unmarshal(b, &m)
+		Expect(m.Count).To(Equal(1))
+	})
 })
