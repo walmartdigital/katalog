@@ -262,9 +262,25 @@ var _ = Describe("run server", func() {
 	})
 
 	It("should count amount of deployments", func() {
-		id := "22d080de-4138-446f-acd4-d4c13fe77912"
-		service := domain.Service{ID: id}
-		repository.persistence[id] = service
+		inputResource1 := domain.Resource{
+			Type:   "Deployment",
+			Object: domain.Deployment{ID: "22d080de-4138-446f-acd4-d4c13fe77912"},
+		}
+
+		inputResource2 := domain.Resource{
+			Type:   "Service",
+			Object: domain.Service{ID: "22d080de-ffff-446f-acd4-d4c13fe77912"},
+		}
+
+		inputResource3 := domain.Resource{
+			Type:   "Deployment",
+			Object: domain.Deployment{ID: "22d080de-xxxx-446f-acd4-d4c13fe77912"},
+		}
+
+		repository.persistence["22d080de-4138-446f-acd4-d4c13fe77912"] = inputResource1
+		repository.persistence["22d080de-ffff-446f-acd4-d4c13fe77912"] = inputResource2
+		repository.persistence["22d080de-xxxx-446f-acd4-d4c13fe77912"] = inputResource3
+
 		path := "/deployments/_count"
 		rec := httptest.NewRecorder()
 
@@ -273,6 +289,6 @@ var _ = Describe("run server", func() {
 		b, _ := ioutil.ReadAll(rec.Body)
 		var m struct{ Count int }
 		json.Unmarshal(b, &m)
-		Expect(m.Count).To(Equal(1))
+		Expect(m.Count).To(Equal(2))
 	})
 })

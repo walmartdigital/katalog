@@ -10,6 +10,18 @@ import (
 	"github.com/walmartdigital/katalog/src/domain"
 )
 
+func (s *Server) getResourcesByType(resourceType string) []interface{} {
+	resources := s.resourcesRepository.GetAllResources()
+	list := arraylist.New()
+	for _, r := range resources {
+		res := r.(domain.Resource)
+		if string(res.Type) == resourceType {
+			list.Add(r)
+		}
+	}
+	return list.Values()
+}
+
 func (s *Server) createService(w http.ResponseWriter, r *http.Request) {
 	var service domain.Service
 	json.NewDecoder(r.Body).Decode(&service)
@@ -27,25 +39,13 @@ func (s *Server) deleteService(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "deleted service id: %s", id)
 }
 
-func getResourcesByType(resourceType string, resources []interface{}) []interface{} {
-	list := arraylist.New()
-	for _, r := range resources {
-		res := r.(domain.Resource)
-		if string(res.Type) == resourceType {
-			list.Add(r)
-		}
-	}
-	return list.Values()
-}
-
 func (s *Server) getAllServices(w http.ResponseWriter, r *http.Request) {
-	resources := s.resourcesRepository.GetAllResources()
-	services := getResourcesByType("Service", resources)
+	services := s.getResourcesByType("Service")
 	json.NewEncoder(w).Encode(services)
 }
 
 func (s *Server) countServices(w http.ResponseWriter, r *http.Request) {
-	services := s.resourcesRepository.GetAllResources()
+	services := s.getResourcesByType("Service")
 	json.NewEncoder(w).Encode(struct{ Count int }{len(services)})
 }
 
@@ -67,12 +67,11 @@ func (s *Server) deleteDeployment(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getAllDeployments(w http.ResponseWriter, r *http.Request) {
-	resources := s.resourcesRepository.GetAllResources()
-	deployments := getResourcesByType("Deployment", resources)
+	deployments := s.getResourcesByType("Deployment")
 	json.NewEncoder(w).Encode(deployments)
 }
 
 func (s *Server) countDeployments(w http.ResponseWriter, r *http.Request) {
-	deployments := s.resourcesRepository.GetAllResources()
+	deployments := s.getResourcesByType("Deployment")
 	json.NewEncoder(w).Encode(struct{ Count int }{len(deployments)})
 }
