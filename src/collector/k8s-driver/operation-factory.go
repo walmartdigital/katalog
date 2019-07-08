@@ -12,8 +12,7 @@ func buildOperationFromK8sService(kind domain.OperationType, sourceService *core
 		destinationService.AddInstance(endpoint)
 	}
 	resource := &domain.Resource{
-		Type:   "Service",
-		Object: destinationService,
+		K8sResource: &destinationService,
 	}
 	operation := &domain.Operation{
 		Kind:     kind,
@@ -25,8 +24,7 @@ func buildOperationFromK8sService(kind domain.OperationType, sourceService *core
 func buildOperationFromK8sDeployment(kind domain.OperationType, sourceDeployment *appsv1.Deployment) domain.Operation {
 	destinationDeployment := buildDeploymentFromK8sDeployment(sourceDeployment)
 	resource := &domain.Resource{
-		Type:   "Deployment",
-		Object: destinationDeployment,
+		K8sResource: &destinationDeployment,
 	}
 	operation := &domain.Operation{
 		Kind:     kind,

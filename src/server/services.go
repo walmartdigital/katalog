@@ -10,12 +10,12 @@ import (
 	"github.com/walmartdigital/katalog/src/domain"
 )
 
-func (s *Server) getResourcesByType(resourceType string) []interface{} {
+func (s *Server) getResourcesByType(resource domain.Resource) []interface{} {
 	resources := s.resourcesRepository.GetAllResources()
 	list := arraylist.New()
 	for _, r := range resources {
 		res := r.(domain.Resource)
-		if string(res.Type) == resourceType {
+		if res.GetType() == resource.GetType() {
 			list.Add(r)
 		}
 	}
@@ -26,8 +26,7 @@ func (s *Server) createService(w http.ResponseWriter, r *http.Request) {
 	var service domain.Service
 	json.NewDecoder(r.Body).Decode(&service)
 	resource := domain.Resource{
-		Type:   "Service",
-		Object: service,
+		K8sResource: &service,
 	}
 	s.resourcesRepository.CreateResource(resource)
 	json.NewEncoder(w).Encode(service)
@@ -40,22 +39,19 @@ func (s *Server) deleteService(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getAllServices(w http.ResponseWriter, r *http.Request) {
-	services := s.getResourcesByType("Service")
+	services := s.getResourcesByType(domain.Resource{K8sResource: &domain.Service{}})
 	json.NewEncoder(w).Encode(services)
 }
 
 func (s *Server) countServices(w http.ResponseWriter, r *http.Request) {
-	services := s.getResourcesByType("Service")
+	services := s.getResourcesByType(domain.Resource{K8sResource: &domain.Service{}})
 	json.NewEncoder(w).Encode(struct{ Count int }{len(services)})
 }
 
 func (s *Server) createDeployment(w http.ResponseWriter, r *http.Request) {
 	var deployment domain.Deployment
 	json.NewDecoder(r.Body).Decode(&deployment)
-	resource := domain.Resource{
-		Type:   "Deployment",
-		Object: deployment,
-	}
+	resource := domain.Resource{K8sResource: &deployment}
 	s.resourcesRepository.CreateResource(resource)
 	json.NewEncoder(w).Encode(deployment)
 }
@@ -67,11 +63,11 @@ func (s *Server) deleteDeployment(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getAllDeployments(w http.ResponseWriter, r *http.Request) {
-	deployments := s.getResourcesByType("Deployment")
+	deployments := s.getResourcesByType(domain.Resource{K8sResource: &domain.Deployment{}})
 	json.NewEncoder(w).Encode(deployments)
 }
 
 func (s *Server) countDeployments(w http.ResponseWriter, r *http.Request) {
-	deployments := s.getResourcesByType("Deployment")
+	deployments := s.getResourcesByType(domain.Resource{K8sResource: &domain.Deployment{}})
 	json.NewEncoder(w).Encode(struct{ Count int }{len(deployments)})
 }

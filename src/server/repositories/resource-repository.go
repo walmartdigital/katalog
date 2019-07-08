@@ -21,23 +21,10 @@ func CreateResourceRepository(persistence persistence.Persistence) *ResourceRepo
 }
 
 // CreateResource ...
-func (r *ResourceRepository) CreateResource(obj interface{}) error {
-	resource := obj.(domain.Resource)
-
-	if resource.Type == "Service" {
-		service := resource.Object.(domain.Service)
-
-		if err := r.persistence.Create(service.ID, resource); err != nil {
-			return err
-		}
-	}
-
-	if resource.Type == "Deployment" {
-		deployment := resource.Object.(domain.Deployment)
-
-		if err := r.persistence.Create(deployment.ID, resource); err != nil {
-			return err
-		}
+func (r *ResourceRepository) CreateResource(resource interface{}) error {
+	res := resource.(domain.Resource)
+	if err := r.persistence.Create(res.GetID(), res); err != nil {
+		return err
 	}
 
 	return nil

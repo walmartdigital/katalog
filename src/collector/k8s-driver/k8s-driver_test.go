@@ -20,7 +20,7 @@ var _ = Describe("build driver", func() {
 
 		output := k8sdriver.BuildDriver(kubePath, excludeSystemNamespace)
 
-		expect(output)
+		Expect(output)
 	})
 
 })

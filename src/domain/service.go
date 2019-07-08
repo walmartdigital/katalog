@@ -1,5 +1,7 @@
 package domain
 
+import "reflect"
+
 // Service ...
 type Service struct {
 	ID        string `json:",omitempty"`
@@ -12,4 +14,19 @@ type Service struct {
 // AddInstance ...
 func (s *Service) AddInstance(endpoint Instance) {
 	s.Instances = append(s.Instances, endpoint)
+}
+
+// GetID ...
+func (s *Service) GetID() string {
+	return s.ID
+}
+
+// GetType ...
+func (s *Service) GetType() reflect.Type {
+	return reflect.TypeOf(s)
+}
+
+// GetK8sResource ...
+func (s *Service) GetK8sResource() interface{} {
+	return s
 }

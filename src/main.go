@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/walmartdigital/katalog/src/domain"
+
 	"github.com/avast/retry-go"
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
@@ -14,8 +16,6 @@ import (
 	"github.com/walmartdigital/katalog/src/server"
 	"github.com/walmartdigital/katalog/src/server/persistence"
 	"github.com/walmartdigital/katalog/src/server/repositories"
-	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 )
 
 const roleCollector = "collector"
@@ -66,8 +66,8 @@ func mainCollector(kubeconfig string) {
 	deploymentEvents := make(chan interface{})
 	k8sDriver := k8sdriver.BuildDriver(kubeconfig, *excludeSystemNamespace)
 	publisher := resolvePublisher()
-	go k8sDriver.StartWatchingResources(serviceEvents, &corev1.Service{}, "services")
-	go k8sDriver.StartWatchingResources(deploymentEvents, &appsv1.Deployment{}, "deployments")
+	go k8sDriver.StartWatchingResources(serviceEvents, domain.Resource{})
+	go k8sDriver.StartWatchingResources(deploymentEvents, domain.Resource{})
 	for {
 		select {
 		case event := <-serviceEvents:
