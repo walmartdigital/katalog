@@ -7,6 +7,7 @@ import (
 
 	"github.com/emirpasic/gods/lists/arraylist"
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/walmartdigital/katalog/src/domain"
 )
 
@@ -53,6 +54,7 @@ func (s *Server) createDeployment(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&deployment)
 	resource := domain.Resource{K8sResource: &deployment}
 	s.resourcesRepository.CreateResource(resource)
+	(*s.metrics)["createDeployment"].(*prometheus.CounterVec).WithLabelValues(resource.GetID()).Inc()
 	json.NewEncoder(w).Encode(deployment)
 }
 
