@@ -84,7 +84,7 @@ func (c *HTTPPublisher) put(resource domain.Resource) error {
 
 func (c *HTTPPublisher) delete(resource domain.Resource) error {
 	if resource.GetType() == reflect.TypeOf(new(domain.Service)) {
-		service := resource.GetK8sResource().(domain.Service)
+		service := resource.GetK8sResource().(*domain.Service)
 		req, _ := http.NewRequest(http.MethodDelete, c.url+"/services/"+service.ID, nil)
 		req.Header.Add("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
@@ -98,7 +98,7 @@ func (c *HTTPPublisher) delete(resource domain.Resource) error {
 		return nil
 	}
 	if resource.GetType() == reflect.TypeOf(new(domain.Deployment)) {
-		deployment := resource.GetK8sResource().(domain.Deployment)
+		deployment := resource.GetK8sResource().(*domain.Deployment)
 		req, _ := http.NewRequest(http.MethodDelete, c.url+"/deployments/"+deployment.ID, nil)
 		req.Header.Add("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)

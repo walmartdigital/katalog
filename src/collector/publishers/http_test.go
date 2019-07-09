@@ -1,6 +1,7 @@
 package publishers_test
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/avast/retry-go"
@@ -14,6 +15,26 @@ import (
 
 func retryDoDouble(retryableFunc retry.RetryableFunc, opts ...retry.Option) error {
 	return retryableFunc()
+}
+
+// DummyK8sResource ...
+type DummyK8sResource struct {
+	ID string `json:",omitempty"`
+}
+
+// GetID ...
+func (s *DummyK8sResource) GetID() string {
+	return s.ID
+}
+
+// GetType ...
+func (s *DummyK8sResource) GetType() reflect.Type {
+	return reflect.TypeOf(s)
+}
+
+// GetK8sResource ...
+func (s *DummyK8sResource) GetK8sResource() interface{} {
+	return s
 }
 
 func TestAll(t *testing.T) {
@@ -35,10 +56,7 @@ var _ = Describe("create", func() {
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeAdd,
 			Resource: domain.Resource{
-				Type: "Service",
-				Object: domain.Service{
-					ID: serviceID,
-				},
+				K8sResource: &domain.Service{ID: serviceID},
 			},
 		})
 
@@ -58,10 +76,7 @@ var _ = Describe("create", func() {
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeAdd,
 			Resource: domain.Resource{
-				Type: "Service",
-				Object: domain.Service{
-					ID: serviceID,
-				},
+				K8sResource: &domain.Service{},
 			},
 		})
 
@@ -82,10 +97,7 @@ var _ = Describe("create", func() {
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeAdd,
 			Resource: domain.Resource{
-				Type: "Service",
-				Object: domain.Service{
-					ID: serviceID,
-				},
+				K8sResource: &domain.Service{},
 			},
 		})
 
@@ -106,10 +118,7 @@ var _ = Describe("create", func() {
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeAdd,
 			Resource: domain.Resource{
-				Type: "Deployment",
-				Object: domain.Deployment{
-					ID: deploymentID,
-				},
+				K8sResource: &domain.Deployment{ID: deploymentID},
 			},
 		})
 
@@ -129,10 +138,7 @@ var _ = Describe("create", func() {
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeAdd,
 			Resource: domain.Resource{
-				Type: "Deployment",
-				Object: domain.Deployment{
-					ID: deploymentID,
-				},
+				K8sResource: &domain.Deployment{},
 			},
 		})
 
@@ -153,10 +159,7 @@ var _ = Describe("create", func() {
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeAdd,
 			Resource: domain.Resource{
-				Type: "Deployment",
-				Object: domain.Deployment{
-					ID: deploymentID,
-				},
+				K8sResource: &domain.Deployment{},
 			},
 		})
 
@@ -175,11 +178,8 @@ var _ = Describe("create", func() {
 		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
 
 		output := publisher.Publish(domain.Operation{
-			Kind: domain.OperationTypeAdd,
-			Resource: domain.Resource{
-				Type:   "XXXX",
-				Object: domain.Service{},
-			},
+			Kind:     domain.OperationTypeAdd,
+			Resource: domain.Resource{K8sResource: new(DummyK8sResource)},
 		})
 
 		Expect(output).To(BeNil())
@@ -196,6 +196,16 @@ func createFakeServer(path string, statusCode int, body string) *httpfake.HTTPFa
 	return output
 }
 
+func createDeleteFakeServer(path string, statusCode int) *httpfake.HTTPFake {
+	output := httpfake.New()
+	output.
+		NewHandler().
+		Delete(path).
+		Reply(statusCode).
+		BodyString("")
+	return output
+}
+
 var _ = Describe("delete", func() {
 	It("should return nil error when service request succeed", func() {
 		serviceID := "6425377e-badd-4c46-828a-00c9afa7a156"
@@ -209,10 +219,7 @@ var _ = Describe("delete", func() {
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeDelete,
 			Resource: domain.Resource{
-				Type: "Service",
-				Object: domain.Service{
-					ID: serviceID,
-				},
+				K8sResource: &domain.Service{ID: serviceID},
 			},
 		})
 
@@ -231,10 +238,7 @@ var _ = Describe("delete", func() {
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeDelete,
 			Resource: domain.Resource{
-				Type: "Service",
-				Object: domain.Service{
-					ID: serviceID,
-				},
+				K8sResource: &domain.Service{ID: serviceID},
 			},
 		})
 
@@ -254,10 +258,7 @@ var _ = Describe("delete", func() {
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeDelete,
 			Resource: domain.Resource{
-				Type: "Service",
-				Object: domain.Service{
-					ID: serviceID,
-				},
+				K8sResource: &domain.Service{ID: serviceID},
 			},
 		})
 
@@ -277,10 +278,7 @@ var _ = Describe("delete", func() {
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeDelete,
 			Resource: domain.Resource{
-				Type: "Service",
-				Object: domain.Service{
-					ID: serviceID,
-				},
+				K8sResource: &domain.Service{ID: serviceID},
 			},
 		})
 
@@ -300,10 +298,7 @@ var _ = Describe("delete", func() {
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeDelete,
 			Resource: domain.Resource{
-				Type: "Deployment",
-				Object: domain.Deployment{
-					ID: deploymentID,
-				},
+				K8sResource: &domain.Deployment{ID: deploymentID},
 			},
 		})
 
@@ -322,10 +317,7 @@ var _ = Describe("delete", func() {
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeDelete,
 			Resource: domain.Resource{
-				Type: "Deployment",
-				Object: domain.Deployment{
-					ID: deploymentID,
-				},
+				K8sResource: &domain.Deployment{ID: deploymentID},
 			},
 		})
 
@@ -345,10 +337,7 @@ var _ = Describe("delete", func() {
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeDelete,
 			Resource: domain.Resource{
-				Type: "Deployment",
-				Object: domain.Deployment{
-					ID: deploymentID,
-				},
+				K8sResource: &domain.Deployment{ID: deploymentID},
 			},
 		})
 
@@ -368,10 +357,7 @@ var _ = Describe("delete", func() {
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeDelete,
 			Resource: domain.Resource{
-				Type: "Deployment",
-				Object: domain.Deployment{
-					ID: deploymentID,
-				},
+				K8sResource: &domain.Deployment{ID: deploymentID},
 			},
 		})
 
@@ -391,26 +377,13 @@ var _ = Describe("delete", func() {
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeDelete,
 			Resource: domain.Resource{
-				Type: "XXXX",
-				Object: domain.Service{
-					ID: serviceID,
-				},
+				K8sResource: &DummyK8sResource{ID: serviceID},
 			},
 		})
 
 		Expect(output).To(BeNil())
 	})
 })
-
-func createDeleteFakeServer(path string, statusCode int) *httpfake.HTTPFake {
-	output := httpfake.New()
-	output.
-		NewHandler().
-		Delete(path).
-		Reply(statusCode).
-		BodyString("")
-	return output
-}
 
 var _ = Describe("update", func() {
 	It("should return nil error when request succeed", func() {
@@ -426,10 +399,7 @@ var _ = Describe("update", func() {
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeUpdate,
 			Resource: domain.Resource{
-				Type: "Service",
-				Object: domain.Service{
-					ID: serviceID,
-				},
+				K8sResource: &domain.Service{ID: serviceID},
 			},
 		})
 
@@ -450,10 +420,7 @@ var _ = Describe("unknown", func() {
 		output := publisher.Publish(domain.Operation{
 			Kind: "unknown",
 			Resource: domain.Resource{
-				Type: "Service",
-				Object: domain.Service{
-					ID: serviceID,
-				},
+				K8sResource: &domain.Service{ID: serviceID},
 			},
 		})
 

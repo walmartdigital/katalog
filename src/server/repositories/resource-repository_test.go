@@ -47,8 +47,7 @@ func TestAll(t *testing.T) {
 var _ = Describe("create resource", func() {
 	It("should persist a service resource", func() {
 		id := "10174c96-a835-4e9e-b49e-9085f6e63368"
-		service := domain.Service{ID: id}
-		resource := domain.Resource{Type: "Service", Object: service}
+		resource := domain.Resource{K8sResource: &domain.Service{ID: id}}
 		memory := make(map[string]interface{})
 		fake := fakePersistence{memory: memory}
 		resourceRepository := repositories.CreateResourceRepository(&fake)
@@ -60,8 +59,7 @@ var _ = Describe("create resource", func() {
 	})
 
 	It("should fail if missing id in service resource", func() {
-		service := domain.Service{}
-		resource := domain.Resource{Type: "Service", Object: service}
+		resource := domain.Resource{K8sResource: &domain.Service{}}
 		memory := make(map[string]interface{})
 		fake := fakePersistence{memory: memory}
 		resourceRepository := repositories.CreateResourceRepository(&fake)
@@ -73,8 +71,7 @@ var _ = Describe("create resource", func() {
 
 	It("should persist a deployment resource", func() {
 		id := "10174c96-a835-4e9e-b49e-9085f6e63368"
-		deployment := domain.Deployment{ID: id}
-		resource := domain.Resource{Type: "Deployment", Object: deployment}
+		resource := domain.Resource{K8sResource: &domain.Deployment{ID: id}}
 		memory := make(map[string]interface{})
 		fake := fakePersistence{memory: memory}
 		resourceRepository := repositories.CreateResourceRepository(&fake)
@@ -86,8 +83,7 @@ var _ = Describe("create resource", func() {
 	})
 
 	It("should fail if missing id in service resource", func() {
-		service := domain.Deployment{}
-		resource := domain.Resource{Type: "Deployment", Object: service}
+		resource := domain.Resource{K8sResource: &domain.Deployment{}}
 		memory := make(map[string]interface{})
 		fake := fakePersistence{memory: memory}
 		resourceRepository := repositories.CreateResourceRepository(&fake)
@@ -101,8 +97,7 @@ var _ = Describe("create resource", func() {
 var _ = Describe("delete service resource", func() {
 	It("should delete a given service resource", func() {
 		id := "10174c96-a835-4e9e-b49e-9085f6e63368"
-		service := domain.Service{ID: id}
-		resource := domain.Resource{Type: "Service", Object: service}
+		resource := domain.Resource{K8sResource: &domain.Service{ID: id}}
 		memory := make(map[string]interface{})
 		fake := fakePersistence{memory: memory}
 		resourceRepository := repositories.CreateResourceRepository(&fake)
@@ -116,8 +111,7 @@ var _ = Describe("delete service resource", func() {
 
 	It("should fail if missing id for service resouce", func() {
 		id := "10174c96-a835-4e9e-b49e-9085f6e63368"
-		service := domain.Service{ID: id}
-		resource := domain.Resource{Type: "Service", Object: service}
+		resource := domain.Resource{K8sResource: &domain.Service{ID: id}}
 		memory := make(map[string]interface{})
 		fake := fakePersistence{memory: memory}
 		resourceRepository := repositories.CreateResourceRepository(&fake)
@@ -132,8 +126,7 @@ var _ = Describe("delete service resource", func() {
 var _ = Describe("get all resources", func() {
 	It("should return all values", func() {
 		id := "10174c96-a835-4e9e-b49e-9085f6e63368"
-		service := domain.Service{ID: id}
-		resource := domain.Resource{Type: "Service", Object: service}
+		resource := domain.Resource{K8sResource: &domain.Service{ID: id}}
 		memory := make(map[string]interface{})
 		fake := fakePersistence{memory: memory}
 		resourceRepository := repositories.CreateResourceRepository(&fake)

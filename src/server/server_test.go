@@ -159,8 +159,8 @@ var _ = Describe("run server", func() {
 		for _, r := range resources {
 			i := r.GetID()
 			resource := repository.persistence[i].(domain.Resource)
-			output := resource.GetK8sResource().(domain.Service)
-			Expect(r.GetK8sResource().(domain.Service)).To(Equal(output))
+			output := resource.GetK8sResource().(*domain.Service)
+			Expect(r.GetK8sResource().(*domain.Service)).To(Equal(output))
 		}
 	})
 
@@ -247,8 +247,8 @@ var _ = Describe("run server", func() {
 		for _, r := range resources {
 			i := r.GetID()
 			resource := repository.persistence[i].(domain.Resource)
-			output := resource.GetK8sResource().(domain.Deployment)
-			Expect(r.GetK8sResource().(domain.Deployment)).To(Equal(output))
+			output := resource.GetK8sResource().(*domain.Deployment)
+			Expect(r.GetK8sResource().(*domain.Deployment)).To(Equal(output))
 		}
 	})
 
