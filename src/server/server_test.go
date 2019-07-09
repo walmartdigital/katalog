@@ -24,18 +24,12 @@ type fakeRepository struct {
 
 func (r *fakeRepository) CreateResource(obj interface{}) error {
 	resource := obj.(domain.Resource)
-	if resource.Type == "Service" {
-		if resource.Object.(domain.Service).ID == "" {
-			return errors.New("")
-		}
-		r.persistence[resource.Object.(domain.Service).ID] = resource
+
+	if resource.GetID() == "" {
+		return errors.New("")
 	}
-	if resource.Type == "Deployment" {
-		if resource.Object.(domain.Deployment).ID == "" {
-			return errors.New("")
-		}
-		r.persistence[resource.Object.(domain.Deployment).ID] = resource
-	}
+	r.persistence[resource.GetID()] = resource
+
 	return nil
 }
 
@@ -117,8 +111,8 @@ var _ = Describe("run server", func() {
 		var srv domain.Service
 		json.Unmarshal(b, &srv)
 		resource := repository.persistence[id].(domain.Resource)
-		output := resource.Object.(domain.Service)
-		Expect(srv).To(Equal(output))
+		output := resource.GetK8sResource().(*domain.Service)
+		Expect(srv).To(Equal(*output))
 	})
 
 	It("should delete a service", func() {
@@ -137,16 +131,13 @@ var _ = Describe("run server", func() {
 
 	It("should list all services", func() {
 		inputResource1 := domain.Resource{
-			Type:   "Service",
-			Object: domain.Service{ID: "22d080de-4138-446f-acd4-d4c13fe77912"},
+			K8sResource: &domain.Service{ID: "22d080de-4138-446f-acd4-d4c13fe77912"},
 		}
 		inputResource2 := domain.Resource{
-			Type:   "Deployment",
-			Object: domain.Deployment{ID: "22d080de-ffff-446f-acd4-d4c13fe77912"},
+			K8sResource: &domain.Deployment{ID: "22d080de-ffff-446f-acd4-d4c13fe77912"},
 		}
 		inputResource3 := domain.Resource{
-			Type:   "Service",
-			Object: domain.Service{ID: "22d080de-xxxx-446f-acd4-d4c13fe77912"},
+			K8sResource: &domain.Service{ID: "22d080de-xxxx-446f-acd4-d4c13fe77912"},
 		}
 
 		repository.persistence["22d080de-4138-446f-acd4-d4c13fe77912"] = inputResource1
@@ -166,25 +157,22 @@ var _ = Describe("run server", func() {
 		mapstructure.Decode(resources, &d)
 
 		for _, r := range resources {
-			i := r.Object.(domain.Service).ID
+			i := r.GetID()
 			resource := repository.persistence[i].(domain.Resource)
-			output := resource.Object.(domain.Service)
-			Expect(r.Object.(domain.Service)).To(Equal(output))
+			output := resource.GetK8sResource().(domain.Service)
+			Expect(r.GetK8sResource().(domain.Service)).To(Equal(output))
 		}
 	})
 
 	It("should count amount of services", func() {
 		inputResource1 := domain.Resource{
-			Type:   "Service",
-			Object: domain.Service{ID: "22d080de-4138-446f-acd4-d4c13fe77912"},
+			K8sResource: &domain.Service{ID: "22d080de-4138-446f-acd4-d4c13fe77912"},
 		}
 		inputResource2 := domain.Resource{
-			Type:   "Deployment",
-			Object: domain.Deployment{ID: "22d080de-ffff-446f-acd4-d4c13fe77912"},
+			K8sResource: &domain.Deployment{ID: "22d080de-ffff-446f-acd4-d4c13fe77912"},
 		}
 		inputResource3 := domain.Resource{
-			Type:   "Service",
-			Object: domain.Service{ID: "22d080de-xxxx-446f-acd4-d4c13fe77912"},
+			K8sResource: &domain.Service{ID: "22d080de-xxxx-446f-acd4-d4c13fe77912"},
 		}
 		repository.persistence["22d080de-4138-446f-acd4-d4c13fe77912"] = inputResource1
 		repository.persistence["22d080de-ffff-446f-acd4-d4c13fe77912"] = inputResource2
@@ -215,8 +203,8 @@ var _ = Describe("run server", func() {
 		var srv domain.Deployment
 		json.Unmarshal(b, &srv)
 		resource := repository.persistence[id].(domain.Resource)
-		output := resource.Object.(domain.Deployment)
-		Expect(srv).To(Equal(output))
+		output := resource.GetK8sResource().(*domain.Deployment)
+		Expect(srv).To(Equal(*output))
 	})
 
 	It("should delete a deployment", func() {
@@ -235,16 +223,13 @@ var _ = Describe("run server", func() {
 
 	It("should list all deployments", func() {
 		inputResource1 := domain.Resource{
-			Type:   "Deployment",
-			Object: domain.Deployment{ID: "22d080de-4138-446f-acd4-d4c13fe77912"},
+			K8sResource: &domain.Deployment{ID: "22d080de-4138-446f-acd4-d4c13fe77912"},
 		}
 		inputResource2 := domain.Resource{
-			Type:   "Service",
-			Object: domain.Service{ID: "22d080de-ffff-446f-acd4-d4c13fe77912"},
+			K8sResource: &domain.Service{ID: "22d080de-ffff-446f-acd4-d4c13fe77912"},
 		}
 		inputResource3 := domain.Resource{
-			Type:   "Deployment",
-			Object: domain.Deployment{ID: "22d080de-xxxx-446f-acd4-d4c13fe77912"},
+			K8sResource: &domain.Deployment{ID: "22d080de-xxxx-446f-acd4-d4c13fe77912"},
 		}
 		repository.persistence["22d080de-4138-446f-acd4-d4c13fe77912"] = inputResource1
 		repository.persistence["22d080de-ffff-446f-acd4-d4c13fe77912"] = inputResource2
@@ -260,25 +245,22 @@ var _ = Describe("run server", func() {
 		json.Unmarshal(b, &d)
 		mapstructure.Decode(resources, &d)
 		for _, r := range resources {
-			i := r.Object.(domain.Deployment).ID
+			i := r.GetID()
 			resource := repository.persistence[i].(domain.Resource)
-			output := resource.Object.(domain.Deployment)
-			Expect(r.Object.(domain.Deployment)).To(Equal(output))
+			output := resource.GetK8sResource().(domain.Deployment)
+			Expect(r.GetK8sResource().(domain.Deployment)).To(Equal(output))
 		}
 	})
 
 	It("should count amount of deployments", func() {
 		inputResource1 := domain.Resource{
-			Type:   "Deployment",
-			Object: domain.Deployment{ID: "22d080de-4138-446f-acd4-d4c13fe77912"},
+			K8sResource: &domain.Deployment{ID: "22d080de-4138-446f-acd4-d4c13fe77912"},
 		}
 		inputResource2 := domain.Resource{
-			Type:   "Service",
-			Object: domain.Service{ID: "22d080de-ffff-446f-acd4-d4c13fe77912"},
+			K8sResource: &domain.Service{ID: "22d080de-ffff-446f-acd4-d4c13fe77912"},
 		}
 		inputResource3 := domain.Resource{
-			Type:   "Deployment",
-			Object: domain.Deployment{ID: "22d080de-xxxx-446f-acd4-d4c13fe77912"},
+			K8sResource: &domain.Deployment{ID: "22d080de-xxxx-446f-acd4-d4c13fe77912"},
 		}
 		repository.persistence["22d080de-4138-446f-acd4-d4c13fe77912"] = inputResource1
 		repository.persistence["22d080de-ffff-446f-acd4-d4c13fe77912"] = inputResource2
