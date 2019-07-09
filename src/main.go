@@ -66,8 +66,8 @@ func mainCollector(kubeconfig string) {
 	deploymentEvents := make(chan interface{})
 	k8sDriver := k8sdriver.BuildDriver(kubeconfig, *excludeSystemNamespace)
 	publisher := resolvePublisher()
-	go k8sDriver.StartWatchingResources(serviceEvents, domain.Resource{})
-	go k8sDriver.StartWatchingResources(deploymentEvents, domain.Resource{})
+	go k8sDriver.StartWatchingResources(serviceEvents, domain.Resource{K8sResource: &domain.Service{}})
+	go k8sDriver.StartWatchingResources(deploymentEvents, domain.Resource{K8sResource: &domain.Deployment{}})
 	for {
 		select {
 		case event := <-serviceEvents:

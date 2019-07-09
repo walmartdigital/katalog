@@ -49,9 +49,9 @@ func (c *HTTPPublisher) Publish(obj interface{}) error {
 func (c *HTTPPublisher) put(resource domain.Resource) error {
 	reqBodyBytes := new(bytes.Buffer)
 
-	if resource.GetType() == reflect.TypeOf(domain.Service{}) {
-		service := resource.GetK8sResource().(domain.Service)
-		json.NewEncoder(reqBodyBytes).Encode(service)
+	if resource.GetType() == reflect.TypeOf(new(domain.Service)) {
+		service := resource.GetK8sResource().(*domain.Service)
+		json.NewEncoder(reqBodyBytes).Encode(*service)
 		req, _ := http.NewRequest(http.MethodPut, c.url+"/services/"+service.ID, reqBodyBytes)
 		req.Header.Add("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
@@ -64,9 +64,9 @@ func (c *HTTPPublisher) put(resource domain.Resource) error {
 		return nil
 	}
 
-	if resource.GetType() == reflect.TypeOf(domain.Deployment{}) {
-		deployment := resource.GetK8sResource().(domain.Deployment)
-		json.NewEncoder(reqBodyBytes).Encode(deployment)
+	if resource.GetType() == reflect.TypeOf(new(domain.Deployment)) {
+		deployment := resource.GetK8sResource().(*domain.Deployment)
+		json.NewEncoder(reqBodyBytes).Encode(*deployment)
 		req, _ := http.NewRequest(http.MethodPut, c.url+"/deployments/"+deployment.ID, reqBodyBytes)
 		req.Header.Add("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
@@ -83,7 +83,7 @@ func (c *HTTPPublisher) put(resource domain.Resource) error {
 }
 
 func (c *HTTPPublisher) delete(resource domain.Resource) error {
-	if resource.GetType() == reflect.TypeOf(domain.Service{}) {
+	if resource.GetType() == reflect.TypeOf(new(domain.Service)) {
 		service := resource.GetK8sResource().(domain.Service)
 		req, _ := http.NewRequest(http.MethodDelete, c.url+"/services/"+service.ID, nil)
 		req.Header.Add("Content-Type", "application/json")
@@ -97,7 +97,7 @@ func (c *HTTPPublisher) delete(resource domain.Resource) error {
 		glog.Info(string(body))
 		return nil
 	}
-	if resource.GetType() == reflect.TypeOf(domain.Deployment{}) {
+	if resource.GetType() == reflect.TypeOf(new(domain.Deployment)) {
 		deployment := resource.GetK8sResource().(domain.Deployment)
 		req, _ := http.NewRequest(http.MethodDelete, c.url+"/deployments/"+deployment.ID, nil)
 		req.Header.Add("Content-Type", "application/json")

@@ -53,14 +53,14 @@ func (d *Driver) buildListWatchForResources(resource domain.Resource) *cache.Lis
 	var listWatch *cache.ListWatch
 
 	switch v := resource.GetType(); v {
-	case reflect.TypeOf(domain.Service{}):
+	case reflect.TypeOf(new(domain.Service)):
 		listWatch = cache.NewListWatchFromClient(
 			d.clientSet.CoreV1().RESTClient(),
 			"services",
 			corev1.NamespaceAll,
 			fields.Everything(),
 		)
-	case reflect.TypeOf(domain.Deployment{}):
+	case reflect.TypeOf(new(domain.Deployment)):
 		listWatch = cache.NewListWatchFromClient(
 			d.clientSet.AppsV1().RESTClient(),
 			"deployments",
@@ -78,7 +78,7 @@ func (d *Driver) buildController(listWatch *cache.ListWatch, resource domain.Res
 	var controller cache.Controller
 
 	switch v := resource.GetType(); v {
-	case reflect.TypeOf(domain.Service{}):
+	case reflect.TypeOf(new(domain.Service)):
 		_, controller = cache.NewInformer(
 			listWatch,
 			&corev1.Service{},
@@ -89,7 +89,7 @@ func (d *Driver) buildController(listWatch *cache.ListWatch, resource domain.Res
 				DeleteFunc: deleteFunc,
 			},
 		)
-	case reflect.TypeOf(domain.Deployment{}):
+	case reflect.TypeOf(new(domain.Deployment)):
 		_, controller = cache.NewInformer(
 			listWatch,
 			&appsv1.Deployment{},
@@ -109,7 +109,7 @@ func (d *Driver) buildController(listWatch *cache.ListWatch, resource domain.Res
 
 func (d *Driver) createAddHandler(channel chan interface{}, resource domain.Resource) func(interface{}) {
 	return func(obj interface{}) {
-		if resource.GetType() == reflect.TypeOf(domain.Service{}) {
+		if resource.GetType() == reflect.TypeOf(new(domain.Service)) {
 			k8sService := obj.(*corev1.Service)
 			if d.excludeSystemNamespace && k8sService.Namespace == "kube-system" {
 				glog.Infof("%s excluded because belongs to kube-system namespace", k8sService.Name)
@@ -120,7 +120,7 @@ func (d *Driver) createAddHandler(channel chan interface{}, resource domain.Reso
 			channel <- service
 		}
 
-		if resource.GetType() == reflect.TypeOf(domain.Deployment{}) {
+		if resource.GetType() == reflect.TypeOf(new(domain.Deployment)) {
 			k8sDeployment := obj.(*appsv1.Deployment)
 			if d.excludeSystemNamespace && k8sDeployment.Namespace == "kube-system" {
 				glog.Infof("%s excluded because belongs to kube-system namespace", k8sDeployment.Name)
@@ -134,13 +134,13 @@ func (d *Driver) createAddHandler(channel chan interface{}, resource domain.Reso
 
 func (d *Driver) createDeleteHandler(channel chan interface{}, resource domain.Resource) func(interface{}) {
 	return func(obj interface{}) {
-		if resource.GetType() == reflect.TypeOf(domain.Service{}) {
+		if resource.GetType() == reflect.TypeOf(new(domain.Service)) {
 			k8sService := obj.(*corev1.Service)
 			endpoints, _ := d.clientSet.CoreV1().Endpoints(k8sService.Namespace).Get(k8sService.Name, metav1.GetOptions{})
 			service := buildOperationFromK8sService(domain.OperationTypeDelete, k8sService, *endpoints)
 			channel <- service
 		}
-		if resource.GetType() == reflect.TypeOf(domain.Deployment{}) {
+		if resource.GetType() == reflect.TypeOf(new(domain.Deployment)) {
 			k8sDeployment := obj.(*appsv1.Deployment)
 			deployment := buildOperationFromK8sDeployment(domain.OperationTypeDelete, k8sDeployment)
 			channel <- deployment
@@ -150,13 +150,13 @@ func (d *Driver) createDeleteHandler(channel chan interface{}, resource domain.R
 
 func (d *Driver) createUpdateHandler(channel chan interface{}, resource domain.Resource) func(oldObj interface{}, newObj interface{}) {
 	return func(oldObj interface{}, newObj interface{}) {
-		if resource.GetType() == reflect.TypeOf(domain.Service{}) {
+		if resource.GetType() == reflect.TypeOf(new(domain.Service)) {
 			k8sService := newObj.(*corev1.Service)
 			endpoints, _ := d.clientSet.CoreV1().Endpoints(k8sService.Namespace).Get(k8sService.Name, metav1.GetOptions{})
 			service := buildOperationFromK8sService(domain.OperationTypeUpdate, k8sService, *endpoints)
 			channel <- service
 		}
-		if resource.GetType() == reflect.TypeOf(domain.Deployment{}) {
+		if resource.GetType() == reflect.TypeOf(new(domain.Deployment)) {
 			k8sDeployment := newObj.(*appsv1.Deployment)
 			deployment := buildOperationFromK8sDeployment(domain.OperationTypeUpdate, k8sDeployment)
 			channel <- deployment
