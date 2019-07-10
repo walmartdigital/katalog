@@ -33,6 +33,16 @@ func (s *Server) createService(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(service)
 }
 
+func (s *Server) updateService(w http.ResponseWriter, r *http.Request) {
+	var service domain.Service
+	json.NewDecoder(r.Body).Decode(&service)
+	resource := domain.Resource{
+		K8sResource: &service,
+	}
+	s.resourcesRepository.UpdateResource(resource)
+	json.NewEncoder(w).Encode(service)
+}
+
 func (s *Server) deleteService(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	s.resourcesRepository.DeleteResource(id)
@@ -55,6 +65,15 @@ func (s *Server) createDeployment(w http.ResponseWriter, r *http.Request) {
 	resource := domain.Resource{K8sResource: &deployment}
 	s.resourcesRepository.CreateResource(resource)
 	(*s.metrics)["createDeployment"].(*prometheus.CounterVec).WithLabelValues(resource.GetID()).Inc()
+	json.NewEncoder(w).Encode(deployment)
+}
+
+func (s *Server) updateDeployment(w http.ResponseWriter, r *http.Request) {
+	var deployment domain.Deployment
+	json.NewDecoder(r.Body).Decode(&deployment)
+	resource := domain.Resource{K8sResource: &deployment}
+	s.resourcesRepository.UpdateResource(resource)
+	(*s.metrics)["updateDeployment"].(*prometheus.CounterVec).WithLabelValues(resource.GetID()).Inc()
 	json.NewEncoder(w).Encode(deployment)
 }
 

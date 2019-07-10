@@ -33,7 +33,7 @@ func (c *HTTPPublisher) Publish(obj interface{}) error {
 	switch operation.Kind {
 	case (domain.OperationTypeAdd):
 		return c.retry(func() error {
-			return c.put(operation.Resource)
+			return c.post(operation.Resource)
 		})
 	case (domain.OperationTypeUpdate):
 		return c.retry(func() error {
@@ -44,6 +44,42 @@ func (c *HTTPPublisher) Publish(obj interface{}) error {
 	default:
 		return errors.New("operation unknown")
 	}
+}
+
+func (c *HTTPPublisher) post(resource domain.Resource) error {
+	reqBodyBytes := new(bytes.Buffer)
+
+	if resource.GetType() == reflect.TypeOf(new(domain.Service)) {
+		service := resource.GetK8sResource().(*domain.Service)
+		json.NewEncoder(reqBodyBytes).Encode(*service)
+		req, _ := http.NewRequest(http.MethodPost, c.url+"/services/"+service.ID, reqBodyBytes)
+		req.Header.Add("Content-Type", "application/json")
+		res, err := http.DefaultClient.Do(req)
+		if err != nil || res.StatusCode != 200 {
+			glog.Error(err)
+			return errors.New("put service failed")
+		}
+		defer res.Body.Close()
+		glog.Info("service " + service.Name + "(id: " + service.ID + ") saved successfully")
+		return nil
+	}
+
+	if resource.GetType() == reflect.TypeOf(new(domain.Deployment)) {
+		deployment := resource.GetK8sResource().(*domain.Deployment)
+		json.NewEncoder(reqBodyBytes).Encode(*deployment)
+		req, _ := http.NewRequest(http.MethodPost, c.url+"/deployments/"+deployment.ID, reqBodyBytes)
+		req.Header.Add("Content-Type", "application/json")
+		res, err := http.DefaultClient.Do(req)
+		if err != nil || res.StatusCode != 200 {
+			glog.Error(err)
+			return errors.New("put deployment failed")
+		}
+		defer res.Body.Close()
+		glog.Info("deployment " + deployment.Name + "(id: " + deployment.ID + ") saved successfully")
+		return nil
+	}
+
+	return nil
 }
 
 func (c *HTTPPublisher) put(resource domain.Resource) error {

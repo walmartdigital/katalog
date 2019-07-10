@@ -27,6 +27,14 @@ func (p *MemoryPersistence) Create(id string, obj interface{}) error {
 	return nil
 }
 
+func (p *MemoryPersistence) Update(id string, obj interface{}) error {
+	if id == "" {
+		return errors.New("you must provide an id")
+	}
+	p.memory[id] = obj
+	return nil
+}
+
 // Delete ...
 func (p *MemoryPersistence) Delete(id string) error {
 	if id == "" {

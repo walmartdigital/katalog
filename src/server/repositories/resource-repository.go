@@ -30,6 +30,16 @@ func (r *ResourceRepository) CreateResource(resource interface{}) error {
 	return nil
 }
 
+// UpdateResource ...
+func (r *ResourceRepository) UpdateResource(resource interface{}) error {
+	res := resource.(domain.Resource)
+	if err := r.persistence.Update(res.GetID(), res); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // DeleteResource ...
 func (r *ResourceRepository) DeleteResource(obj interface{}) error {
 	id := obj.(string)
