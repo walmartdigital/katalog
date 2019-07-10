@@ -40,9 +40,10 @@ func (r *ResourceRepository) UpdateResource(resource interface{}) (*domain.Resou
 			if err := r.persistence.Update(res.GetID(), res); err != nil {
 				return nil, err
 			}
+			return &res, nil
 		}
 	}
-	return &res, nil
+	return nil, nil
 }
 
 // DeleteResource ...
