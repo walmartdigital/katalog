@@ -9,6 +9,7 @@ type K8sResource interface {
 	GetType() reflect.Type
 	GetID() string
 	GetK8sResource() interface{}
+	GetGeneration() int64
 }
 
 // Resource ...
@@ -29,4 +30,9 @@ func (r *Resource) GetK8sResource() interface{} {
 // GetID ...
 func (r *Resource) GetID() string {
 	return r.K8sResource.GetID()
+}
+
+// GetGeneration ...
+func (r *Resource) GetGeneration() int64 {
+	return r.K8sResource.GetGeneration()
 }

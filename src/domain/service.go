@@ -4,11 +4,12 @@ import "reflect"
 
 // Service ...
 type Service struct {
-	ID        string `json:",omitempty"`
-	Name      string `json:",omitempty"`
-	Port      int    `json:",omitempty"`
-	Address   string `json:",omitempty"`
-	Instances []Instance
+	ID         string `json:",omitempty"`
+	Name       string `json:",omitempty"`
+	Port       int    `json:",omitempty"`
+	Address    string `json:",omitempty"`
+	Generation int64  `json:",omitempty"`
+	Instances  []Instance
 }
 
 // AddInstance ...
@@ -29,4 +30,9 @@ func (s *Service) GetType() reflect.Type {
 // GetK8sResource ...
 func (s *Service) GetK8sResource() interface{} {
 	return s
+}
+
+// GetGeneration ...
+func (s *Service) GetGeneration() int64 {
+	return s.Generation
 }

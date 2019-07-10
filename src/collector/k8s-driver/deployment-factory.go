@@ -7,8 +7,9 @@ import (
 
 func buildDeploymentFromK8sDeployment(sourceDeployment *appsv1.Deployment) domain.Deployment {
 	destinationDeployment := &domain.Deployment{
-		ID:   string(sourceDeployment.GetUID()),
-		Name: sourceDeployment.GetName(),
+		ID:         string(sourceDeployment.GetUID()),
+		Name:       sourceDeployment.GetName(),
+		Generation: sourceDeployment.GetGeneration(),
 	}
 
 	return *destinationDeployment

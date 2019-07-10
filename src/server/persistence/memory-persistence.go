@@ -18,6 +18,14 @@ func BuildMemoryPersistence(memory map[string]interface{}) Persistence {
 	}
 }
 
+// Get ...
+func (p *MemoryPersistence) Get(id string) interface{} {
+	if id == "" {
+		return errors.New("you must provide an id")
+	}
+	return p.memory[id]
+}
+
 // Create ...
 func (p *MemoryPersistence) Create(id string, obj interface{}) error {
 	if id == "" {
@@ -27,6 +35,7 @@ func (p *MemoryPersistence) Create(id string, obj interface{}) error {
 	return nil
 }
 
+// Update ...
 func (p *MemoryPersistence) Update(id string, obj interface{}) error {
 	if id == "" {
 		return errors.New("you must provide an id")

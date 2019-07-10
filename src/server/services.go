@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/emirpasic/gods/lists/arraylist"
+	"github.com/golang/glog"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/walmartdigital/katalog/src/domain"
@@ -72,8 +73,15 @@ func (s *Server) updateDeployment(w http.ResponseWriter, r *http.Request) {
 	var deployment domain.Deployment
 	json.NewDecoder(r.Body).Decode(&deployment)
 	resource := domain.Resource{K8sResource: &deployment}
-	s.resourcesRepository.UpdateResource(resource)
-	(*s.metrics)["updateDeployment"].(*prometheus.CounterVec).WithLabelValues(resource.GetID()).Inc()
+	result, err := s.resourcesRepository.UpdateResource(resource)
+
+	if err != nil {
+		glog.Errorf("Error occurred trying to update resource (id: %s)", resource.GetID())
+	}
+
+	if result != nil {
+		(*s.metrics)["updateDeployment"].(*prometheus.CounterVec).WithLabelValues(resource.GetID()).Inc()
+	}
 	json.NewEncoder(w).Encode(deployment)
 }
 

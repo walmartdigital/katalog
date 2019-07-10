@@ -31,13 +31,18 @@ func (r *ResourceRepository) CreateResource(resource interface{}) error {
 }
 
 // UpdateResource ...
-func (r *ResourceRepository) UpdateResource(resource interface{}) error {
+func (r *ResourceRepository) UpdateResource(resource interface{}) (*domain.Resource, error) {
 	res := resource.(domain.Resource)
-	if err := r.persistence.Update(res.GetID(), res); err != nil {
-		return err
-	}
+	savedResource := r.persistence.Get(res.GetID()).(domain.Resource)
 
-	return nil
+	if &savedResource != nil {
+		if savedResource.GetGeneration() < res.GetGeneration() {
+			if err := r.persistence.Update(res.GetID(), res); err != nil {
+				return nil, err
+			}
+		}
+	}
+	return &res, nil
 }
 
 // DeleteResource ...
