@@ -60,7 +60,7 @@ func (c *HTTPPublisher) post(resource domain.Resource) error {
 			return errors.New("put service failed")
 		}
 		defer res.Body.Close()
-		glog.Info("service " + service.Name + "(id: " + service.ID + ") saved successfully")
+		glog.Info("service " + service.Name + "(id: " + service.ID + ") created successfully")
 		return nil
 	}
 
@@ -75,7 +75,7 @@ func (c *HTTPPublisher) post(resource domain.Resource) error {
 			return errors.New("put deployment failed")
 		}
 		defer res.Body.Close()
-		glog.Info("deployment " + deployment.Name + "(id: " + deployment.ID + ") saved successfully")
+		glog.Info("deployment " + deployment.Name + "(id: " + deployment.ID + ") created successfully")
 		return nil
 	}
 
@@ -96,7 +96,7 @@ func (c *HTTPPublisher) put(resource domain.Resource) error {
 			return errors.New("put service failed")
 		}
 		defer res.Body.Close()
-		glog.Info("service " + service.Name + "(id: " + service.ID + ") saved successfully")
+		glog.Info("service " + service.Name + "(id: " + service.ID + ") updated successfully")
 		return nil
 	}
 
@@ -111,7 +111,7 @@ func (c *HTTPPublisher) put(resource domain.Resource) error {
 			return errors.New("put deployment failed")
 		}
 		defer res.Body.Close()
-		glog.Info("deployment " + deployment.Name + "(id: " + deployment.ID + ") saved successfully")
+		glog.Info("deployment " + deployment.Name + "(id: " + deployment.ID + ") updated successfully")
 		return nil
 	}
 
