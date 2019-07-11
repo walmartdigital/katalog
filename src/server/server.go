@@ -33,13 +33,23 @@ type Route interface {
 
 // CreateServer ...
 func CreateServer(server HTTPServer, repository repositories.Repository, router Router) Server {
+	return Server{
+		httpServer:          server,
+		resourcesRepository: repository,
+		router:              router,
+		metrics:             initMetrics(),
+	}
+}
+
+// initMetrics ...
+func initMetrics() *map[string]interface{} {
 	metricsmap := make(map[string]interface{})
 
 	metricsmap["createDeployment"] = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: "katalog",
 			Subsystem: "deployment",
-			Name:      "katalog_deployment_create",
+			Name:      "create",
 			Help:      "Total number of deployment creations",
 		},
 		[]string{"id"},
@@ -50,19 +60,24 @@ func CreateServer(server HTTPServer, repository repositories.Repository, router 
 		prometheus.CounterOpts{
 			Namespace: "katalog",
 			Subsystem: "deployment",
-			Name:      "katalog_deployment_update",
+			Name:      "update",
 			Help:      "Total number of deployment updates",
 		},
 		[]string{"id"},
 	)
 	prometheus.MustRegister(metricsmap["updateDeployment"].(*prometheus.CounterVec))
 
-	return Server{
-		httpServer:          server,
-		resourcesRepository: repository,
-		router:              router,
-		metrics:             &metricsmap,
-	}
+	metricsmap["deleteDeployment"] = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: "katalog",
+			Subsystem: "deployment",
+			Name:      "delete",
+			Help:      "Total number of deployment deletes",
+		},
+		[]string{"id"},
+	)
+	prometheus.MustRegister(metricsmap["deleteDeployment"].(*prometheus.CounterVec))
+	return &metricsmap
 }
 
 // Run ...

@@ -87,8 +87,12 @@ func (s *Server) updateDeployment(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) deleteDeployment(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
-	s.resourcesRepository.DeleteResource(id)
-	fmt.Fprintf(w, "deleted deployment id: %s", id)
+	err := s.resourcesRepository.DeleteResource(id)
+
+	if err != nil {
+		fmt.Fprintf(w, "deleted deployment id: %s", id)
+	}
+	(*s.metrics)["deleteDeployment"].(*prometheus.CounterVec).WithLabelValues(id).Inc()
 }
 
 func (s *Server) getAllDeployments(w http.ResponseWriter, r *http.Request) {
