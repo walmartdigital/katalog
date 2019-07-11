@@ -32,12 +32,12 @@ func (f *fakePersistence) Update(id string, obj interface{}) error {
 	return nil
 }
 
-func (f *fakePersistence) Get(id string) interface{} {
+func (f *fakePersistence) Get(id string) (interface{}, error) {
 	if id == "" {
-		return errors.New("")
+		return nil, errors.New("")
 	}
 	res := f.memory[id]
-	return res
+	return res, nil
 }
 
 func (f *fakePersistence) Delete(id string) error {
@@ -182,7 +182,7 @@ var _ = Describe("update service resource", func() {
 		badres := domain.Resource{K8sResource: &domain.Service{ID: ""}}
 		_, error := resourceRepository.UpdateResource(badres)
 
-		Expect(error).To(BeNil())
+		Expect(error).NotTo(BeNil())
 	})
 })
 

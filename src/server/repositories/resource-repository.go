@@ -33,17 +33,14 @@ func (r *ResourceRepository) CreateResource(resource interface{}) error {
 // UpdateResource ...
 func (r *ResourceRepository) UpdateResource(resource interface{}) (*domain.Resource, error) {
 	res := resource.(domain.Resource)
-	savedResource, ok := r.persistence.Get(res.GetID()).(domain.Resource)
-
-	if !ok {
-		return nil, nil
+	savedResource, err := r.persistence.Get(res.GetID())
+	if err != nil {
+		return nil, err
 	}
-
-	if &savedResource != nil {
-		if savedResource.GetGeneration() < res.GetGeneration() {
-			if err := r.persistence.Update(res.GetID(), res); err != nil {
-				return nil, err
-			}
+	sr := savedResource.(domain.Resource)
+	if &sr != nil {
+		if sr.GetGeneration() < res.GetGeneration() {
+			r.persistence.Update(res.GetID(), res)
 			return &res, nil
 		}
 	}
