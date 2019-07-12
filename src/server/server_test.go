@@ -97,11 +97,11 @@ func TestAll(t *testing.T) {
 
 var _ = Describe("run server", func() {
 	var (
-		persistence map[string]interface{}
-		repository  fakeRepository
-		router      fakeRouter
-		httpServer  fakeHTTPServer
-		server      server.Server
+		persistence   map[string]interface{}
+		repository    fakeRepository
+		router        fakeRouter
+		httpServer    fakeHTTPServer
+		katalogServer server.Server
 	)
 
 	BeforeEach(func() {
@@ -109,8 +109,8 @@ var _ = Describe("run server", func() {
 		repository = fakeRepository{persistence: persistence}
 		router = fakeRouter{}
 		httpServer = fakeHTTPServer{}
-		server = server.CreateServer(&httpServer, &repository, &router)
-		server.Run()
+		katalogServer = server.CreateServer(&httpServer, &repository, &router)
+		katalogServer.Run()
 	})
 
 	It("should create a service", func() {
@@ -122,7 +122,7 @@ var _ = Describe("run server", func() {
 		req, _ := http.NewRequest(http.MethodPut, "", body)
 		rec := httptest.NewRecorder()
 
-		routes[path+"@PUT"](rec, req)
+		routes[path+"@POST"](rec, req)
 
 		b, _ := ioutil.ReadAll(rec.Body)
 		var srv domain.Service
@@ -214,7 +214,7 @@ var _ = Describe("run server", func() {
 		req, _ := http.NewRequest(http.MethodPut, "", body)
 		rec := httptest.NewRecorder()
 
-		routes[path+"@PUT"](rec, req)
+		routes[path+"@POST"](rec, req)
 
 		b, _ := ioutil.ReadAll(rec.Body)
 		var srv domain.Deployment
@@ -294,11 +294,6 @@ var _ = Describe("run server", func() {
 	})
 
 	AfterEach(func() {
-		persistence = make(map[string]interface{})
-		repository = fakeRepository{persistence: persistence}
-		router = fakeRouter{}
-		httpServer = fakeHTTPServer{}
-		server := server.CreateServer(&httpServer, &repository, &router)
-		server.Run()
+		katalogServer.DestroyMetrics()
 	})
 })
