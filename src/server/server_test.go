@@ -33,6 +33,22 @@ func (r *fakeRepository) CreateResource(obj interface{}) error {
 	return nil
 }
 
+func (r *fakeRepository) UpdateResource(resource interface{}) (*domain.Resource, error) {
+	res := resource.(domain.Resource)
+	savedResource, ok := r.persistence[res.GetID()]
+	if !ok {
+		return nil, errors.New("")
+	}
+	sr := savedResource.(domain.Resource)
+	if &sr != nil {
+		if sr.GetGeneration() < res.GetGeneration() {
+			r.persistence[res.GetID()] = res
+			return &res, nil
+		}
+	}
+	return nil, nil
+}
+
 func (r *fakeRepository) DeleteResource(obj interface{}) error {
 	id := obj.(string)
 	if id == "" {
@@ -85,6 +101,7 @@ var _ = Describe("run server", func() {
 		repository  fakeRepository
 		router      fakeRouter
 		httpServer  fakeHTTPServer
+		server      server.Server
 	)
 
 	BeforeEach(func() {
@@ -92,7 +109,7 @@ var _ = Describe("run server", func() {
 		repository = fakeRepository{persistence: persistence}
 		router = fakeRouter{}
 		httpServer = fakeHTTPServer{}
-		server := server.CreateServer(&httpServer, &repository, &router)
+		server = server.CreateServer(&httpServer, &repository, &router)
 		server.Run()
 	})
 
@@ -274,5 +291,14 @@ var _ = Describe("run server", func() {
 		var m struct{ Count int }
 		json.Unmarshal(b, &m)
 		Expect(m.Count).To(Equal(2))
+	})
+
+	AfterEach(func() {
+		persistence = make(map[string]interface{})
+		repository = fakeRepository{persistence: persistence}
+		router = fakeRouter{}
+		httpServer = fakeHTTPServer{}
+		server := server.CreateServer(&httpServer, &repository, &router)
+		server.Run()
 	})
 })

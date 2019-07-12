@@ -41,6 +41,13 @@ func CreateServer(server HTTPServer, repository repositories.Repository, router 
 	}
 }
 
+// DestroyMetrics ...
+func (s *Server) DestroyMetrics() {
+	for _, v := range *(s.metrics) {
+		prometheus.Unregister(v.(prometheus.Collector))
+	}
+}
+
 // initMetrics ...
 func initMetrics() *map[string]interface{} {
 	metricsmap := make(map[string]interface{})
