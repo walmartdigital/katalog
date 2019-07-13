@@ -11,6 +11,8 @@ steps:
   pull: default
   image: golang:alpine
   commands:
+    - apk update && apk --no-cache add git dep ca-certificates
+    - dep ensure
     - go test ./... -v -cover
   when:
     branch:
