@@ -12,7 +12,9 @@ steps:
   image: golang:alpine
   commands:
     - apk update && apk --no-cache add git dep ca-certificates
-    - export GOPATH=$GOPATH:/drone
+    - mkdir /go/src/katalog
+    - cp -R /drone/src /go/src/katalog
+    - cd /go/src/katalog
     - dep ensure
     - go test ./... -v -cover
   when:
