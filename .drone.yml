@@ -7,6 +7,18 @@ platform:
   arch: amd64
 
 steps:
+- name: test
+  pull: default
+  image: golang:alpine
+  commands:
+    - go test ./... -v -cover
+  when:
+    branch:
+    - master
+    event:
+    - push
+    - pull_request
+    - tag
 - name: publish
   pull: default
   image: plugins/docker
