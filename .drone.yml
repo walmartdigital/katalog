@@ -15,7 +15,7 @@ steps:
     - mkdir /go/src/katalog
     - echo $PWD
     - ls
-    - cp -R /drone/src/ /go/src/katalog/
+    - cp -R /drone/src/. /go/src/katalog/
     - cd /go/src/katalog
     - ls /go/src/katalog
     - ls
