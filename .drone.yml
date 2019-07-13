@@ -15,6 +15,9 @@ steps:
     - mkdir /go/src/katalog
     - cp -R /drone/src /go/src/katalog
     - cd /go/src/katalog
+    - ls /go/src/katalog
+    - ls
+    - echo $PWD
     - dep ensure
     - go test ./... -v -cover
   when:
@@ -45,4 +48,4 @@ steps:
     - pull_request
     - tag
 
-    
+
