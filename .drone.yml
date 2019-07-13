@@ -13,7 +13,9 @@ steps:
   commands:
     - apk update && apk --no-cache add git dep ca-certificates
     - mkdir /go/src/katalog
-    - cp -R /drone/src /go/src/katalog
+    - echo $PWD
+    - ls
+    - cp -R /drone/src/ /go/src/katalog/
     - cd /go/src/katalog
     - ls /go/src/katalog
     - ls
