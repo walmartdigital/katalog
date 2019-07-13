@@ -11,8 +11,12 @@ steps:
   pull: default
   image: golang:alpine
   commands:
+    - echo $PWD
+    - echo $GOPATH
+    - ls /drone
+    - ls /drone/src
     - apk update && apk --no-cache add git dep ca-certificates
-    - export GOPATH=$GOPATH:$PWD
+    - export GOPATH=$GOPATH:/drone/src
     - dep ensure
     - go test ./... -v -cover
   when:
