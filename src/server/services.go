@@ -7,9 +7,9 @@ import (
 
 	"github.com/emirpasic/gods/lists/arraylist"
 	"github.com/gorilla/mux"
-	"k8s.io/klog"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/walmartdigital/katalog/src/domain"
+	"k8s.io/klog"
 )
 
 func (s *Server) getResourcesByType(resource domain.Resource) []interface{} {
@@ -52,6 +52,7 @@ func (s *Server) deleteService(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) getAllServices(w http.ResponseWriter, r *http.Request) {
 	services := s.getResourcesByType(domain.Resource{K8sResource: &domain.Service{}})
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(services)
 }
 
@@ -97,6 +98,7 @@ func (s *Server) deleteDeployment(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) getAllDeployments(w http.ResponseWriter, r *http.Request) {
 	deployments := s.getResourcesByType(domain.Resource{K8sResource: &domain.Deployment{}})
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(deployments)
 }
 
