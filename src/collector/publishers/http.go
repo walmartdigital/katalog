@@ -57,7 +57,7 @@ func (c *HTTPPublisher) post(resource domain.Resource) error {
 		res, err := http.DefaultClient.Do(req)
 		if err != nil || res.StatusCode != 200 {
 			glog.Error(err)
-			return errors.New("put service failed")
+			return errors.New("post service failed")
 		}
 		defer res.Body.Close()
 		glog.Info("service " + service.Name + "(id: " + service.ID + ") created successfully")
@@ -72,7 +72,7 @@ func (c *HTTPPublisher) post(resource domain.Resource) error {
 		res, err := http.DefaultClient.Do(req)
 		if err != nil || res.StatusCode != 200 {
 			glog.Error(err)
-			return errors.New("put deployment failed")
+			return errors.New("post deployment failed")
 		}
 		defer res.Body.Close()
 		glog.Info("deployment " + deployment.Name + "(id: " + deployment.ID + ") created successfully")

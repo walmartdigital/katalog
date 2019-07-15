@@ -37,6 +37,11 @@ func (s *DummyK8sResource) GetK8sResource() interface{} {
 	return s
 }
 
+// GetGeneration ...
+func (s *DummyK8sResource) GetGeneration() int64 {
+	return s.GetGeneration()
+}
+
 func TestAll(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "memory persistence")
@@ -48,7 +53,7 @@ var _ = Describe("create", func() {
 		path := "/services/" + serviceID
 		statusCode := 200
 		body := `{"ID": "` + serviceID + `"}`
-		fakeService := createFakeServer(path, statusCode, body)
+		fakeService := createCreateFakeServer(path, statusCode, body)
 		defer fakeService.Server.Close()
 		url := fakeService.ResolveURL("")
 		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
@@ -68,7 +73,7 @@ var _ = Describe("create", func() {
 		path := "/services/" + serviceID
 		statusCode := 500
 		body := `{"status": "fail"}`
-		fakeService := createFakeServer(path, statusCode, body)
+		fakeService := createCreateFakeServer(path, statusCode, body)
 		defer fakeService.Server.Close()
 		url := "localhost:5000"
 		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
@@ -81,7 +86,7 @@ var _ = Describe("create", func() {
 		})
 
 		Expect(output).ToNot(BeNil())
-		Expect(output.Error()).To(Equal("put service failed"))
+		Expect(output.Error()).To(Equal("post service failed"))
 	})
 
 	It("should return an error when service request respond 500", func() {
@@ -89,7 +94,7 @@ var _ = Describe("create", func() {
 		path := "/services/" + serviceID
 		statusCode := 500
 		body := `{"status": "fail"}`
-		fakeService := createFakeServer(path, statusCode, body)
+		fakeService := createCreateFakeServer(path, statusCode, body)
 		defer fakeService.Server.Close()
 		url := fakeService.ResolveURL("")
 		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
@@ -102,7 +107,7 @@ var _ = Describe("create", func() {
 		})
 
 		Expect(output).ToNot(BeNil())
-		Expect(output.Error()).To(Equal("put service failed"))
+		Expect(output.Error()).To(Equal("post service failed"))
 	})
 
 	It("should return nil error when deployment request succeed", func() {
@@ -110,7 +115,7 @@ var _ = Describe("create", func() {
 		path := "/deployments/" + deploymentID
 		statusCode := 200
 		body := `{"ID": "` + deploymentID + `"}`
-		fakeDeployment := createFakeServer(path, statusCode, body)
+		fakeDeployment := createCreateFakeServer(path, statusCode, body)
 		defer fakeDeployment.Server.Close()
 		url := fakeDeployment.ResolveURL("")
 		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
@@ -130,7 +135,7 @@ var _ = Describe("create", func() {
 		path := "/deployments/" + deploymentID
 		statusCode := 500
 		body := `{"status": "fail"}`
-		fakeDeployment := createFakeServer(path, statusCode, body)
+		fakeDeployment := createCreateFakeServer(path, statusCode, body)
 		defer fakeDeployment.Server.Close()
 		url := "localhost:5000"
 		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
@@ -143,7 +148,7 @@ var _ = Describe("create", func() {
 		})
 
 		Expect(output).ToNot(BeNil())
-		Expect(output.Error()).To(Equal("put deployment failed"))
+		Expect(output.Error()).To(Equal("post deployment failed"))
 	})
 
 	It("should return an error when deployment request respond 500", func() {
@@ -151,7 +156,7 @@ var _ = Describe("create", func() {
 		path := "/deployments/" + deploymentID
 		statusCode := 500
 		body := `{"status": "fail"}`
-		fakeDeployment := createFakeServer(path, statusCode, body)
+		fakeDeployment := createCreateFakeServer(path, statusCode, body)
 		defer fakeDeployment.Server.Close()
 		url := fakeDeployment.ResolveURL("")
 		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
@@ -164,7 +169,7 @@ var _ = Describe("create", func() {
 		})
 
 		Expect(output).ToNot(BeNil())
-		Expect(output.Error()).To(Equal("put deployment failed"))
+		Expect(output.Error()).To(Equal("post deployment failed"))
 	})
 
 	It("should return nil if resource Type is not handled", func() {
@@ -172,7 +177,7 @@ var _ = Describe("create", func() {
 		path := "/services/" + serviceID
 		statusCode := 500
 		body := `{"status": "fail"}`
-		fakeService := createFakeServer(path, statusCode, body)
+		fakeService := createCreateFakeServer(path, statusCode, body)
 		defer fakeService.Server.Close()
 		url := fakeService.ResolveURL("")
 		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
@@ -186,11 +191,21 @@ var _ = Describe("create", func() {
 	})
 })
 
-func createFakeServer(path string, statusCode int, body string) *httpfake.HTTPFake {
+func createUpdateFakeServer(path string, statusCode int, body string) *httpfake.HTTPFake {
 	output := httpfake.New()
 	output.
 		NewHandler().
 		Put(path).
+		Reply(statusCode).
+		BodyString(body)
+	return output
+}
+
+func createCreateFakeServer(path string, statusCode int, body string) *httpfake.HTTPFake {
+	output := httpfake.New()
+	output.
+		NewHandler().
+		Post(path).
 		Reply(statusCode).
 		BodyString(body)
 	return output
@@ -391,7 +406,7 @@ var _ = Describe("update", func() {
 		path := "/services/" + serviceID
 		statusCode := 200
 		body := `{"ID": "` + serviceID + `"}`
-		fakeService := createFakeServer(path, statusCode, body)
+		fakeService := createUpdateFakeServer(path, statusCode, body)
 		defer fakeService.Server.Close()
 		url := fakeService.ResolveURL("")
 		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
