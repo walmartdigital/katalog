@@ -9,8 +9,8 @@ import (
 	"reflect"
 
 	"github.com/avast/retry-go"
-	"github.com/golang/glog"
 	"github.com/walmartdigital/katalog/src/domain"
+	"k8s.io/klog"
 )
 
 type httpClient interface {
@@ -56,11 +56,11 @@ func (c *HTTPPublisher) post(resource domain.Resource) error {
 		req.Header.Add("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
 		if err != nil || res.StatusCode != 200 {
-			glog.Error(err)
+			klog.Error(err)
 			return errors.New("post service failed")
 		}
 		defer res.Body.Close()
-		glog.Info("service " + service.Name + "(id: " + service.ID + ") created successfully")
+		klog.Info("service " + service.Name + "(id: " + service.ID + ") created successfully")
 		return nil
 	}
 
@@ -71,11 +71,11 @@ func (c *HTTPPublisher) post(resource domain.Resource) error {
 		req.Header.Add("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
 		if err != nil || res.StatusCode != 200 {
-			glog.Error(err)
+			klog.Error(err)
 			return errors.New("post deployment failed")
 		}
 		defer res.Body.Close()
-		glog.Info("deployment " + deployment.Name + "(id: " + deployment.ID + ") created successfully")
+		klog.Info("deployment " + deployment.Name + "(id: " + deployment.ID + ") created successfully")
 		return nil
 	}
 
@@ -92,11 +92,11 @@ func (c *HTTPPublisher) put(resource domain.Resource) error {
 		req.Header.Add("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
 		if err != nil || res.StatusCode != 200 {
-			glog.Error(err)
+			klog.Error(err)
 			return errors.New("put service failed")
 		}
 		defer res.Body.Close()
-		glog.Info("service " + service.Name + "(id: " + service.ID + ") updated successfully")
+		klog.Info("service " + service.Name + "(id: " + service.ID + ") updated successfully")
 		return nil
 	}
 
@@ -107,11 +107,11 @@ func (c *HTTPPublisher) put(resource domain.Resource) error {
 		req.Header.Add("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
 		if err != nil || res.StatusCode != 200 {
-			glog.Error(err)
+			klog.Error(err)
 			return errors.New("put deployment failed")
 		}
 		defer res.Body.Close()
-		glog.Info("deployment " + deployment.Name + "(id: " + deployment.ID + ") updated successfully")
+		klog.Info("deployment " + deployment.Name + "(id: " + deployment.ID + ") updated successfully")
 		return nil
 	}
 
@@ -125,12 +125,12 @@ func (c *HTTPPublisher) delete(resource domain.Resource) error {
 		req.Header.Add("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
 		if err != nil || res.StatusCode != 200 {
-			glog.Error(err)
+			klog.Error(err)
 			return errors.New("delete service failed")
 		}
 		defer res.Body.Close()
 		body, _ := ioutil.ReadAll(res.Body)
-		glog.Info(string(body))
+		klog.Info(string(body))
 		return nil
 	}
 	if resource.GetType() == reflect.TypeOf(new(domain.Deployment)) {
@@ -139,12 +139,12 @@ func (c *HTTPPublisher) delete(resource domain.Resource) error {
 		req.Header.Add("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
 		if err != nil || res.StatusCode != 200 {
-			glog.Error(err)
+			klog.Error(err)
 			return errors.New("delete deployment failed")
 		}
 		defer res.Body.Close()
 		body, _ := ioutil.ReadAll(res.Body)
-		glog.Info(string(body))
+		klog.Info(string(body))
 		return nil
 	}
 	return nil

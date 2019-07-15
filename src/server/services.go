@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/emirpasic/gods/lists/arraylist"
-	"github.com/golang/glog"
 	"github.com/gorilla/mux"
+	"k8s.io/klog"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/walmartdigital/katalog/src/domain"
 )
@@ -76,7 +76,7 @@ func (s *Server) updateDeployment(w http.ResponseWriter, r *http.Request) {
 	result, err := s.resourcesRepository.UpdateResource(resource)
 
 	if err != nil {
-		glog.Errorf("Error occurred trying to update resource (id: %s)", resource.GetID())
+		klog.Errorf("Error occurred trying to update resource (id: %s)", resource.GetID())
 	}
 
 	if result != nil {

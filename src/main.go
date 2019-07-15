@@ -9,8 +9,8 @@ import (
 	"github.com/walmartdigital/katalog/src/domain"
 
 	"github.com/avast/retry-go"
-	"github.com/golang/glog"
 	"github.com/gorilla/mux"
+	"k8s.io/klog"
 	k8sdriver "github.com/walmartdigital/katalog/src/collector/k8s-driver"
 	"github.com/walmartdigital/katalog/src/collector/publishers"
 	"github.com/walmartdigital/katalog/src/server"
@@ -29,17 +29,10 @@ var excludeSystemNamespace = flag.Bool("exclude-system-namespace", false, "exclu
 var publisher = flag.String("publisher", publisherHTTP, "select where to publish: http")
 var configfile = flag.Bool("kubeconfig", false, "true if a $HOME/.kube/config file exists")
 
-func usage() {
-	flag.PrintDefaults()
-	os.Exit(2)
-}
-
-func init() {
+func main() {
+	klog.InitFlags(nil)
 	flag.Set("logtostderr", "true")
 	flag.Parse()
-}
-
-func main() {
 	var kubeconfig string
 
 	if *configfile {
@@ -56,12 +49,12 @@ func main() {
 	case roleServer:
 		mainServer()
 	default:
-		glog.Warning("role should be server or collector")
+		klog.Warning("role should be server or collector")
 	}
 }
 
 func mainCollector(kubeconfig string) {
-	glog.Info("collector starting...")
+	klog.Info("collector starting...")
 	serviceEvents := make(chan interface{})
 	deploymentEvents := make(chan interface{})
 	k8sDriver := k8sdriver.BuildDriver(kubeconfig, *excludeSystemNamespace)
@@ -88,7 +81,7 @@ func resolvePublisher() publishers.Publisher {
 }
 
 func mainServer() {
-	glog.Info("server starting...")
+	klog.Info("server starting...")
 	memory := make(map[string]interface{})
 	persistence := persistence.BuildMemoryPersistence(memory)
 	resourceRepository := repositories.CreateResourceRepository(persistence)

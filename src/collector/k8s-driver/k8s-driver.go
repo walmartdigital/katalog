@@ -3,7 +3,6 @@ package k8sdriver
 import (
 	"reflect"
 
-	"github.com/golang/glog"
 	"github.com/walmartdigital/katalog/src/domain"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -12,6 +11,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/klog"
 )
 
 const resyncPeriod = 0
@@ -40,11 +40,11 @@ func (d *Driver) StartWatchingResources(events chan interface{}, resource domain
 func buildClientSet(kubeconfigPath string) *kubernetes.Clientset {
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
 	if err != nil {
-		glog.Errorln(err)
+		klog.Errorln(err)
 	}
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		glog.Errorln(err)
+		klog.Errorln(err)
 	}
 	return clientset
 }
@@ -68,7 +68,7 @@ func (d *Driver) buildListWatchForResources(resource domain.Resource) *cache.Lis
 			fields.Everything(),
 		)
 	default:
-		glog.Errorf("Type %s not found", v)
+		klog.Errorf("Type %s not found", v)
 	}
 
 	return listWatch
@@ -101,7 +101,7 @@ func (d *Driver) buildController(listWatch *cache.ListWatch, resource domain.Res
 			},
 		)
 	default:
-		glog.Errorf("Type %s not found", v)
+		klog.Errorf("Type %s not found", v)
 	}
 
 	return controller
@@ -112,7 +112,7 @@ func (d *Driver) createAddHandler(channel chan interface{}, resource domain.Reso
 		if resource.GetType() == reflect.TypeOf(new(domain.Service)) {
 			k8sService := obj.(*corev1.Service)
 			if d.excludeSystemNamespace && k8sService.Namespace == "kube-system" {
-				glog.Infof("%s excluded because belongs to kube-system namespace", k8sService.Name)
+				klog.Infof("%s excluded because belongs to kube-system namespace", k8sService.Name)
 				return
 			}
 			endpoints, _ := d.clientSet.CoreV1().Endpoints(k8sService.Namespace).Get(k8sService.Name, metav1.GetOptions{})
@@ -123,7 +123,7 @@ func (d *Driver) createAddHandler(channel chan interface{}, resource domain.Reso
 		if resource.GetType() == reflect.TypeOf(new(domain.Deployment)) {
 			k8sDeployment := obj.(*appsv1.Deployment)
 			if d.excludeSystemNamespace && k8sDeployment.Namespace == "kube-system" {
-				glog.Infof("%s excluded because belongs to kube-system namespace", k8sDeployment.Name)
+				klog.Infof("%s excluded because belongs to kube-system namespace", k8sDeployment.Name)
 				return
 			}
 			deployment := buildOperationFromK8sDeployment(domain.OperationTypeAdd, k8sDeployment)

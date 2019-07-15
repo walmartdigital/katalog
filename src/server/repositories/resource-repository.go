@@ -2,7 +2,7 @@ package repositories
 
 import (
 	"github.com/emirpasic/gods/lists/arraylist"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/mitchellh/mapstructure"
 	"github.com/walmartdigital/katalog/src/domain"
 	"github.com/walmartdigital/katalog/src/server/persistence"
@@ -58,7 +58,7 @@ func (r *ResourceRepository) DeleteResource(obj interface{}) error {
 
 // GetAllResources ...
 func (r *ResourceRepository) GetAllResources() []interface{} {
-	glog.Info("get all resourcess called")
+	klog.Info("get all resourcess called")
 	list := arraylist.New()
 	resources := r.persistence.GetAll()
 	for _, item := range resources {
