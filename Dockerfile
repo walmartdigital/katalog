@@ -11,4 +11,4 @@ FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /go/src/katalog/src /app/
 WORKDIR /app
-CMD ./main
+ENTRYPOINT ["./main"]
