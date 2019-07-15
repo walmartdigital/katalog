@@ -25,3 +25,4 @@ go run src/main.go -role server
 ```bash
 go run src/main.go -role collector
 ```
+
