@@ -59,7 +59,7 @@ func initMetrics() *map[string]interface{} {
 			Name:      "create",
 			Help:      "Total number of deployment creations",
 		},
-		[]string{"id", "namespace"},
+		[]string{"id", "ns"},
 	)
 	prometheus.MustRegister(metricsmap["createDeployment"].(*prometheus.CounterVec))
 
@@ -70,7 +70,7 @@ func initMetrics() *map[string]interface{} {
 			Name:      "update",
 			Help:      "Total number of deployment updates",
 		},
-		[]string{"id", "namespace"},
+		[]string{"id", "ns"},
 	)
 	prometheus.MustRegister(metricsmap["updateDeployment"].(*prometheus.CounterVec))
 
@@ -81,7 +81,7 @@ func initMetrics() *map[string]interface{} {
 			Name:      "delete",
 			Help:      "Total number of deployment deletes",
 		},
-		[]string{"id", "namespace"},
+		[]string{"id", "ns"},
 	)
 	prometheus.MustRegister(metricsmap["deleteDeployment"].(*prometheus.CounterVec))
 	return &metricsmap
