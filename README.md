@@ -5,7 +5,7 @@ Catalog all your kubernetes services in order to understand what is running and 
 ## Roles
 
 * collector: read k8s and publish to a server
-* server: receive information from collector
+* server: receive information from collector and expose it as a REST API
 
 ## Run
 
@@ -20,8 +20,10 @@ you wan to monitor
 go run src/main.go -role server
 ```
 
-### Run The Collector
+### Run The Collector (developer mode)
 
 ```bash
-go run src/main.go -role collector
+go run src/main.go -kubeconfig
 ```
+
+> When deploying on K8s cluster, omit the `-role` flag
