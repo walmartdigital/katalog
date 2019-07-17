@@ -92,6 +92,7 @@ func (s *Server) Run() {
 	s.handleRequests()
 }
 
+// handleRequests
 func (s *Server) handleRequests() {
 	s.router.HandleFunc("/metrics", promhttp.Handler().ServeHTTP).Methods("GET")
 	s.router.HandleFunc("/services", s.getAllServices).Methods("GET")
