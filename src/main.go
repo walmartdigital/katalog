@@ -10,12 +10,12 @@ import (
 
 	"github.com/avast/retry-go"
 	"github.com/gorilla/mux"
-	"k8s.io/klog"
 	k8sdriver "github.com/walmartdigital/katalog/src/collector/k8s-driver"
 	"github.com/walmartdigital/katalog/src/collector/publishers"
 	"github.com/walmartdigital/katalog/src/server"
 	"github.com/walmartdigital/katalog/src/server/persistence"
 	"github.com/walmartdigital/katalog/src/server/repositories"
+	"k8s.io/klog"
 )
 
 const roleCollector = "collector"
@@ -57,15 +57,19 @@ func mainCollector(kubeconfig string) {
 	klog.Info("collector starting...")
 	serviceEvents := make(chan interface{})
 	deploymentEvents := make(chan interface{})
+	statefulsetEvents := make(chan interface{})
 	k8sDriver := k8sdriver.BuildDriver(kubeconfig, *excludeSystemNamespace)
 	publisher := resolvePublisher()
 	go k8sDriver.StartWatchingResources(serviceEvents, domain.Resource{K8sResource: &domain.Service{}})
 	go k8sDriver.StartWatchingResources(deploymentEvents, domain.Resource{K8sResource: &domain.Deployment{}})
+	go k8sDriver.StartWatchingResources(statefulsetEvents, domain.Resource{K8sResource: &domain.StatefulSet{}})
 	for {
 		select {
 		case event := <-serviceEvents:
 			publisher.Publish(event)
 		case event := <-deploymentEvents:
+			publisher.Publish(event)
+		case event := <-statefulsetEvents:
 			publisher.Publish(event)
 		}
 	}

@@ -105,5 +105,10 @@ func (s *Server) handleRequests() {
 	s.router.HandleFunc("/deployments/{id}", s.createDeployment).Methods("POST")
 	s.router.HandleFunc("/deployments/{id}", s.updateDeployment).Methods("PUT")
 	s.router.HandleFunc("/deployments/{id}", s.deleteDeployment).Methods("DELETE")
+	s.router.HandleFunc("/statefulsets", s.getAllDeployments).Methods("GET")
+	s.router.HandleFunc("/statefulsets/_count", s.countDeployments).Methods("GET")
+	s.router.HandleFunc("/statefulsets/{id}", s.createDeployment).Methods("POST")
+	s.router.HandleFunc("/statefulsets/{id}", s.updateDeployment).Methods("PUT")
+	s.router.HandleFunc("/statefulsets/{id}", s.deleteDeployment).Methods("DELETE")
 	s.httpServer.ListenAndServe()
 }
