@@ -26,4 +26,4 @@ go run src/main.go -role server
 go run src/main.go -kubeconfig
 ```
 
-> When deploying on K8s cluster, omit the `-role` flag
+> When deploying on K8s cluster, omit the `-kubeconfig` flag
