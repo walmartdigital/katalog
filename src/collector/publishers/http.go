@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
 	"net/http"
 	"reflect"
 
@@ -164,8 +163,7 @@ func (c *HTTPPublisher) delete(resource domain.Resource) error {
 			return errors.New("delete service failed")
 		}
 		defer res.Body.Close()
-		body, _ := ioutil.ReadAll(res.Body)
-		klog.Info(string(body))
+		klog.Info("service " + service.Name + "(id: " + service.ID + ") deleted successfully")
 		return nil
 
 	case reflect.TypeOf(new(domain.Deployment)):
@@ -178,8 +176,7 @@ func (c *HTTPPublisher) delete(resource domain.Resource) error {
 			return errors.New("delete deployment failed")
 		}
 		defer res.Body.Close()
-		body, _ := ioutil.ReadAll(res.Body)
-		klog.Info(string(body))
+		klog.Info("deployment " + deployment.Name + "(id: " + deployment.ID + ") deleted successfully")
 		return nil
 
 	case reflect.TypeOf(new(domain.StatefulSet)):
@@ -192,8 +189,7 @@ func (c *HTTPPublisher) delete(resource domain.Resource) error {
 			return errors.New("delete statefulset failed")
 		}
 		defer res.Body.Close()
-		body, _ := ioutil.ReadAll(res.Body)
-		klog.Info(string(body))
+		klog.Info("statefulset " + statefulset.Name + "(id: " + statefulset.ID + ") deleted successfully")
 		return nil
 
 	default:

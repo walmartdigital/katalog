@@ -84,6 +84,39 @@ func initMetrics() *map[string]interface{} {
 		[]string{"id", "ns"},
 	)
 	prometheus.MustRegister(metricsmap["deleteDeployment"].(*prometheus.CounterVec))
+
+	metricsmap["createStatefulSet"] = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: "katalog",
+			Subsystem: "statefulset",
+			Name:      "create",
+			Help:      "Total number of statefulset creations",
+		},
+		[]string{"id", "ns"},
+	)
+	prometheus.MustRegister(metricsmap["createStatefulSet"].(*prometheus.CounterVec))
+
+	metricsmap["updateStatefulSet"] = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: "katalog",
+			Subsystem: "statefulset",
+			Name:      "update",
+			Help:      "Total number of statefulset updates",
+		},
+		[]string{"id", "ns"},
+	)
+	prometheus.MustRegister(metricsmap["updateStatefulSet"].(*prometheus.CounterVec))
+
+	metricsmap["deleteStatefulSet"] = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: "katalog",
+			Subsystem: "statefulset",
+			Name:      "delete",
+			Help:      "Total number of statefulset deletes",
+		},
+		[]string{"id", "ns"},
+	)
+	prometheus.MustRegister(metricsmap["deleteStatefulSet"].(*prometheus.CounterVec))
 	return &metricsmap
 }
 
@@ -105,10 +138,10 @@ func (s *Server) handleRequests() {
 	s.router.HandleFunc("/deployments/{id}", s.createDeployment).Methods("POST")
 	s.router.HandleFunc("/deployments/{id}", s.updateDeployment).Methods("PUT")
 	s.router.HandleFunc("/deployments/{id}", s.deleteDeployment).Methods("DELETE")
-	s.router.HandleFunc("/statefulsets", s.getAllDeployments).Methods("GET")
-	s.router.HandleFunc("/statefulsets/_count", s.countDeployments).Methods("GET")
-	s.router.HandleFunc("/statefulsets/{id}", s.createDeployment).Methods("POST")
-	s.router.HandleFunc("/statefulsets/{id}", s.updateDeployment).Methods("PUT")
-	s.router.HandleFunc("/statefulsets/{id}", s.deleteDeployment).Methods("DELETE")
+	s.router.HandleFunc("/statefulsets", s.getAllStatefulSets).Methods("GET")
+	s.router.HandleFunc("/statefulsets/_count", s.countStatefulSets).Methods("GET")
+	s.router.HandleFunc("/statefulsets/{id}", s.createStatefulSet).Methods("POST")
+	s.router.HandleFunc("/statefulsets/{id}", s.updateStatefulSet).Methods("PUT")
+	s.router.HandleFunc("/statefulsets/{id}", s.deleteStatefulSet).Methods("DELETE")
 	s.httpServer.ListenAndServe()
 }
