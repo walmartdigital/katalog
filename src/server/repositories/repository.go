@@ -10,4 +10,5 @@ type Repository interface {
 	UpdateResource(obj interface{}) (*domain.Resource, error)
 	DeleteResource(obj interface{}) error
 	GetAllResources() []interface{}
+	GetResource(id string) (interface{}, error)
 }

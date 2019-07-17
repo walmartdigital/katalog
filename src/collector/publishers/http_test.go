@@ -42,6 +42,11 @@ func (s *DummyK8sResource) GetGeneration() int64 {
 	return s.GetGeneration()
 }
 
+// GetNamespace ...
+func (s *DummyK8sResource) GetNamespace() string {
+	return s.GetNamespace()
+}
+
 func TestAll(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "memory persistence")

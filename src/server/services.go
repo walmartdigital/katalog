@@ -66,7 +66,7 @@ func (s *Server) createDeployment(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&deployment)
 	resource := domain.Resource{K8sResource: &deployment}
 	s.resourcesRepository.CreateResource(resource)
-	(*s.metrics)["createDeployment"].(*prometheus.CounterVec).WithLabelValues(resource.GetID()).Inc()
+	(*s.metrics)["createDeployment"].(*prometheus.CounterVec).WithLabelValues(resource.GetID(), resource.GetNamespace()).Inc()
 	json.NewEncoder(w).Encode(deployment)
 }
 
@@ -81,19 +81,23 @@ func (s *Server) updateDeployment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if result != nil {
-		(*s.metrics)["updateDeployment"].(*prometheus.CounterVec).WithLabelValues(resource.GetID()).Inc()
+		(*s.metrics)["updateDeployment"].(*prometheus.CounterVec).WithLabelValues(resource.GetID(), resource.GetNamespace()).Inc()
 	}
 	json.NewEncoder(w).Encode(deployment)
 }
 
 func (s *Server) deleteDeployment(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
-	err := s.resourcesRepository.DeleteResource(id)
-
+	res, err := s.resourcesRepository.GetResource(id)
+	if err != nil {
+		klog.Error("You have to provide an ID")
+	}
+	rep := res.(domain.Resource)
+	err = s.resourcesRepository.DeleteResource(id)
 	if err != nil {
 		fmt.Fprintf(w, "deleted deployment id: %s", id)
 	}
-	(*s.metrics)["deleteDeployment"].(*prometheus.CounterVec).WithLabelValues(id).Inc()
+	(*s.metrics)["deleteDeployment"].(*prometheus.CounterVec).WithLabelValues(id, rep.GetNamespace()).Inc()
 }
 
 func (s *Server) getAllDeployments(w http.ResponseWriter, r *http.Request) {

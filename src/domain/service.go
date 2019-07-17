@@ -9,6 +9,7 @@ type Service struct {
 	Port       int    `json:",omitempty"`
 	Address    string `json:",omitempty"`
 	Generation int64  `json:",omitempty"`
+	Namespace  string `json:",omitempty"`
 	Instances  []Instance
 }
 
@@ -35,4 +36,9 @@ func (s *Service) GetK8sResource() interface{} {
 // GetGeneration ...
 func (s *Service) GetGeneration() int64 {
 	return s.Generation
+}
+
+// GetNamespace ...
+func (s *Service) GetNamespace() string {
+	return s.Namespace
 }

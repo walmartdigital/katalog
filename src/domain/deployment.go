@@ -7,6 +7,7 @@ type Deployment struct {
 	ID         string `json:",omitempty"`
 	Name       string `json:",omitempty"`
 	Generation int64  `json:",omitempty"`
+	Namespace  string `json:",omitempty"`
 }
 
 // GetID ...
@@ -27,4 +28,9 @@ func (s *Deployment) GetK8sResource() interface{} {
 // GetGeneration ...
 func (s *Deployment) GetGeneration() int64 {
 	return s.Generation
+}
+
+// GetNamespace ...
+func (s *Deployment) GetNamespace() string {
+	return s.Namespace
 }

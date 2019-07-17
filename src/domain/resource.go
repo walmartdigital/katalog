@@ -10,6 +10,7 @@ type K8sResource interface {
 	GetID() string
 	GetK8sResource() interface{}
 	GetGeneration() int64
+	GetNamespace() string
 }
 
 // Resource ...
@@ -35,4 +36,9 @@ func (r *Resource) GetID() string {
 // GetGeneration ...
 func (r *Resource) GetGeneration() int64 {
 	return r.K8sResource.GetGeneration()
+}
+
+// GetNamespace ...
+func (r *Resource) GetNamespace() string {
+	return r.K8sResource.GetNamespace()
 }

@@ -2,10 +2,10 @@ package repositories
 
 import (
 	"github.com/emirpasic/gods/lists/arraylist"
-	"k8s.io/klog"
 	"github.com/mitchellh/mapstructure"
 	"github.com/walmartdigital/katalog/src/domain"
 	"github.com/walmartdigital/katalog/src/server/persistence"
+	"k8s.io/klog"
 )
 
 // ResourceRepository ...
@@ -28,6 +28,16 @@ func (r *ResourceRepository) CreateResource(resource interface{}) error {
 	}
 
 	return nil
+}
+
+// GetResource ...
+func (r *ResourceRepository) GetResource(id string) (interface{}, error) {
+	resource, err := r.persistence.Get(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return resource, nil
 }
 
 // UpdateResource ...
