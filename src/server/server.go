@@ -61,6 +61,7 @@ func initMetrics() *map[string]interface{} {
 		},
 		[]string{"id", "ns"},
 	)
+	metricsmap["createDeployment"].(*prometheus.CounterVec).WithLabelValues("", "")
 	prometheus.MustRegister(metricsmap["createDeployment"].(*prometheus.CounterVec))
 
 	metricsmap["updateDeployment"] = prometheus.NewCounterVec(
@@ -72,6 +73,7 @@ func initMetrics() *map[string]interface{} {
 		},
 		[]string{"id", "ns"},
 	)
+	metricsmap["updateDeployment"].(*prometheus.CounterVec).WithLabelValues("", "")
 	prometheus.MustRegister(metricsmap["updateDeployment"].(*prometheus.CounterVec))
 
 	metricsmap["deleteDeployment"] = prometheus.NewCounterVec(
@@ -83,6 +85,7 @@ func initMetrics() *map[string]interface{} {
 		},
 		[]string{"id", "ns"},
 	)
+	metricsmap["deleteDeployment"].(*prometheus.CounterVec).WithLabelValues("", "")
 	prometheus.MustRegister(metricsmap["deleteDeployment"].(*prometheus.CounterVec))
 
 	metricsmap["createStatefulSet"] = prometheus.NewCounterVec(
@@ -94,6 +97,7 @@ func initMetrics() *map[string]interface{} {
 		},
 		[]string{"id", "ns"},
 	)
+	metricsmap["createStatefulSet"].(*prometheus.CounterVec).WithLabelValues("", "")
 	prometheus.MustRegister(metricsmap["createStatefulSet"].(*prometheus.CounterVec))
 
 	metricsmap["updateStatefulSet"] = prometheus.NewCounterVec(
@@ -105,6 +109,7 @@ func initMetrics() *map[string]interface{} {
 		},
 		[]string{"id", "ns"},
 	)
+	metricsmap["updateStatefulSet"].(*prometheus.CounterVec).WithLabelValues("", "")
 	prometheus.MustRegister(metricsmap["updateStatefulSet"].(*prometheus.CounterVec))
 
 	metricsmap["deleteStatefulSet"] = prometheus.NewCounterVec(
@@ -116,7 +121,9 @@ func initMetrics() *map[string]interface{} {
 		},
 		[]string{"id", "ns"},
 	)
+	metricsmap["deleteStatefulSet"].(*prometheus.CounterVec).WithLabelValues("", "")
 	prometheus.MustRegister(metricsmap["deleteStatefulSet"].(*prometheus.CounterVec))
+
 	return &metricsmap
 }
 
