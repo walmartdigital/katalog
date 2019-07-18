@@ -56,7 +56,7 @@ func (r *fakeRepository) UpdateResource(resource interface{}) (*domain.Resource,
 func (r *fakeRepository) DeleteResource(obj interface{}) error {
 	id := obj.(string)
 	if id == "" {
-		return errors.New("")
+		return errors.New("need to provide an ID")
 	}
 	if r.fail {
 		return errors.New("error trying to delete on database")
@@ -65,15 +65,15 @@ func (r *fakeRepository) DeleteResource(obj interface{}) error {
 	return nil
 }
 
-func (r *fakeRepository) GetAllResources() []interface{} {
+func (r *fakeRepository) GetAllResources() ([]interface{}, error) {
 	resources := arraylist.New()
 	if r.fail {
-		return errors.New("error trying to delete on database")
+		return nil, errors.New("error trying to delete on database")
 	}
 	for _, resource := range r.persistence {
 		resources.Add(resource)
 	}
-	return resources.Values()
+	return resources.Values(), nil
 }
 
 func (r *fakeRepository) GetResource(id string) (interface{}, error) {
@@ -202,6 +202,37 @@ var _ = Describe("run server", func() {
 		Expect(repository.persistence[id]).To(BeNil())
 	})
 
+	It("should not delete a non-existent service", func() {
+		id := "22d080de-4138-446f-acd4-d4c13fe77912"
+		service := domain.Service{ID: id}
+		repository.persistence[id] = service
+		nonExistentID := "a9b313fc-4cf6-42b9-8fa0-f0e258ea5c06"
+		path := "/services/{id}"
+		req, _ := http.NewRequest(http.MethodDelete, "/services/"+nonExistentID, nil)
+		req = mux.SetURLVars(req, map[string]string{"id": nonExistentID})
+		rec := httptest.NewRecorder()
+
+		routes[path+"@DELETE"](rec, req)
+
+		Expect(repository.persistence[nonExistentID]).To(BeNil())
+	})
+
+	It("should not delete service when repository error", func() {
+		id := "22d080de-4138-446f-acd4-d4c13fe77912"
+		service := domain.Service{ID: id}
+		resource := domain.Resource{K8sResource: &service}
+		repository.persistence[id] = resource
+		repository.fail = true
+		path := "/services/{id}"
+		req, _ := http.NewRequest(http.MethodDelete, "/services/"+id, nil)
+		req = mux.SetURLVars(req, map[string]string{"id": id})
+		rec := httptest.NewRecorder()
+
+		routes[path+"@DELETE"](rec, req)
+
+		Expect(repository.persistence[id]).NotTo(BeNil())
+	})
+
 	It("should list all services", func() {
 		inputResource1 := domain.Resource{
 			K8sResource: &domain.Service{ID: "22d080de-4138-446f-acd4-d4c13fe77912"},
@@ -233,6 +264,19 @@ var _ = Describe("run server", func() {
 		}
 	})
 
+	It("should not list any services", func() {
+		inputResource := domain.Resource{
+			K8sResource: &domain.Deployment{ID: "22d080de-ffff-446f-acd4-d4c13fe77912"},
+		}
+		repository.persistence["22d080de-4138-446f-acd4-d4c13fe77912"] = inputResource
+		path := "/services"
+		rec := httptest.NewRecorder()
+		routes[path](rec, nil)
+
+		b, _ := ioutil.ReadAll(rec.Body)
+		//TODO: expect stuff
+	})
+
 	It("should count amount of services", func() {
 		inputResource1 := domain.Resource{
 			K8sResource: &domain.Service{ID: "22d080de-4138-446f-acd4-d4c13fe77912"},
@@ -257,7 +301,7 @@ var _ = Describe("run server", func() {
 		Expect(m.Count).To(Equal(2))
 	})
 
-	It("should create a deployment", func() {
+	It("should create a service", func() {
 		id := "22d080de-4138-446f-acd4-d4c13fe77912"
 		deployment := domain.Deployment{ID: id}
 		body := new(bytes.Buffer)
@@ -358,7 +402,7 @@ var _ = Describe("run server", func() {
 
 		routes[path+"@DELETE"](rec, req)
 
-		Expect(repository.persistence[id]).To(BeNil())
+		Expect(repository.persistence[id]).NotTo(BeNil())
 	})
 
 	It("should list all deployments", func() {

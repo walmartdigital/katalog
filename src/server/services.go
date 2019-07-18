@@ -69,13 +69,21 @@ func (s *Server) deleteService(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getAllServices(w http.ResponseWriter, r *http.Request) {
-	services := s.getResourcesByType(domain.Resource{K8sResource: &domain.Service{}})
+	services, err := s.getResourcesByType(domain.Resource{K8sResource: &domain.Service{}})
+	if err != nil {
+		fmt.Fprint(w, "Resource not found")
+		klog.Error("Resource not found")
+	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(services)
 }
 
 func (s *Server) countServices(w http.ResponseWriter, r *http.Request) {
-	services := s.getResourcesByType(domain.Resource{K8sResource: &domain.Service{}})
+	services, err := s.getResourcesByType(domain.Resource{K8sResource: &domain.Service{}})
+	if err != nil {
+		fmt.Fprint(w, "Resource not found")
+		klog.Error("Resource not found")
+	}
 	json.NewEncoder(w).Encode(struct{ Count int }{len(services)})
 }
 
@@ -124,13 +132,21 @@ func (s *Server) deleteDeployment(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getAllDeployments(w http.ResponseWriter, r *http.Request) {
-	deployments := s.getResourcesByType(domain.Resource{K8sResource: &domain.Deployment{}})
+	deployments, err := s.getResourcesByType(domain.Resource{K8sResource: &domain.Deployment{}})
+	if err != nil {
+		fmt.Fprint(w, "Resource not found")
+		klog.Error("Resource not found")
+	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(deployments)
 }
 
 func (s *Server) countDeployments(w http.ResponseWriter, r *http.Request) {
-	deployments := s.getResourcesByType(domain.Resource{K8sResource: &domain.Deployment{}})
+	deployments, err := s.getResourcesByType(domain.Resource{K8sResource: &domain.Deployment{}})
+	if err != nil {
+		fmt.Fprint(w, "Resource not found")
+		klog.Error("Resource not found")
+	}
 	json.NewEncoder(w).Encode(struct{ Count int }{len(deployments)})
 }
 
@@ -176,12 +192,20 @@ func (s *Server) deleteStatefulSet(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getAllStatefulSets(w http.ResponseWriter, r *http.Request) {
-	statefulsets := s.getResourcesByType(domain.Resource{K8sResource: &domain.StatefulSet{}})
+	statefulsets, err := s.getResourcesByType(domain.Resource{K8sResource: &domain.StatefulSet{}})
+	if err != nil {
+		fmt.Fprint(w, "Resource not found")
+		klog.Error("Resource not found")
+	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(statefulsets)
 }
 
 func (s *Server) countStatefulSets(w http.ResponseWriter, r *http.Request) {
-	statefulsets := s.getResourcesByType(domain.Resource{K8sResource: &domain.StatefulSet{}})
+	statefulsets, err := s.getResourcesByType(domain.Resource{K8sResource: &domain.StatefulSet{}})
+	if err != nil {
+		fmt.Fprint(w, "Resource not found")
+		klog.Error("Resource not found")
+	}
 	json.NewEncoder(w).Encode(struct{ Count int }{len(statefulsets)})
 }
