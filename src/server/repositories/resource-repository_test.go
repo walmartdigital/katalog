@@ -48,12 +48,12 @@ func (f *fakePersistence) Delete(id string) error {
 	return nil
 }
 
-func (f *fakePersistence) GetAll() []interface{} {
+func (f *fakePersistence) GetAll() ([]interface{}, error) {
 	list := arraylist.New()
 	for _, value := range f.memory {
 		list.Add(value)
 	}
-	return list.Values()
+	return list.Values(), nil
 }
 
 func TestAll(t *testing.T) {
@@ -72,7 +72,8 @@ var _ = Describe("create resource", func() {
 		error := resourceRepository.CreateResource(resource)
 
 		Expect(error).To(BeNil())
-		Expect(fake.GetAll()[0]).To(Equal(resource))
+		allServices, _ := fake.GetAll()
+		Expect(allServices[0]).To(Equal(resource))
 	})
 
 	It("should fail if missing id in service resource", func() {
@@ -96,7 +97,8 @@ var _ = Describe("create resource", func() {
 		error := resourceRepository.CreateResource(resource)
 
 		Expect(error).To(BeNil())
-		Expect(fake.GetAll()[0]).To(Equal(resource))
+		allDeployments, _ := fake.GetAll()
+		Expect(allDeployments[0]).To(Equal(resource))
 	})
 
 	It("should fail if missing id in service resource", func() {
@@ -108,6 +110,21 @@ var _ = Describe("create resource", func() {
 		error := resourceRepository.CreateResource(resource)
 
 		Expect(error).NotTo(BeNil())
+	})
+})
+
+var _ = Describe("get resource", func() {
+	It("should retrieve a given resource", func() {
+		id := "10174c96-a835-4e9e-b49e-9085f6e63368"
+		resource := domain.Resource{K8sResource: &domain.Service{ID: id}}
+		memory := make(map[string]interface{})
+		fake := fakePersistence{memory: memory}
+		resourceRepository := repositories.CreateResourceRepository(&fake)
+
+		res, error := resourceRepository.GetResource(id)
+
+		Expect(error).To(BeNil())
+		Expect(res).To(Equal(resource))
 	})
 })
 
@@ -195,7 +212,7 @@ var _ = Describe("get all resources", func() {
 		resourceRepository := repositories.CreateResourceRepository(&fake)
 		error := resourceRepository.CreateResource(resource)
 
-		results := resourceRepository.GetAllResources()
+		results, _ := resourceRepository.GetAllResources()
 
 		Expect(error).To(BeNil())
 		Expect(fake.GetAll()).To(Equal(results))

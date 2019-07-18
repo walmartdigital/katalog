@@ -9,6 +9,6 @@ type Repository interface {
 	CreateResource(obj interface{}) error
 	UpdateResource(obj interface{}) (*domain.Resource, error)
 	DeleteResource(obj interface{}) error
-	GetAllResources() []interface{}
+	GetAllResources() ([]interface{}, error)
 	GetResource(id string) (interface{}, error)
 }

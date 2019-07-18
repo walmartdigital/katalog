@@ -67,15 +67,18 @@ func (r *ResourceRepository) DeleteResource(obj interface{}) error {
 }
 
 // GetAllResources ...
-func (r *ResourceRepository) GetAllResources() []interface{} {
+func (r *ResourceRepository) GetAllResources() ([]interface{}, error) {
 	klog.Info("get all resourcess called")
 	list := arraylist.New()
-	resources := r.persistence.GetAll()
+	resources, err := r.persistence.GetAll()
+	if err != nil {
+		return nil, err
+	}
 	for _, item := range resources {
 		var resources domain.Resource
 		mapstructure.Decode(item, &resources)
 		list.Add(resources)
 	}
 
-	return list.Values()
+	return list.Values(), nil
 }

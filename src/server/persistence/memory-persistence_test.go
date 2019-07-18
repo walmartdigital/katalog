@@ -131,7 +131,7 @@ var _ = Describe("get all", func() {
 		expected := make([]interface{}, 1)
 		expected[0] = value
 
-		results := persistence.GetAll()
+		results, _ := persistence.GetAll()
 
 		Expect(results).To(Equal(expected))
 	})

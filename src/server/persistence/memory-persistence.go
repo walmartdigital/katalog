@@ -54,10 +54,10 @@ func (p *MemoryPersistence) Delete(id string) error {
 }
 
 // GetAll ...
-func (p *MemoryPersistence) GetAll() []interface{} {
+func (p *MemoryPersistence) GetAll() ([]interface{}, error) {
 	list := arraylist.New()
 	for _, value := range p.memory {
 		list.Add(value)
 	}
-	return list.Values()
+	return list.Values(), nil
 }

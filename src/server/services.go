@@ -49,7 +49,18 @@ func (s *Server) updateService(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) deleteService(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
-	s.resourcesRepository.DeleteResource(id)
+	_, err := s.resourcesRepository.GetResource(id)
+	if err != nil {
+		fmt.Fprintf(w, "You provided a non-existing ID: %s", id)
+		klog.Errorf("You provided a non-existing ID: %s", id)
+		return
+	}
+	err = s.resourcesRepository.DeleteResource(id)
+	if err != nil {
+		fmt.Fprintf(w, "Deleted service ID: %s", id)
+		klog.Errorf("Deleted service ID: %s", id)
+		return
+	}
 	fmt.Fprintf(w, "deleted service id: %s", id)
 }
 
@@ -104,6 +115,7 @@ func (s *Server) deleteDeployment(w http.ResponseWriter, r *http.Request) {
 		klog.Errorf("Deleted deployment ID: %s", id)
 		return
 	}
+	fmt.Fprintf(w, "deleted deployment id: %s", id)
 	(*s.metrics)["deleteDeployment"].(*prometheus.CounterVec).WithLabelValues(id, rep.GetNamespace()).Inc()
 }
 
@@ -154,6 +166,8 @@ func (s *Server) deleteStatefulSet(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprintf(w, "deleted statefulset id: %s", id)
 	}
+	fmt.Fprintf(w, "deleted statefulset id: %s", id)
+
 	(*s.metrics)["deleteStatefulSet"].(*prometheus.CounterVec).WithLabelValues(id, rep.GetNamespace()).Inc()
 }
 
