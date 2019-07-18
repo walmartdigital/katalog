@@ -13,6 +13,7 @@ import (
 
 type fakePersistence struct {
 	memory map[string]interface{}
+	fail   bool
 }
 
 func (f *fakePersistence) Create(id string, obj interface{}) error {
@@ -50,6 +51,9 @@ func (f *fakePersistence) Delete(id string) error {
 
 func (f *fakePersistence) GetAll() ([]interface{}, error) {
 	list := arraylist.New()
+	if f.fail {
+		return nil, errors.New("")
+	}
 	for _, value := range f.memory {
 		list.Add(value)
 	}
@@ -66,7 +70,7 @@ var _ = Describe("create resource", func() {
 		id := "10174c96-a835-4e9e-b49e-9085f6e63368"
 		resource := domain.Resource{K8sResource: &domain.Service{ID: id}}
 		memory := make(map[string]interface{})
-		fake := fakePersistence{memory: memory}
+		fake := fakePersistence{memory: memory, fail: false}
 		resourceRepository := repositories.CreateResourceRepository(&fake)
 
 		error := resourceRepository.CreateResource(resource)
@@ -91,7 +95,7 @@ var _ = Describe("create resource", func() {
 		id := "10174c96-a835-4e9e-b49e-9085f6e63368"
 		resource := domain.Resource{K8sResource: &domain.Deployment{ID: id}}
 		memory := make(map[string]interface{})
-		fake := fakePersistence{memory: memory}
+		fake := fakePersistence{memory: memory, fail: false}
 		resourceRepository := repositories.CreateResourceRepository(&fake)
 
 		error := resourceRepository.CreateResource(resource)
@@ -120,11 +124,39 @@ var _ = Describe("get resource", func() {
 		memory := make(map[string]interface{})
 		fake := fakePersistence{memory: memory}
 		resourceRepository := repositories.CreateResourceRepository(&fake)
+		resourceRepository.CreateResource(resource)
 
 		res, error := resourceRepository.GetResource(id)
 
 		Expect(error).To(BeNil())
 		Expect(res).To(Equal(resource))
+	})
+
+	It("should not retrieve a non-existing resource", func() {
+		id := "10174c96-a835-4e9e-b49e-9085f6e63368"
+		resource := domain.Resource{K8sResource: &domain.Service{ID: id}}
+		memory := make(map[string]interface{})
+		fake := fakePersistence{memory: memory}
+		resourceRepository := repositories.CreateResourceRepository(&fake)
+		resourceRepository.CreateResource(resource)
+
+		res, _ := resourceRepository.GetResource("10174c96-a835-4e9e-b49e-9085f6e633ff")
+
+		Expect(res).To(BeNil())
+	})
+
+	It("should return an error if trying to retrieve a resource with empty ID", func() {
+		id := "10174c96-a835-4e9e-b49e-9085f6e63368"
+		resource := domain.Resource{K8sResource: &domain.Service{ID: id}}
+		memory := make(map[string]interface{})
+		fake := fakePersistence{memory: memory}
+		resourceRepository := repositories.CreateResourceRepository(&fake)
+		resourceRepository.CreateResource(resource)
+
+		res, error := resourceRepository.GetResource("")
+
+		Expect(res).To(BeNil())
+		Expect(error).NotTo(BeNil())
 	})
 })
 
@@ -208,7 +240,7 @@ var _ = Describe("get all resources", func() {
 		id := "10174c96-a835-4e9e-b49e-9085f6e63368"
 		resource := domain.Resource{K8sResource: &domain.Service{ID: id}}
 		memory := make(map[string]interface{})
-		fake := fakePersistence{memory: memory}
+		fake := fakePersistence{memory: memory, fail: false}
 		resourceRepository := repositories.CreateResourceRepository(&fake)
 		error := resourceRepository.CreateResource(resource)
 
@@ -216,5 +248,19 @@ var _ = Describe("get all resources", func() {
 
 		Expect(error).To(BeNil())
 		Expect(fake.GetAll()).To(Equal(results))
+	})
+
+	It("should return an error when retrieving all elements from persistence fails", func() {
+		id := "10174c96-a835-4e9e-b49e-9085f6e63368"
+		resource := domain.Resource{K8sResource: &domain.Service{ID: id}}
+		memory := make(map[string]interface{})
+		fake := fakePersistence{memory: memory, fail: true}
+		resourceRepository := repositories.CreateResourceRepository(&fake)
+		resourceRepository.CreateResource(resource)
+
+		results, error := resourceRepository.GetAllResources()
+
+		Expect(error).NotTo(BeNil())
+		Expect(results).To(BeNil())
 	})
 })

@@ -12,8 +12,12 @@ import (
 	"k8s.io/klog"
 )
 
-func (s *Server) getResourcesByType(resource domain.Resource) []interface{} {
-	resources := s.resourcesRepository.GetAllResources()
+func (s *Server) getResourcesByType(resource domain.Resource) ([]interface{}, error) {
+	resources, err := s.resourcesRepository.GetAllResources()
+	if err != nil {
+		return nil, err
+	}
+
 	list := arraylist.New()
 	for _, r := range resources {
 		res := r.(domain.Resource)
@@ -21,7 +25,7 @@ func (s *Server) getResourcesByType(resource domain.Resource) []interface{} {
 			list.Add(r)
 		}
 	}
-	return list.Values()
+	return list.Values(), nil
 }
 
 func (s *Server) createService(w http.ResponseWriter, r *http.Request) {
