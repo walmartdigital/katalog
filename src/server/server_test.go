@@ -140,6 +140,44 @@ var _ = Describe("run server", func() {
 		Expect(srv).To(Equal(*output))
 	})
 
+	It("should update a service", func() {
+		id := "22d080de-4138-446f-acd4-d4c13fe77912"
+		service := domain.Service{ID: id, Port: 8888, Generation: 1}
+		resource := domain.Resource{K8sResource: &service}
+		repository.persistence[id] = resource
+		newService := domain.Service{ID: id, Port: 9999, Generation: 2}
+		body := new(bytes.Buffer)
+		json.NewEncoder(body).Encode(newService)
+		path := "/services/{id}"
+		req, _ := http.NewRequest(http.MethodPut, "/services/"+id, body)
+		req = mux.SetURLVars(req, map[string]string{"id": id})
+		rec := httptest.NewRecorder()
+
+		routes[path+"@PUT"](rec, req)
+
+		newResource := domain.Resource{K8sResource: &newService}
+		Expect(repository.persistence[id]).To(Equal(newResource))
+	})
+
+	It("should not update an non-existing service", func() {
+		id := "22d080de-4138-446f-acd4-d4c13fe77912"
+		service := domain.Service{ID: id, Port: 8888, Generation: 1}
+		resource := domain.Resource{K8sResource: &service}
+		repository.persistence[id] = resource
+		newService := domain.Service{ID: "22d080de-4138-446f-acd4-d4c13fe779ff", Port: 9999, Generation: 2}
+		body := new(bytes.Buffer)
+		json.NewEncoder(body).Encode(newService)
+		path := "/services/{id}"
+		req, _ := http.NewRequest(http.MethodPut, "/services/"+id, body)
+		req = mux.SetURLVars(req, map[string]string{"id": id})
+		rec := httptest.NewRecorder()
+
+		routes[path+"@PUT"](rec, req)
+
+		newResource := domain.Resource{K8sResource: &newService}
+		Expect(repository.persistence[id]).NotTo(Equal(newResource))
+	})
+
 	It("should delete a service", func() {
 		id := "22d080de-4138-446f-acd4-d4c13fe77912"
 		service := domain.Service{ID: id}
@@ -249,6 +287,25 @@ var _ = Describe("run server", func() {
 
 		newResource := domain.Resource{K8sResource: &newDeployment}
 		Expect(repository.persistence[id]).To(Equal(newResource))
+	})
+
+	It("should not update an non-existing deployment", func() {
+		id := "22d080de-4138-446f-acd4-d4c13fe77912"
+		deployment := domain.Deployment{ID: id, Generation: 1}
+		resource := domain.Resource{K8sResource: &deployment}
+		repository.persistence[id] = resource
+		newDeployment := domain.Deployment{ID: "22d080de-4138-446f-acd4-d4c13fe779ff", Generation: 2}
+		body := new(bytes.Buffer)
+		json.NewEncoder(body).Encode(newDeployment)
+		path := "/deployments/{id}"
+		req, _ := http.NewRequest(http.MethodPut, "/deployments/"+id, body)
+		req = mux.SetURLVars(req, map[string]string{"id": id})
+		rec := httptest.NewRecorder()
+
+		routes[path+"@PUT"](rec, req)
+
+		newResource := domain.Resource{K8sResource: &newDeployment}
+		Expect(repository.persistence[id]).NotTo(Equal(newResource))
 	})
 
 	It("should delete a deployment", func() {

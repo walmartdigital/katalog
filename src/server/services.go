@@ -37,10 +37,13 @@ func (s *Server) createService(w http.ResponseWriter, r *http.Request) {
 func (s *Server) updateService(w http.ResponseWriter, r *http.Request) {
 	var service domain.Service
 	json.NewDecoder(r.Body).Decode(&service)
-	resource := domain.Resource{
-		K8sResource: &service,
+	resource := domain.Resource{K8sResource: &service}
+	_, err := s.resourcesRepository.UpdateResource(resource)
+
+	if err != nil {
+		klog.Errorf("Error occurred trying to update service (id: %s)", resource.GetID())
 	}
-	s.resourcesRepository.UpdateResource(resource)
+
 	json.NewEncoder(w).Encode(service)
 }
 
@@ -77,7 +80,7 @@ func (s *Server) updateDeployment(w http.ResponseWriter, r *http.Request) {
 	result, err := s.resourcesRepository.UpdateResource(resource)
 
 	if err != nil {
-		klog.Errorf("Error occurred trying to update resource (id: %s)", resource.GetID())
+		klog.Errorf("Error occurred trying to update deployment (id: %s)", resource.GetID())
 	}
 
 	if result != nil {
