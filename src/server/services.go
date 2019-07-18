@@ -93,12 +93,16 @@ func (s *Server) deleteDeployment(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	res, err := s.resourcesRepository.GetResource(id)
 	if err != nil {
-		klog.Error("You have to provide an ID")
+		fmt.Fprintf(w, "You provided a non-existing ID: %s", id)
+		klog.Errorf("You provided a non-existing ID: %s", id)
+		return
 	}
 	rep := res.(domain.Resource)
 	err = s.resourcesRepository.DeleteResource(id)
 	if err != nil {
-		fmt.Fprintf(w, "deleted deployment id: %s", id)
+		fmt.Fprintf(w, "Deleted deployment ID: %s", id)
+		klog.Errorf("Deleted deployment ID: %s", id)
+		return
 	}
 	(*s.metrics)["deleteDeployment"].(*prometheus.CounterVec).WithLabelValues(id, rep.GetNamespace()).Inc()
 }

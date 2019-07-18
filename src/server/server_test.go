@@ -20,6 +20,7 @@ import (
 
 type fakeRepository struct {
 	persistence map[string]interface{}
+	fail        bool
 }
 
 func (r *fakeRepository) CreateResource(obj interface{}) error {
@@ -114,7 +115,7 @@ var _ = Describe("run server", func() {
 
 	BeforeEach(func() {
 		persistence = make(map[string]interface{})
-		repository = fakeRepository{persistence: persistence}
+		repository = fakeRepository{persistence: persistence, fail: false}
 		router = fakeRouter{}
 		httpServer = fakeHTTPServer{}
 		katalogServer = server.CreateServer(&httpServer, &repository, &router)
@@ -321,6 +322,22 @@ var _ = Describe("run server", func() {
 		routes[path+"@DELETE"](rec, req)
 
 		Expect(repository.persistence[id]).To(BeNil())
+	})
+
+	It("should not delete an non-existing deployment", func() {
+		id := "22d080de-4138-446f-acd4-d4c13fe77912"
+		deployment := domain.Deployment{ID: id}
+		resource := domain.Resource{K8sResource: &deployment}
+		repository.persistence[id] = resource
+		nonExistingID := "3c665874-bc02-4691-981a-73fed8a12562"
+		path := "/deployments/{id}"
+		req, _ := http.NewRequest(http.MethodDelete, "/deployments/"+id, nil)
+		req = mux.SetURLVars(req, map[string]string{"id": nonExistingID})
+		rec := httptest.NewRecorder()
+
+		routes[path+"@DELETE"](rec, req)
+
+		Expect(repository.persistence[nonExistingID]).To(BeNil())
 	})
 
 	It("should list all deployments", func() {
