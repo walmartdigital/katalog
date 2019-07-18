@@ -66,6 +66,14 @@ func (r *fakeRepository) GetAllResources() []interface{} {
 	return resources.Values()
 }
 
+func (r *fakeRepository) GetResource(id string) (interface{}, error) {
+	resource, ok := r.persistence[id]
+	if !ok {
+		return nil, errors.New("ID does not exist")
+	}
+	return resource, nil
+}
+
 type fakeRouter struct{}
 
 var routes = make(map[string]func(http.ResponseWriter, *http.Request))
@@ -211,7 +219,7 @@ var _ = Describe("run server", func() {
 		body := new(bytes.Buffer)
 		json.NewEncoder(body).Encode(deployment)
 		path := "/deployments/{id}"
-		req, _ := http.NewRequest(http.MethodPut, "", body)
+		req, _ := http.NewRequest(http.MethodPost, "", body)
 		rec := httptest.NewRecorder()
 
 		routes[path+"@POST"](rec, req)
@@ -224,10 +232,30 @@ var _ = Describe("run server", func() {
 		Expect(srv).To(Equal(*output))
 	})
 
+	It("should update a deployment", func() {
+		id := "22d080de-4138-446f-acd4-d4c13fe77912"
+		deployment := domain.Deployment{ID: id, Generation: 1}
+		resource := domain.Resource{K8sResource: &deployment}
+		repository.persistence[id] = resource
+		newDeployment := domain.Deployment{ID: id, Generation: 2}
+		body := new(bytes.Buffer)
+		json.NewEncoder(body).Encode(newDeployment)
+		path := "/deployments/{id}"
+		req, _ := http.NewRequest(http.MethodPut, "/deployments/"+id, body)
+		req = mux.SetURLVars(req, map[string]string{"id": id})
+		rec := httptest.NewRecorder()
+
+		routes[path+"@PUT"](rec, req)
+
+		newResource := domain.Resource{K8sResource: &newDeployment}
+		Expect(repository.persistence[id]).To(Equal(newResource))
+	})
+
 	It("should delete a deployment", func() {
 		id := "22d080de-4138-446f-acd4-d4c13fe77912"
 		deployment := domain.Deployment{ID: id}
-		repository.persistence[id] = deployment
+		resource := domain.Resource{K8sResource: &deployment}
+		repository.persistence[id] = resource
 		path := "/deployments/{id}"
 		req, _ := http.NewRequest(http.MethodDelete, "/deployments/"+id, nil)
 		req = mux.SetURLVars(req, map[string]string{"id": id})
