@@ -46,6 +46,7 @@ func (s *Server) updateService(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		klog.Errorf("Error occurred trying to update service (id: %s)", resource.GetID())
+		return
 	}
 
 	json.NewEncoder(w).Encode(service)
@@ -84,6 +85,7 @@ func (s *Server) countServices(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprint(w, "Resource not found")
 		klog.Error("Resource not found")
+		return
 	}
 	json.NewEncoder(w).Encode(struct{ Count int }{len(services)})
 }
@@ -105,6 +107,7 @@ func (s *Server) updateDeployment(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		klog.Errorf("Error occurred trying to update deployment (id: %s)", resource.GetID())
+		return
 	}
 
 	if result != nil {
@@ -137,6 +140,7 @@ func (s *Server) getAllDeployments(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprint(w, "Resource not found")
 		klog.Error("Resource not found")
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(deployments)
@@ -147,6 +151,7 @@ func (s *Server) countDeployments(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprint(w, "Resource not found")
 		klog.Error("Resource not found")
+		return
 	}
 	json.NewEncoder(w).Encode(struct{ Count int }{len(deployments)})
 }
@@ -168,6 +173,7 @@ func (s *Server) updateStatefulSet(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		klog.Errorf("Error occurred trying to update resource (id: %s)", resource.GetID())
+		return
 	}
 
 	if result != nil {
@@ -181,11 +187,13 @@ func (s *Server) deleteStatefulSet(w http.ResponseWriter, r *http.Request) {
 	res, err := s.resourcesRepository.GetResource(id)
 	if err != nil {
 		klog.Error("You have to provide an ID")
+		return
 	}
 	rep := res.(domain.Resource)
 	err = s.resourcesRepository.DeleteResource(id)
 	if err != nil {
 		fmt.Fprintf(w, "deleted statefulset id: %s", id)
+		return
 	}
 	fmt.Fprintf(w, "deleted statefulset id: %s", id)
 
@@ -197,6 +205,7 @@ func (s *Server) getAllStatefulSets(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprint(w, "Resource not found")
 		klog.Error("Resource not found")
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(statefulsets)
@@ -207,6 +216,7 @@ func (s *Server) countStatefulSets(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprint(w, "Resource not found")
 		klog.Error("Resource not found")
+		return
 	}
 	json.NewEncoder(w).Encode(struct{ Count int }{len(statefulsets)})
 }

@@ -258,7 +258,7 @@ var _ = Describe("run server", func() {
 		Expect(string(b)).To(Equal(string(resBodyBytes.Bytes())))
 	})
 
-	It("should not find any services", func() {
+	It("should not find any services to list", func() {
 		repository.fail = true
 		path := "/services"
 		rec := httptest.NewRecorder()
@@ -293,7 +293,18 @@ var _ = Describe("run server", func() {
 		Expect(m.Count).To(Equal(2))
 	})
 
-	It("should create a service", func() {
+	It("should not find any services to count", func() {
+		repository.fail = true
+		path := "/services/_count"
+		rec := httptest.NewRecorder()
+
+		routes[path](rec, nil)
+
+		b, _ := ioutil.ReadAll(rec.Body)
+		Expect(string(b)).To(Equal("Resource not found"))
+	})
+
+	It("should create a deployment", func() {
 		id := "22d080de-4138-446f-acd4-d4c13fe77912"
 		deployment := domain.Deployment{ID: id}
 		body := new(bytes.Buffer)
@@ -365,7 +376,7 @@ var _ = Describe("run server", func() {
 		Expect(repository.persistence[id]).To(BeNil())
 	})
 
-	It("should not delete deployment an non-existing deployment", func() {
+	It("should not delete a non-existing deployment", func() {
 		id := "22d080de-4138-446f-acd4-d4c13fe77912"
 		deployment := domain.Deployment{ID: id}
 		resource := domain.Resource{K8sResource: &deployment}
@@ -428,6 +439,17 @@ var _ = Describe("run server", func() {
 		}
 	})
 
+	It("should not find any deployments to list", func() {
+		repository.fail = true
+		path := "/deployments"
+		rec := httptest.NewRecorder()
+
+		routes[path](rec, nil)
+
+		b, _ := ioutil.ReadAll(rec.Body)
+		Expect(string(b)).To(Equal("Resource not found"))
+	})
+
 	It("should count amount of deployments", func() {
 		inputResource1 := domain.Resource{
 			K8sResource: &domain.Deployment{ID: "22d080de-4138-446f-acd4-d4c13fe77912"},
@@ -450,6 +472,198 @@ var _ = Describe("run server", func() {
 		var m struct{ Count int }
 		json.Unmarshal(b, &m)
 		Expect(m.Count).To(Equal(2))
+	})
+
+	It("should not find any deployments to count", func() {
+		repository.fail = true
+		path := "/deployments/_count"
+		rec := httptest.NewRecorder()
+
+		routes[path](rec, nil)
+
+		b, _ := ioutil.ReadAll(rec.Body)
+		Expect(string(b)).To(Equal("Resource not found"))
+	})
+
+	It("should create a statefulSet", func() {
+		id := "22d080de-4138-446f-acd4-d4c13fe77912"
+		statefulSet := domain.StatefulSet{ID: id}
+		body := new(bytes.Buffer)
+		json.NewEncoder(body).Encode(statefulSet)
+		path := "/statefulsets/{id}"
+		req, _ := http.NewRequest(http.MethodPost, "", body)
+		rec := httptest.NewRecorder()
+
+		routes[path+"@POST"](rec, req)
+
+		b, _ := ioutil.ReadAll(rec.Body)
+		var srv domain.StatefulSet
+		json.Unmarshal(b, &srv)
+		resource := repository.persistence[id].(domain.Resource)
+		output := resource.GetK8sResource().(*domain.StatefulSet)
+		Expect(srv).To(Equal(*output))
+	})
+
+	It("should update a statefulSet", func() {
+		id := "22d080de-4138-446f-acd4-d4c13fe77912"
+		statefulSet := domain.StatefulSet{ID: id, Generation: 1}
+		resource := domain.Resource{K8sResource: &statefulSet}
+		repository.persistence[id] = resource
+		newStatefulSet := domain.StatefulSet{ID: id, Generation: 2}
+		body := new(bytes.Buffer)
+		json.NewEncoder(body).Encode(newStatefulSet)
+		path := "/statefulsets/{id}"
+		req, _ := http.NewRequest(http.MethodPut, "/statefulsets/"+id, body)
+		req = mux.SetURLVars(req, map[string]string{"id": id})
+		rec := httptest.NewRecorder()
+
+		routes[path+"@PUT"](rec, req)
+
+		newResource := domain.Resource{K8sResource: &newStatefulSet}
+		Expect(repository.persistence[id]).To(Equal(newResource))
+	})
+
+	It("should not update an non-existing statefulset", func() {
+		id := "22d080de-4138-446f-acd4-d4c13fe77912"
+		statefulSet := domain.StatefulSet{ID: id, Generation: 1}
+		resource := domain.Resource{K8sResource: &statefulSet}
+		repository.persistence[id] = resource
+		newStatefulSet := domain.StatefulSet{ID: "22d080de-4138-446f-acd4-d4c13fe779ff", Generation: 2}
+		body := new(bytes.Buffer)
+		json.NewEncoder(body).Encode(newStatefulSet)
+		path := "/statefulsets/{id}"
+		req, _ := http.NewRequest(http.MethodPut, "/statefulsets/"+id, body)
+		req = mux.SetURLVars(req, map[string]string{"id": id})
+		rec := httptest.NewRecorder()
+
+		routes[path+"@PUT"](rec, req)
+
+		newResource := domain.Resource{K8sResource: &newStatefulSet}
+		Expect(repository.persistence[id]).NotTo(Equal(newResource))
+	})
+
+	It("should delete a statefulset", func() {
+		id := "22d080de-4138-446f-acd4-d4c13fe77912"
+		statefulSet := domain.StatefulSet{ID: id}
+		resource := domain.Resource{K8sResource: &statefulSet}
+		repository.persistence[id] = resource
+		path := "/statefulsets/{id}"
+		req, _ := http.NewRequest(http.MethodDelete, "/statefulsets/"+id, nil)
+		req = mux.SetURLVars(req, map[string]string{"id": id})
+		rec := httptest.NewRecorder()
+
+		routes[path+"@DELETE"](rec, req)
+
+		Expect(repository.persistence[id]).To(BeNil())
+	})
+
+	It("should not delete a non-existing statefulset", func() {
+		id := "22d080de-4138-446f-acd4-d4c13fe77912"
+		statefulSet := domain.StatefulSet{ID: id}
+		resource := domain.Resource{K8sResource: &statefulSet}
+		repository.persistence[id] = resource
+		nonExistingID := "3c665874-bc02-4691-981a-73fed8a12562"
+		path := "/statefulsets/{id}"
+		req, _ := http.NewRequest(http.MethodDelete, "/statefulsets/"+id, nil)
+		req = mux.SetURLVars(req, map[string]string{"id": nonExistingID})
+		rec := httptest.NewRecorder()
+
+		routes[path+"@DELETE"](rec, req)
+
+		Expect(repository.persistence[nonExistingID]).To(BeNil())
+	})
+
+	It("should not delete statefulset when repository error", func() {
+		id := "22d080de-4138-446f-acd4-d4c13fe77912"
+		statefulSet := domain.Deployment{ID: id}
+		resource := domain.Resource{K8sResource: &statefulSet}
+		repository.persistence[id] = resource
+		repository.fail = true
+		path := "/statefulsets/{id}"
+		req, _ := http.NewRequest(http.MethodDelete, "/statefulsets/"+id, nil)
+		req = mux.SetURLVars(req, map[string]string{"id": id})
+		rec := httptest.NewRecorder()
+
+		routes[path+"@DELETE"](rec, req)
+
+		Expect(repository.persistence[id]).NotTo(BeNil())
+	})
+
+	It("should list all statefulsets", func() {
+		inputResource1 := domain.Resource{
+			K8sResource: &domain.StatefulSet{ID: "22d080de-4138-446f-acd4-d4c13fe77912"},
+		}
+		inputResource2 := domain.Resource{
+			K8sResource: &domain.Service{ID: "22d080de-ffff-446f-acd4-d4c13fe77912"},
+		}
+		inputResource3 := domain.Resource{
+			K8sResource: &domain.StatefulSet{ID: "22d080de-xxxx-446f-acd4-d4c13fe77912"},
+		}
+		repository.persistence["22d080de-4138-446f-acd4-d4c13fe77912"] = inputResource1
+		repository.persistence["22d080de-ffff-446f-acd4-d4c13fe77912"] = inputResource2
+		repository.persistence["22d080de-xxxx-446f-acd4-d4c13fe77912"] = inputResource3
+		path := "/statefulsets"
+		rec := httptest.NewRecorder()
+
+		routes[path](rec, nil)
+
+		b, _ := ioutil.ReadAll(rec.Body)
+		var resources []domain.Resource
+		var d map[string]interface{}
+		json.Unmarshal(b, &d)
+		mapstructure.Decode(resources, &d)
+		for _, r := range resources {
+			i := r.GetID()
+			resource := repository.persistence[i].(domain.Resource)
+			output := resource.GetK8sResource().(*domain.StatefulSet)
+			Expect(r.GetK8sResource().(*domain.StatefulSet)).To(Equal(output))
+		}
+	})
+
+	It("should not find any statefulsets to list", func() {
+		repository.fail = true
+		path := "/statefulsets"
+		rec := httptest.NewRecorder()
+
+		routes[path](rec, nil)
+
+		b, _ := ioutil.ReadAll(rec.Body)
+		Expect(string(b)).To(Equal("Resource not found"))
+	})
+
+	It("should count amount of statefulsets", func() {
+		inputResource1 := domain.Resource{
+			K8sResource: &domain.StatefulSet{ID: "22d080de-4138-446f-acd4-d4c13fe77912"},
+		}
+		inputResource2 := domain.Resource{
+			K8sResource: &domain.Service{ID: "22d080de-ffff-446f-acd4-d4c13fe77912"},
+		}
+		inputResource3 := domain.Resource{
+			K8sResource: &domain.StatefulSet{ID: "22d080de-xxxx-446f-acd4-d4c13fe77912"},
+		}
+		repository.persistence["22d080de-4138-446f-acd4-d4c13fe77912"] = inputResource1
+		repository.persistence["22d080de-ffff-446f-acd4-d4c13fe77912"] = inputResource2
+		repository.persistence["22d080de-xxxx-446f-acd4-d4c13fe77912"] = inputResource3
+		path := "/statefulsets/_count"
+		rec := httptest.NewRecorder()
+
+		routes[path](rec, nil)
+
+		b, _ := ioutil.ReadAll(rec.Body)
+		var m struct{ Count int }
+		json.Unmarshal(b, &m)
+		Expect(m.Count).To(Equal(2))
+	})
+
+	It("should not find any statefulsets to count", func() {
+		repository.fail = true
+		path := "/statefulsets/_count"
+		rec := httptest.NewRecorder()
+
+		routes[path](rec, nil)
+
+		b, _ := ioutil.ReadAll(rec.Body)
+		Expect(string(b)).To(Equal("Resource not found"))
 	})
 
 	AfterEach(func() {
