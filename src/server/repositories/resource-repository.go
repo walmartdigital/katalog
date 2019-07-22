@@ -75,9 +75,9 @@ func (r *ResourceRepository) GetAllResources() ([]interface{}, error) {
 		return nil, err
 	}
 	for _, item := range resources {
-		var resources domain.Resource
-		mapstructure.Decode(item, &resources)
-		list.Add(resources)
+		var resource domain.Resource
+		mapstructure.Decode(item, &resource)
+		list.Add(resource)
 	}
 
 	return list.Values(), nil

@@ -252,11 +252,13 @@ var _ = Describe("run server", func() {
 
 		b, _ := ioutil.ReadAll(rec.Body)
 
-		var resources []domain.Resource
-		var d map[string]interface{}
-		json.Unmarshal(b, &d)
-		mapstructure.Decode(resources, &d)
-		for _, r := range resources {
+		var resources []interface{}
+		// var d []interface{}
+		// json.Unmarshal(b, &d)
+		mapstructure.Decode(b, &resources)
+		for _, resource := range resources {
+			var r domain.Resource
+			r = resource.(domain.Resource)
 			i := r.GetID()
 			resource := repository.persistence[i].(domain.Resource)
 			output := resource.GetK8sResource().(*domain.Service)
@@ -264,18 +266,18 @@ var _ = Describe("run server", func() {
 		}
 	})
 
-	It("should not list any services", func() {
-		inputResource := domain.Resource{
-			K8sResource: &domain.Deployment{ID: "22d080de-ffff-446f-acd4-d4c13fe77912"},
-		}
-		repository.persistence["22d080de-4138-446f-acd4-d4c13fe77912"] = inputResource
-		path := "/services"
-		rec := httptest.NewRecorder()
-		routes[path](rec, nil)
+	// It("should not list any services", func() {
+	// 	inputResource := domain.Resource{
+	// 		K8sResource: &domain.Deployment{ID: "22d080de-ffff-446f-acd4-d4c13fe77912"},
+	// 	}
+	// 	repository.persistence["22d080de-4138-446f-acd4-d4c13fe77912"] = inputResource
+	// 	path := "/services"
+	// 	rec := httptest.NewRecorder()
+	// 	routes[path](rec, nil)
 
-		b, _ := ioutil.ReadAll(rec.Body)
-		//TODO: expect stuff
-	})
+	// 	b, _ := ioutil.ReadAll(rec.Body)
+	// 	//TODO: expect stuff
+	// })
 
 	It("should count amount of services", func() {
 		inputResource1 := domain.Resource{
