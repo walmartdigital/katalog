@@ -73,6 +73,7 @@ func (s *Server) getAllServices(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprint(w, "Resource not found")
 		klog.Error("Resource not found")
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(services)
