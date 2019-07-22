@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/emirpasic/gods/lists/arraylist"
+	"github.com/fatih/structs"
 	"github.com/gorilla/mux"
 	"github.com/mitchellh/mapstructure"
 	. "github.com/onsi/ginkgo"
@@ -252,7 +254,22 @@ var _ = Describe("run server", func() {
 
 		b, _ := ioutil.ReadAll(rec.Body)
 
+		var services []map[string]interface{}
+		err := json.Unmarshal(b, &services)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
 		resources := []domain.Resource{inputResource1, inputResource3}
+		m := structs.Map(resources)
+
+		for _, s := range services {
+			srv := s["K8sResource"].(map[string]interface{})
+			id := srv["ID"]
+			fmt.Println(m[id.(string)])
+		}
+
 		resBodyBytes := new(bytes.Buffer)
 		json.NewEncoder(resBodyBytes).Encode(resources)
 		Expect(string(b)).To(Equal(string(resBodyBytes.Bytes())))
