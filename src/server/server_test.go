@@ -252,13 +252,13 @@ var _ = Describe("run server", func() {
 
 		b, _ := ioutil.ReadAll(rec.Body)
 
-		var resources []interface{}
+		var resources []map[string]interface{}
 		// var d []interface{}
-		// json.Unmarshal(b, &d)
-		mapstructure.Decode(b, &resources)
+		json.Unmarshal(b, &resources)
+		//mapstructure.Decode(b, &resources)
 		for _, resource := range resources {
 			var r domain.Resource
-			r = resource.(domain.Resource)
+			mapstructure.Decode(resource, &r)
 			i := r.GetID()
 			resource := repository.persistence[i].(domain.Resource)
 			output := resource.GetK8sResource().(*domain.Service)
