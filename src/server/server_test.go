@@ -11,9 +11,7 @@ import (
 	"testing"
 
 	"github.com/emirpasic/gods/lists/arraylist"
-	"github.com/fatih/structs"
 	"github.com/gorilla/mux"
-	"github.com/mitchellh/mapstructure"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/walmartdigital/katalog/src/domain"
@@ -237,13 +235,13 @@ var _ = Describe("run server", func() {
 
 	It("should list all services", func() {
 		inputResource1 := domain.Resource{
-			K8sResource: &domain.Service{ID: "22d080de-4138-446f-acd4-d4c13fe77912"},
+			K8sResource: &domain.Service{ID: "22d080de-4138-446f-acd4-d4c13fe77912", Name: "", Port: 0, Address: "", Generation: 0, Namespace: "", Instances: []domain.Instance{}},
 		}
 		inputResource2 := domain.Resource{
 			K8sResource: &domain.Deployment{ID: "22d080de-ffff-446f-acd4-d4c13fe77912"},
 		}
 		inputResource3 := domain.Resource{
-			K8sResource: &domain.Service{ID: "22d080de-xxxx-446f-acd4-d4c13fe77912"},
+			K8sResource: &domain.Service{ID: "22d080de-xxxx-446f-acd4-d4c13fe77912", Name: "", Port: 0, Address: "", Generation: 0, Namespace: "", Instances: []domain.Instance{}},
 		}
 		repository.persistence["22d080de-4138-446f-acd4-d4c13fe77912"] = inputResource1
 		repository.persistence["22d080de-ffff-446f-acd4-d4c13fe77912"] = inputResource2
@@ -254,25 +252,23 @@ var _ = Describe("run server", func() {
 
 		b, _ := ioutil.ReadAll(rec.Body)
 
-		var services []map[string]interface{}
-		err := json.Unmarshal(b, &services)
+		var objMapArray []map[string]*json.RawMessage
+
+		err := json.Unmarshal(b, &objMapArray)
 
 		if err != nil {
 			fmt.Println(err)
 		}
 
-		resources := []domain.Resource{inputResource1, inputResource3}
-		m := structs.Map(resources)
-
-		for _, s := range services {
-			srv := s["K8sResource"].(map[string]interface{})
-			id := srv["ID"]
-			fmt.Println(m[id.(string)])
+		for _, m := range objMapArray {
+			s := domain.Service{}
+			err := json.Unmarshal(*m["K8sResource"], &s)
+			if err != nil {
+				fmt.Println(err)
+			}
+			r := domain.Resource{K8sResource: &s}
+			Expect(r).To(Equal(repository.persistence[r.GetID()]))
 		}
-
-		resBodyBytes := new(bytes.Buffer)
-		json.NewEncoder(resBodyBytes).Encode(resources)
-		Expect(string(b)).To(Equal(string(resBodyBytes.Bytes())))
 	})
 
 	It("should not find any services to list", func() {
@@ -444,15 +440,23 @@ var _ = Describe("run server", func() {
 		routes[path](rec, nil)
 
 		b, _ := ioutil.ReadAll(rec.Body)
-		var resources []domain.Resource
-		var d map[string]interface{}
-		json.Unmarshal(b, &d)
-		mapstructure.Decode(resources, &d)
-		for _, r := range resources {
-			i := r.GetID()
-			resource := repository.persistence[i].(domain.Resource)
-			output := resource.GetK8sResource().(*domain.Deployment)
-			Expect(r.GetK8sResource().(*domain.Deployment)).To(Equal(output))
+
+		var objMapArray []map[string]*json.RawMessage
+
+		err := json.Unmarshal(b, &objMapArray)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		for _, m := range objMapArray {
+			s := domain.Deployment{}
+			err := json.Unmarshal(*m["K8sResource"], &s)
+			if err != nil {
+				fmt.Println(err)
+			}
+			r := domain.Resource{K8sResource: &s}
+			Expect(r).To(Equal(repository.persistence[r.GetID()]))
 		}
 	})
 
@@ -625,15 +629,23 @@ var _ = Describe("run server", func() {
 		routes[path](rec, nil)
 
 		b, _ := ioutil.ReadAll(rec.Body)
-		var resources []domain.Resource
-		var d map[string]interface{}
-		json.Unmarshal(b, &d)
-		mapstructure.Decode(resources, &d)
-		for _, r := range resources {
-			i := r.GetID()
-			resource := repository.persistence[i].(domain.Resource)
-			output := resource.GetK8sResource().(*domain.StatefulSet)
-			Expect(r.GetK8sResource().(*domain.StatefulSet)).To(Equal(output))
+
+		var objMapArray []map[string]*json.RawMessage
+
+		err := json.Unmarshal(b, &objMapArray)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		for _, m := range objMapArray {
+			s := domain.StatefulSet{}
+			err := json.Unmarshal(*m["K8sResource"], &s)
+			if err != nil {
+				fmt.Println(err)
+			}
+			r := domain.Resource{K8sResource: &s}
+			Expect(r).To(Equal(repository.persistence[r.GetID()]))
 		}
 	})
 

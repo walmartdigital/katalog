@@ -15,7 +15,7 @@ type K8sResource interface {
 
 // Resource ...
 type Resource struct {
-	K8sResource K8sResource `json:",omitempty"`
+	K8sResource K8sResource `json:"K8sResource"`
 }
 
 // GetType ...

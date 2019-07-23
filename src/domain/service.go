@@ -4,13 +4,13 @@ import "reflect"
 
 // Service ...
 type Service struct {
-	ID         string `json:",omitempty"`
-	Name       string `json:",omitempty"`
-	Port       int    `json:",omitempty"`
-	Address    string `json:",omitempty"`
-	Generation int64  `json:",omitempty"`
-	Namespace  string `json:",omitempty"`
-	Instances  []Instance
+	ID         string     `json:"ID"`
+	Name       string     `json:"Name"`
+	Port       int        `json:"Port"`
+	Address    string     `json:"Address"`
+	Generation int64      `json:"Generation"`
+	Namespace  string     `json:"Namespace"`
+	Instances  []Instance `json:"Instances"`
 }
 
 // AddInstance ...
