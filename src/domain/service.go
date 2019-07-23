@@ -42,3 +42,8 @@ func (s *Service) GetGeneration() int64 {
 func (s *Service) GetNamespace() string {
 	return s.Namespace
 }
+
+// GetName ...
+func (s *Service) GetName() string {
+	return s.Name
+}

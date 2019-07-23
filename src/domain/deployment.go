@@ -34,3 +34,8 @@ func (s *Deployment) GetGeneration() int64 {
 func (s *Deployment) GetNamespace() string {
 	return s.Namespace
 }
+
+// GetName ...
+func (s *Deployment) GetName() string {
+	return s.Name
+}

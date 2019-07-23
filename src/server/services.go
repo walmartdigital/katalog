@@ -95,7 +95,7 @@ func (s *Server) createDeployment(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&deployment)
 	resource := domain.Resource{K8sResource: &deployment}
 	s.resourcesRepository.CreateResource(resource)
-	(*s.metrics)["createDeployment"].(*prometheus.CounterVec).WithLabelValues(resource.GetID(), resource.GetNamespace()).Inc()
+	(*s.metrics)["createDeployment"].(*prometheus.CounterVec).WithLabelValues(resource.GetID(), resource.GetNamespace(), resource.GetName()).Inc()
 	json.NewEncoder(w).Encode(deployment)
 }
 
@@ -111,7 +111,7 @@ func (s *Server) updateDeployment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if result != nil {
-		(*s.metrics)["updateDeployment"].(*prometheus.CounterVec).WithLabelValues(resource.GetID(), resource.GetNamespace()).Inc()
+		(*s.metrics)["updateDeployment"].(*prometheus.CounterVec).WithLabelValues(resource.GetID(), resource.GetNamespace(), resource.GetName()).Inc()
 	}
 	json.NewEncoder(w).Encode(deployment)
 }
@@ -132,7 +132,7 @@ func (s *Server) deleteDeployment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Fprintf(w, "deleted deployment id: %s", id)
-	(*s.metrics)["deleteDeployment"].(*prometheus.CounterVec).WithLabelValues(id, rep.GetNamespace()).Inc()
+	(*s.metrics)["deleteDeployment"].(*prometheus.CounterVec).WithLabelValues(id, rep.GetNamespace(), rep.GetName()).Inc()
 }
 
 func (s *Server) getAllDeployments(w http.ResponseWriter, r *http.Request) {
@@ -161,7 +161,7 @@ func (s *Server) createStatefulSet(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&statefulset)
 	resource := domain.Resource{K8sResource: &statefulset}
 	s.resourcesRepository.CreateResource(resource)
-	(*s.metrics)["createStatefulSet"].(*prometheus.CounterVec).WithLabelValues(resource.GetID(), resource.GetNamespace()).Inc()
+	(*s.metrics)["createStatefulSet"].(*prometheus.CounterVec).WithLabelValues(resource.GetID(), resource.GetNamespace(), resource.GetName()).Inc()
 	json.NewEncoder(w).Encode(statefulset)
 }
 
@@ -177,7 +177,7 @@ func (s *Server) updateStatefulSet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if result != nil {
-		(*s.metrics)["updateStatefulSet"].(*prometheus.CounterVec).WithLabelValues(resource.GetID(), resource.GetNamespace()).Inc()
+		(*s.metrics)["updateStatefulSet"].(*prometheus.CounterVec).WithLabelValues(resource.GetID(), resource.GetNamespace(), resource.GetName()).Inc()
 	}
 	json.NewEncoder(w).Encode(statefulset)
 }
@@ -197,7 +197,7 @@ func (s *Server) deleteStatefulSet(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Fprintf(w, "deleted statefulset id: %s", id)
 
-	(*s.metrics)["deleteStatefulSet"].(*prometheus.CounterVec).WithLabelValues(id, rep.GetNamespace()).Inc()
+	(*s.metrics)["deleteStatefulSet"].(*prometheus.CounterVec).WithLabelValues(id, rep.GetNamespace(), rep.GetName()).Inc()
 }
 
 func (s *Server) getAllStatefulSets(w http.ResponseWriter, r *http.Request) {

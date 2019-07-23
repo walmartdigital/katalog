@@ -59,9 +59,9 @@ func initMetrics() *map[string]interface{} {
 			Name:      "create",
 			Help:      "Total number of deployment creations",
 		},
-		[]string{"id", "ns"},
+		[]string{"id", "ns", "rn"},
 	)
-	metricsmap["createDeployment"].(*prometheus.CounterVec).WithLabelValues("", "")
+	metricsmap["createDeployment"].(*prometheus.CounterVec).WithLabelValues("", "", "")
 	prometheus.MustRegister(metricsmap["createDeployment"].(*prometheus.CounterVec))
 
 	metricsmap["updateDeployment"] = prometheus.NewCounterVec(
@@ -71,9 +71,9 @@ func initMetrics() *map[string]interface{} {
 			Name:      "update",
 			Help:      "Total number of deployment updates",
 		},
-		[]string{"id", "ns"},
+		[]string{"id", "ns", "rn"},
 	)
-	metricsmap["updateDeployment"].(*prometheus.CounterVec).WithLabelValues("", "")
+	metricsmap["updateDeployment"].(*prometheus.CounterVec).WithLabelValues("", "", "")
 	prometheus.MustRegister(metricsmap["updateDeployment"].(*prometheus.CounterVec))
 
 	metricsmap["deleteDeployment"] = prometheus.NewCounterVec(
@@ -83,9 +83,9 @@ func initMetrics() *map[string]interface{} {
 			Name:      "delete",
 			Help:      "Total number of deployment deletes",
 		},
-		[]string{"id", "ns"},
+		[]string{"id", "ns", "rn"},
 	)
-	metricsmap["deleteDeployment"].(*prometheus.CounterVec).WithLabelValues("", "")
+	metricsmap["deleteDeployment"].(*prometheus.CounterVec).WithLabelValues("", "", "")
 	prometheus.MustRegister(metricsmap["deleteDeployment"].(*prometheus.CounterVec))
 
 	metricsmap["createStatefulSet"] = prometheus.NewCounterVec(
@@ -95,9 +95,9 @@ func initMetrics() *map[string]interface{} {
 			Name:      "create",
 			Help:      "Total number of statefulset creations",
 		},
-		[]string{"id", "ns"},
+		[]string{"id", "ns", "rn"},
 	)
-	metricsmap["createStatefulSet"].(*prometheus.CounterVec).WithLabelValues("", "")
+	metricsmap["createStatefulSet"].(*prometheus.CounterVec).WithLabelValues("", "", "")
 	prometheus.MustRegister(metricsmap["createStatefulSet"].(*prometheus.CounterVec))
 
 	metricsmap["updateStatefulSet"] = prometheus.NewCounterVec(
@@ -107,9 +107,9 @@ func initMetrics() *map[string]interface{} {
 			Name:      "update",
 			Help:      "Total number of statefulset updates",
 		},
-		[]string{"id", "ns"},
+		[]string{"id", "ns", "rn"},
 	)
-	metricsmap["updateStatefulSet"].(*prometheus.CounterVec).WithLabelValues("", "")
+	metricsmap["updateStatefulSet"].(*prometheus.CounterVec).WithLabelValues("", "", "")
 	prometheus.MustRegister(metricsmap["updateStatefulSet"].(*prometheus.CounterVec))
 
 	metricsmap["deleteStatefulSet"] = prometheus.NewCounterVec(
@@ -119,9 +119,9 @@ func initMetrics() *map[string]interface{} {
 			Name:      "delete",
 			Help:      "Total number of statefulset deletes",
 		},
-		[]string{"id", "ns"},
+		[]string{"id", "ns", "rn"},
 	)
-	metricsmap["deleteStatefulSet"].(*prometheus.CounterVec).WithLabelValues("", "")
+	metricsmap["deleteStatefulSet"].(*prometheus.CounterVec).WithLabelValues("", "", "")
 	prometheus.MustRegister(metricsmap["deleteStatefulSet"].(*prometheus.CounterVec))
 
 	return &metricsmap

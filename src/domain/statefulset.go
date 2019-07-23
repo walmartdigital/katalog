@@ -34,3 +34,8 @@ func (s *StatefulSet) GetGeneration() int64 {
 func (s *StatefulSet) GetNamespace() string {
 	return s.Namespace
 }
+
+// GetName ...
+func (s *StatefulSet) GetName() string {
+	return s.Name
+}
