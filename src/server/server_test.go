@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 
 	"github.com/emirpasic/gods/lists/arraylist"
@@ -16,6 +17,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/walmartdigital/katalog/src/domain"
 	"github.com/walmartdigital/katalog/src/server"
+	"github.com/walmartdigital/katalog/src/utils"
 )
 
 type fakeRepository struct {
@@ -251,23 +253,12 @@ var _ = Describe("run server", func() {
 		routes[path](rec, nil)
 
 		b, _ := ioutil.ReadAll(rec.Body)
-
-		var objMapArray []map[string]*json.RawMessage
-
-		err := json.Unmarshal(b, &objMapArray)
-
+		resources, err := utils.DeserializeResourceArray(b, reflect.TypeOf(domain.Service{}))
 		if err != nil {
 			fmt.Println(err)
 		}
-
-		for _, m := range objMapArray {
-			s := domain.Service{}
-			err := json.Unmarshal(*m["K8sResource"], &s)
-			if err != nil {
-				fmt.Println(err)
-			}
-			r := domain.Resource{K8sResource: &s}
-			Expect(r).To(Equal(repository.persistence[r.GetID()]))
+		for _, r := range resources {
+			Expect(*r).To(Equal(repository.persistence[r.GetID()]))
 		}
 	})
 
@@ -441,22 +432,12 @@ var _ = Describe("run server", func() {
 
 		b, _ := ioutil.ReadAll(rec.Body)
 
-		var objMapArray []map[string]*json.RawMessage
-
-		err := json.Unmarshal(b, &objMapArray)
-
+		resources, err := utils.DeserializeResourceArray(b, reflect.TypeOf(domain.Deployment{}))
 		if err != nil {
 			fmt.Println(err)
 		}
-
-		for _, m := range objMapArray {
-			s := domain.Deployment{}
-			err := json.Unmarshal(*m["K8sResource"], &s)
-			if err != nil {
-				fmt.Println(err)
-			}
-			r := domain.Resource{K8sResource: &s}
-			Expect(r).To(Equal(repository.persistence[r.GetID()]))
+		for _, r := range resources {
+			Expect(*r).To(Equal(repository.persistence[r.GetID()]))
 		}
 	})
 
@@ -629,23 +610,12 @@ var _ = Describe("run server", func() {
 		routes[path](rec, nil)
 
 		b, _ := ioutil.ReadAll(rec.Body)
-
-		var objMapArray []map[string]*json.RawMessage
-
-		err := json.Unmarshal(b, &objMapArray)
-
+		resources, err := utils.DeserializeResourceArray(b, reflect.TypeOf(domain.StatefulSet{}))
 		if err != nil {
 			fmt.Println(err)
 		}
-
-		for _, m := range objMapArray {
-			s := domain.StatefulSet{}
-			err := json.Unmarshal(*m["K8sResource"], &s)
-			if err != nil {
-				fmt.Println(err)
-			}
-			r := domain.Resource{K8sResource: &s}
-			Expect(r).To(Equal(repository.persistence[r.GetID()]))
+		for _, r := range resources {
+			Expect(*r).To(Equal(repository.persistence[r.GetID()]))
 		}
 	})
 

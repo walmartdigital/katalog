@@ -2,12 +2,12 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 
+	"github.com/walmartdigital/katalog/src/domain"
 	"k8s.io/klog"
 )
-
-
 
 // Serialize ...
 func Serialize(input interface{}) string {
@@ -30,20 +30,36 @@ func Deserialize(input string) interface{} {
 	return output
 }
 
-func DeserializeForType(b []byte, objType reflect.Type) (*interface{}, error) {
-	var objMap map[string]*json.RawMessage
-	var err error
-	err = json.Unmarshal(b, &objMap)
-	if err != nil {
-		return nil, err
-	}
+func DeserializeResourceArray(b []byte, objType reflect.Type) ([]*domain.Resource, error) {
+	var objMapArray []map[string]*json.RawMessage
 
-	objPtr := reflect.New(objType)
-
-	err = json.Unmarshal(*objMap["K8sResource"], &objPtr)
+	err := json.Unmarshal(b, &objMapArray)
 
 	if err != nil {
 		return nil, err
 	}
-	return objPtr.Elem().Interface(), nil
+
+	output := make([]*domain.Resource, len(objMapArray))
+
+	for i, m := range objMapArray {
+		r, err := DeserializeResource(m, objType)
+		if err != nil {
+			fmt.Println(err)
+		}
+		output[i] = r
+	}
+	return output, nil
+}
+
+func DeserializeResource(objMap map[string]*json.RawMessage, objType reflect.Type) (*domain.Resource, error) {
+	obj := reflect.New(objType).Interface()
+	err1 := json.Unmarshal(*objMap["K8sResource"], &obj)
+
+	if err1 != nil {
+		return nil, err1
+	}
+
+	d := new(domain.Resource)
+	d.K8sResource = obj.(domain.K8sResource)
+	return d, nil
 }
