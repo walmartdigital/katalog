@@ -57,8 +57,18 @@ func TestAll(t *testing.T) {
 	RunSpecs(t, "memory persistence")
 }
 
-var _ = Describe("create", func() {
-	It("should return nil error when service request succeed", func() {
+func createCreateFakeServer(path string, statusCode int, body string) *httpfake.HTTPFake {
+	output := httpfake.New()
+	output.
+		NewHandler().
+		Post(path).
+		Reply(statusCode).
+		BodyString(body)
+	return output
+}
+
+var _ = Describe("add", func() {
+	It("should return nil error when add service request succeed", func() {
 		serviceID := "6425377e-badd-4c46-828a-00c9afa7a156"
 		path := "/services/" + serviceID
 		statusCode := 200
@@ -78,10 +88,10 @@ var _ = Describe("create", func() {
 		Expect(output).To(BeNil())
 	})
 
-	It("should return an error when service request failed", func() {
+	It("should return an error when add service request fail with status code 404", func() {
 		serviceID := "6425377e-badd-4c46-828a-00c9afa7a156"
 		path := "/services/" + serviceID
-		statusCode := 500
+		statusCode := 404
 		body := `{"status": "fail"}`
 		fakeService := createCreateFakeServer(path, statusCode, body)
 		defer fakeService.Server.Close()
@@ -99,7 +109,7 @@ var _ = Describe("create", func() {
 		Expect(output.Error()).To(Equal("post service failed"))
 	})
 
-	It("should return an error when service request respond 500", func() {
+	It("should return an error when add service request fail with status code 500", func() {
 		serviceID := "6425377e-badd-4c46-828a-00c9afa7a156"
 		path := "/services/" + serviceID
 		statusCode := 500
@@ -120,7 +130,7 @@ var _ = Describe("create", func() {
 		Expect(output.Error()).To(Equal("post service failed"))
 	})
 
-	It("should return nil error when deployment request succeed", func() {
+	It("should return nil error when add deployment request succeed", func() {
 		deploymentID := "6425377e-badd-4c46-828a-00c9afa7a156"
 		path := "/deployments/" + deploymentID
 		statusCode := 200
@@ -140,10 +150,10 @@ var _ = Describe("create", func() {
 		Expect(output).To(BeNil())
 	})
 
-	It("should return an error when deployment request failed", func() {
+	It("should return an error when add deployment request fail with status code 404", func() {
 		deploymentID := "6425377e-badd-4c46-828a-00c9afa7a156"
 		path := "/deployments/" + deploymentID
-		statusCode := 500
+		statusCode := 404
 		body := `{"status": "fail"}`
 		fakeDeployment := createCreateFakeServer(path, statusCode, body)
 		defer fakeDeployment.Server.Close()
@@ -161,7 +171,7 @@ var _ = Describe("create", func() {
 		Expect(output.Error()).To(Equal("post deployment failed"))
 	})
 
-	It("should return an error when deployment request respond 500", func() {
+	It("should return an error when add deployment request fail with status code 500", func() {
 		deploymentID := "6425377e-badd-4c46-828a-00c9afa7a156"
 		path := "/deployments/" + deploymentID
 		statusCode := 500
@@ -180,6 +190,68 @@ var _ = Describe("create", func() {
 
 		Expect(output).ToNot(BeNil())
 		Expect(output.Error()).To(Equal("post deployment failed"))
+	})
+
+	It("should return nil error when add statefulset request succeed", func() {
+		statefulSetID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/statefulsets/" + statefulSetID
+		statusCode := 200
+		body := `{"ID": "` + statefulSetID + `"}`
+		fakeStatefulSet := createCreateFakeServer(path, statusCode, body)
+		defer fakeStatefulSet.Server.Close()
+		url := fakeStatefulSet.ResolveURL("")
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
+
+		output := publisher.Publish(domain.Operation{
+			Kind: domain.OperationTypeAdd,
+			Resource: domain.Resource{
+				K8sResource: &domain.StatefulSet{ID: statefulSetID},
+			},
+		})
+
+		Expect(output).To(BeNil())
+	})
+
+	It("should return an error when add statefulset request fail with status code 404", func() {
+		statefulSetID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/statefulsets/" + statefulSetID
+		statusCode := 404
+		body := `{"status": "fail"}`
+		fakeStatefulSet := createCreateFakeServer(path, statusCode, body)
+		defer fakeStatefulSet.Server.Close()
+		url := "localhost:5000"
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
+
+		output := publisher.Publish(domain.Operation{
+			Kind: domain.OperationTypeAdd,
+			Resource: domain.Resource{
+				K8sResource: &domain.StatefulSet{},
+			},
+		})
+
+		Expect(output).ToNot(BeNil())
+		Expect(output.Error()).To(Equal("post statefulset failed"))
+	})
+
+	It("should return an error when add statefulset request fail with status code 500", func() {
+		statefulSetID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/statefulsets/" + statefulSetID
+		statusCode := 500
+		body := `{"status": "fail"}`
+		fakeStatefulSet := createCreateFakeServer(path, statusCode, body)
+		defer fakeStatefulSet.Server.Close()
+		url := fakeStatefulSet.ResolveURL("")
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
+
+		output := publisher.Publish(domain.Operation{
+			Kind: domain.OperationTypeAdd,
+			Resource: domain.Resource{
+				K8sResource: &domain.StatefulSet{},
+			},
+		})
+
+		Expect(output).ToNot(BeNil())
+		Expect(output.Error()).To(Equal("post statefulset failed"))
 	})
 
 	It("should return nil if resource Type is not handled", func() {
@@ -211,15 +283,211 @@ func createUpdateFakeServer(path string, statusCode int, body string) *httpfake.
 	return output
 }
 
-func createCreateFakeServer(path string, statusCode int, body string) *httpfake.HTTPFake {
-	output := httpfake.New()
-	output.
-		NewHandler().
-		Post(path).
-		Reply(statusCode).
-		BodyString(body)
-	return output
-}
+var _ = Describe("update", func() {
+	It("should return nil error when update service request succeed", func() {
+		serviceID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/services/" + serviceID
+		statusCode := 200
+		body := `{"ID": "` + serviceID + `"}`
+		fakeService := createUpdateFakeServer(path, statusCode, body)
+		defer fakeService.Server.Close()
+		url := fakeService.ResolveURL("")
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
+
+		output := publisher.Publish(domain.Operation{
+			Kind: domain.OperationTypeUpdate,
+			Resource: domain.Resource{
+				K8sResource: &domain.Service{ID: serviceID},
+			},
+		})
+
+		Expect(output).To(BeNil())
+	})
+
+	It("should return an error when update service request fail with status code 404", func() {
+		serviceID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/services/" + serviceID
+		statusCode := 404
+		body := `{"status": "fail"}`
+		fakeService := createUpdateFakeServer(path, statusCode, body)
+		defer fakeService.Server.Close()
+		url := "localhost:5000"
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
+
+		output := publisher.Publish(domain.Operation{
+			Kind: domain.OperationTypeUpdate,
+			Resource: domain.Resource{
+				K8sResource: &domain.Service{},
+			},
+		})
+
+		Expect(output).ToNot(BeNil())
+		Expect(output.Error()).To(Equal("put service failed"))
+	})
+
+	It("should return an error when update service request fail with status code 500", func() {
+		serviceID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/services/" + serviceID
+		statusCode := 500
+		body := `{"status": "fail"}`
+		fakeService := createUpdateFakeServer(path, statusCode, body)
+		defer fakeService.Server.Close()
+		url := fakeService.ResolveURL("")
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
+
+		output := publisher.Publish(domain.Operation{
+			Kind: domain.OperationTypeUpdate,
+			Resource: domain.Resource{
+				K8sResource: &domain.Service{},
+			},
+		})
+
+		Expect(output).ToNot(BeNil())
+		Expect(output.Error()).To(Equal("put service failed"))
+	})
+
+	It("should return nil error when update deployment request succeed", func() {
+		deploymentID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/deployments/" + deploymentID
+		statusCode := 200
+		body := `{"ID": "` + deploymentID + `"}`
+		fakeDeployment := createUpdateFakeServer(path, statusCode, body)
+		defer fakeDeployment.Server.Close()
+		url := fakeDeployment.ResolveURL("")
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
+
+		output := publisher.Publish(domain.Operation{
+			Kind: domain.OperationTypeUpdate,
+			Resource: domain.Resource{
+				K8sResource: &domain.Deployment{ID: deploymentID},
+			},
+		})
+
+		Expect(output).To(BeNil())
+	})
+
+	It("should return an error when update deployment request fail with status code 404", func() {
+		deploymentID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/deployments/" + deploymentID
+		statusCode := 404
+		body := `{"status": "fail"}`
+		fakeDeployment := createUpdateFakeServer(path, statusCode, body)
+		defer fakeDeployment.Server.Close()
+		url := "localhost:5000"
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
+
+		output := publisher.Publish(domain.Operation{
+			Kind: domain.OperationTypeUpdate,
+			Resource: domain.Resource{
+				K8sResource: &domain.Deployment{},
+			},
+		})
+
+		Expect(output).ToNot(BeNil())
+		Expect(output.Error()).To(Equal("put deployment failed"))
+	})
+
+	It("should return an error when update deployment request fail with status code 500", func() {
+		deploymentID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/deployments/" + deploymentID
+		statusCode := 500
+		body := `{"status": "fail"}`
+		fakeDeployment := createUpdateFakeServer(path, statusCode, body)
+		defer fakeDeployment.Server.Close()
+		url := fakeDeployment.ResolveURL("")
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
+
+		output := publisher.Publish(domain.Operation{
+			Kind: domain.OperationTypeUpdate,
+			Resource: domain.Resource{
+				K8sResource: &domain.Deployment{},
+			},
+		})
+
+		Expect(output).ToNot(BeNil())
+		Expect(output.Error()).To(Equal("put deployment failed"))
+	})
+
+	It("should return nil error when update statefulset request succeed", func() {
+		statefulSettID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/statefulsets/" + statefulSettID
+		statusCode := 200
+		body := `{"ID": "` + statefulSettID + `"}`
+		fakeStatefulSet := createUpdateFakeServer(path, statusCode, body)
+		defer fakeStatefulSet.Server.Close()
+		url := fakeStatefulSet.ResolveURL("")
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
+
+		output := publisher.Publish(domain.Operation{
+			Kind: domain.OperationTypeUpdate,
+			Resource: domain.Resource{
+				K8sResource: &domain.StatefulSet{ID: statefulSettID},
+			},
+		})
+
+		Expect(output).To(BeNil())
+	})
+
+	It("should return an error when update statefulset request fail with status code 404", func() {
+		deploymentID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/statefulsets/" + deploymentID
+		statusCode := 404
+		body := `{"status": "fail"}`
+		fakeStatefulSet := createUpdateFakeServer(path, statusCode, body)
+		defer fakeStatefulSet.Server.Close()
+		url := "localhost:5000"
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
+
+		output := publisher.Publish(domain.Operation{
+			Kind: domain.OperationTypeUpdate,
+			Resource: domain.Resource{
+				K8sResource: &domain.StatefulSet{},
+			},
+		})
+
+		Expect(output).ToNot(BeNil())
+		Expect(output.Error()).To(Equal("put statefulset failed"))
+	})
+
+	It("should return an error when update statefulset request fail with status code 500", func() {
+		statefulSetID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/statefulsets/" + statefulSetID
+		statusCode := 500
+		body := `{"status": "fail"}`
+		fakeStatefulSet := createUpdateFakeServer(path, statusCode, body)
+		defer fakeStatefulSet.Server.Close()
+		url := fakeStatefulSet.ResolveURL("")
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
+
+		output := publisher.Publish(domain.Operation{
+			Kind: domain.OperationTypeUpdate,
+			Resource: domain.Resource{
+				K8sResource: &domain.StatefulSet{},
+			},
+		})
+
+		Expect(output).ToNot(BeNil())
+		Expect(output.Error()).To(Equal("put statefulset failed"))
+	})
+
+	It("should return nil if resource Type is not handled", func() {
+		deploymentID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/deployments/" + deploymentID
+		statusCode := 500
+		body := `{"status": "fail"}`
+		fakeDeployment := createUpdateFakeServer(path, statusCode, body)
+		defer fakeDeployment.Server.Close()
+		url := fakeDeployment.ResolveURL("")
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
+
+		output := publisher.Publish(domain.Operation{
+			Kind:     domain.OperationTypeUpdate,
+			Resource: domain.Resource{K8sResource: new(DummyK8sResource)},
+		})
+
+		Expect(output).To(BeNil())
+	})
+})
 
 func createDeleteFakeServer(path string, statusCode int) *httpfake.HTTPFake {
 	output := httpfake.New()
@@ -232,7 +500,7 @@ func createDeleteFakeServer(path string, statusCode int) *httpfake.HTTPFake {
 }
 
 var _ = Describe("delete", func() {
-	It("should return nil error when service request succeed", func() {
+	It("should return nil error when delete service request succeed", func() {
 		serviceID := "6425377e-badd-4c46-828a-00c9afa7a156"
 		path := "/services/" + serviceID
 		statusCode := 200
@@ -255,26 +523,6 @@ var _ = Describe("delete", func() {
 		serviceID := "6425377e-badd-4c46-828a-00c9afa7a156"
 		path := "/services/" + serviceID
 		statusCode := 404
-		fakeService := createDeleteFakeServer(path, statusCode)
-		defer fakeService.Server.Close()
-		url := fakeService.ResolveURL("")
-		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
-
-		output := publisher.Publish(domain.Operation{
-			Kind: domain.OperationTypeDelete,
-			Resource: domain.Resource{
-				K8sResource: &domain.Service{ID: serviceID},
-			},
-		})
-
-		Expect(output).ToNot(BeNil())
-		Expect(output.Error()).To(Equal("delete service failed"))
-	})
-
-	It("should return an error when service request fail with status code 500", func() {
-		serviceID := "6425377e-badd-4c46-828a-00c9afa7a156"
-		path := "/services/" + serviceID
-		statusCode := 500
 		fakeService := createDeleteFakeServer(path, statusCode)
 		defer fakeService.Server.Close()
 		url := fakeService.ResolveURL("")
@@ -370,24 +618,63 @@ var _ = Describe("delete", func() {
 		Expect(output.Error()).To(Equal("delete deployment failed"))
 	})
 
-	It("should return an error when deployment request fail with status code 500", func() {
-		deploymentID := "6425377e-badd-4c46-828a-00c9afa7a156"
-		path := "/deployments/" + deploymentID
-		statusCode := 500
-		fakeDeployment := createDeleteFakeServer(path, statusCode)
-		defer fakeDeployment.Server.Close()
-		url := fakeDeployment.ResolveURL("")
+	It("should return nil error when statefulset request succeed", func() {
+		statefulSetID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/statefulsets/" + statefulSetID
+		statusCode := 200
+		fakeStatefulSet := createDeleteFakeServer(path, statusCode)
+		defer fakeStatefulSet.Server.Close()
+		url := fakeStatefulSet.ResolveURL("")
 		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
 
 		output := publisher.Publish(domain.Operation{
 			Kind: domain.OperationTypeDelete,
 			Resource: domain.Resource{
-				K8sResource: &domain.Deployment{ID: deploymentID},
+				K8sResource: &domain.StatefulSet{ID: statefulSetID},
+			},
+		})
+
+		Expect(output).To(BeNil())
+	})
+
+	It("should return an error when statefulset request fail with status code 404", func() {
+		statefulSetID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/statefulsets/" + statefulSetID
+		statusCode := 404
+		fakeStatefulSet := createDeleteFakeServer(path, statusCode)
+		defer fakeStatefulSet.Server.Close()
+		url := fakeStatefulSet.ResolveURL("")
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
+
+		output := publisher.Publish(domain.Operation{
+			Kind: domain.OperationTypeDelete,
+			Resource: domain.Resource{
+				K8sResource: &domain.StatefulSet{ID: statefulSetID},
 			},
 		})
 
 		Expect(output).ToNot(BeNil())
-		Expect(output.Error()).To(Equal("delete deployment failed"))
+		Expect(output.Error()).To(Equal("delete statefulset failed"))
+	})
+
+	It("should return an error when statefulset request fail with status code 500", func() {
+		statefulSetID := "6425377e-badd-4c46-828a-00c9afa7a156"
+		path := "/statefulsets/" + statefulSetID
+		statusCode := 500
+		fakeStatefulSet := createDeleteFakeServer(path, statusCode)
+		defer fakeStatefulSet.Server.Close()
+		url := fakeStatefulSet.ResolveURL("")
+		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
+
+		output := publisher.Publish(domain.Operation{
+			Kind: domain.OperationTypeDelete,
+			Resource: domain.Resource{
+				K8sResource: &domain.StatefulSet{ID: statefulSetID},
+			},
+		})
+
+		Expect(output).ToNot(BeNil())
+		Expect(output.Error()).To(Equal("delete statefulset failed"))
 	})
 
 	It("should return nil if resource Type is not handled", func() {
@@ -403,28 +690,6 @@ var _ = Describe("delete", func() {
 			Kind: domain.OperationTypeDelete,
 			Resource: domain.Resource{
 				K8sResource: &DummyK8sResource{ID: serviceID},
-			},
-		})
-
-		Expect(output).To(BeNil())
-	})
-})
-
-var _ = Describe("update", func() {
-	It("should return nil error when request succeed", func() {
-		serviceID := "6425377e-badd-4c46-828a-00c9afa7a156"
-		path := "/services/" + serviceID
-		statusCode := 200
-		body := `{"ID": "` + serviceID + `"}`
-		fakeService := createUpdateFakeServer(path, statusCode, body)
-		defer fakeService.Server.Close()
-		url := fakeService.ResolveURL("")
-		publisher := publishers.BuildHTTPPublisher(url, retryDoDouble)
-
-		output := publisher.Publish(domain.Operation{
-			Kind: domain.OperationTypeUpdate,
-			Resource: domain.Resource{
-				K8sResource: &domain.Service{ID: serviceID},
 			},
 		})
 
