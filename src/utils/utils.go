@@ -30,6 +30,7 @@ func Deserialize(input string) interface{} {
 	return output
 }
 
+// DeserializeResourceArray ...
 func DeserializeResourceArray(b []byte, objType reflect.Type) ([]*domain.Resource, error) {
 	var objMapArray []map[string]*json.RawMessage
 
@@ -51,6 +52,7 @@ func DeserializeResourceArray(b []byte, objType reflect.Type) ([]*domain.Resourc
 	return output, nil
 }
 
+// DeserializeResource ...
 func DeserializeResource(objMap map[string]*json.RawMessage, objType reflect.Type) (*domain.Resource, error) {
 	obj := reflect.New(objType).Interface()
 	err1 := json.Unmarshal(*objMap["K8sResource"], &obj)
