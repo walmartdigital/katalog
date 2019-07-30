@@ -2,3 +2,4 @@
 bolt.db
 vendor/
 .vscode/
+deploy/skaffold/dev/development.yaml
