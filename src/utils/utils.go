@@ -76,7 +76,7 @@ func DeserializeResource(objMap map[string]*json.RawMessage, objType reflect.Typ
 // LogInit ...
 func LogInit(log *logrus.Logger) error {
 	log.Formatter = &logrus.JSONFormatter{}
-	logLocation := "/var/log/probot.log"
+	logLocation := "/var/log/katalog.log"
 
 	file, err := os.OpenFile(logLocation, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err == nil {
