@@ -3,17 +3,24 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"reflect"
 
+	"github.com/sirupsen/logrus"
 	"github.com/walmartdigital/katalog/src/domain"
-	"k8s.io/klog"
 )
+
+var log = logrus.New()
+
+func init() {
+	LogInit(log)
+}
 
 // Serialize ...
 func Serialize(input interface{}) string {
 	serial, err := json.Marshal(input)
 	if err != nil {
-		klog.Error(err)
+		log.Error(err)
 		return ""
 	}
 	return string(serial)
@@ -24,7 +31,7 @@ func Deserialize(input string) interface{} {
 	output := make(map[string]interface{})
 	err := json.Unmarshal([]byte(input), &output)
 	if err != nil {
-		klog.Error(err)
+		log.Error(err)
 		return ""
 	}
 	return output
@@ -64,4 +71,18 @@ func DeserializeResource(objMap map[string]*json.RawMessage, objType reflect.Typ
 	d := new(domain.Resource)
 	d.K8sResource = obj.(domain.K8sResource)
 	return d, nil
+}
+
+// LogInit ...
+func LogInit(log *logrus.Logger) error {
+	log.Formatter = &logrus.JSONFormatter{}
+	logLocation := "/var/log/probot.log"
+
+	file, err := os.OpenFile(logLocation, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err == nil {
+		log.Out = file
+	} else {
+		log.Info("Failed to log to file, using default stderr")
+	}
+	return err
 }

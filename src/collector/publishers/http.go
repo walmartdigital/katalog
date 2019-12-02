@@ -8,9 +8,16 @@ import (
 	"reflect"
 
 	"github.com/avast/retry-go"
+	"github.com/sirupsen/logrus"
 	"github.com/walmartdigital/katalog/src/domain"
-	"k8s.io/klog"
+	"github.com/walmartdigital/katalog/src/utils"
 )
+
+var log = logrus.New()
+
+func init() {
+	utils.LogInit(log)
+}
 
 type httpClient interface {
 }
@@ -56,11 +63,11 @@ func (c *HTTPPublisher) post(resource domain.Resource) error {
 		req.Header.Add("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
 		if err != nil || res.StatusCode != 200 {
-			klog.Error(err)
+			log.Error(err)
 			return errors.New("post service failed")
 		}
 		defer res.Body.Close()
-		klog.Info("service " + service.Name + "(id: " + service.ID + ") created successfully")
+		log.Info("service " + service.Name + "(id: " + service.ID + ") created successfully")
 		return nil
 
 	case reflect.TypeOf(new(domain.Deployment)):
@@ -70,11 +77,11 @@ func (c *HTTPPublisher) post(resource domain.Resource) error {
 		req.Header.Add("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
 		if err != nil || res.StatusCode != 200 {
-			klog.Error(err)
+			log.Error(err)
 			return errors.New("post deployment failed")
 		}
 		defer res.Body.Close()
-		klog.Info("deployment " + deployment.Name + "(id: " + deployment.ID + ") created successfully")
+		log.Info("deployment " + deployment.Name + "(id: " + deployment.ID + ") created successfully")
 		return nil
 
 	case reflect.TypeOf(new(domain.StatefulSet)):
@@ -84,15 +91,15 @@ func (c *HTTPPublisher) post(resource domain.Resource) error {
 		req.Header.Add("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
 		if err != nil || res.StatusCode != 200 {
-			klog.Error(err)
+			log.Error(err)
 			return errors.New("post statefulset failed")
 		}
 		defer res.Body.Close()
-		klog.Info("statefulset " + statefulset.Name + "(id: " + statefulset.ID + ") created successfully")
+		log.Info("statefulset " + statefulset.Name + "(id: " + statefulset.ID + ") created successfully")
 		return nil
 
 	default:
-		klog.Errorf("Type %s not found", v)
+		log.Errorf("Type %s not found", v)
 	}
 
 	return nil
@@ -109,11 +116,11 @@ func (c *HTTPPublisher) put(resource domain.Resource) error {
 		req.Header.Add("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
 		if err != nil || res.StatusCode != 200 {
-			klog.Error(err)
+			log.Error(err)
 			return errors.New("put service failed")
 		}
 		defer res.Body.Close()
-		klog.Info("service " + service.Name + "(id: " + service.ID + ") updated successfully")
+		log.Info("service " + service.Name + "(id: " + service.ID + ") updated successfully")
 		return nil
 
 	case reflect.TypeOf(new(domain.Deployment)):
@@ -123,11 +130,11 @@ func (c *HTTPPublisher) put(resource domain.Resource) error {
 		req.Header.Add("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
 		if err != nil || res.StatusCode != 200 {
-			klog.Error(err)
+			log.Error(err)
 			return errors.New("put deployment failed")
 		}
 		defer res.Body.Close()
-		klog.Info("deployment " + deployment.Name + "(id: " + deployment.ID + ") updated successfully")
+		log.Info("deployment " + deployment.Name + "(id: " + deployment.ID + ") updated successfully")
 		return nil
 
 	case reflect.TypeOf(new(domain.StatefulSet)):
@@ -137,15 +144,15 @@ func (c *HTTPPublisher) put(resource domain.Resource) error {
 		req.Header.Add("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
 		if err != nil || res.StatusCode != 200 {
-			klog.Error(err)
+			log.Error(err)
 			return errors.New("put statefulset failed")
 		}
 		defer res.Body.Close()
-		klog.Info("statefulset " + statefulset.Name + "(id: " + statefulset.ID + ") updated successfully")
+		log.Info("statefulset " + statefulset.Name + "(id: " + statefulset.ID + ") updated successfully")
 		return nil
 
 	default:
-		klog.Errorf("Type %s not found", v)
+		log.Errorf("Type %s not found", v)
 	}
 
 	return nil
@@ -159,11 +166,11 @@ func (c *HTTPPublisher) delete(resource domain.Resource) error {
 		req.Header.Add("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
 		if err != nil || res.StatusCode != 200 {
-			klog.Error(err)
+			log.Error(err)
 			return errors.New("delete service failed")
 		}
 		defer res.Body.Close()
-		klog.Info("service " + service.Name + "(id: " + service.ID + ") deleted successfully")
+		log.Info("service " + service.Name + "(id: " + service.ID + ") deleted successfully")
 		return nil
 
 	case reflect.TypeOf(new(domain.Deployment)):
@@ -172,11 +179,11 @@ func (c *HTTPPublisher) delete(resource domain.Resource) error {
 		req.Header.Add("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
 		if err != nil || res.StatusCode != 200 {
-			klog.Error(err)
+			log.Error(err)
 			return errors.New("delete deployment failed")
 		}
 		defer res.Body.Close()
-		klog.Info("deployment " + deployment.Name + "(id: " + deployment.ID + ") deleted successfully")
+		log.Info("deployment " + deployment.Name + "(id: " + deployment.ID + ") deleted successfully")
 		return nil
 
 	case reflect.TypeOf(new(domain.StatefulSet)):
@@ -185,15 +192,15 @@ func (c *HTTPPublisher) delete(resource domain.Resource) error {
 		req.Header.Add("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
 		if err != nil || res.StatusCode != 200 {
-			klog.Error(err)
+			log.Error(err)
 			return errors.New("delete statefulset failed")
 		}
 		defer res.Body.Close()
-		klog.Info("statefulset " + statefulset.Name + "(id: " + statefulset.ID + ") deleted successfully")
+		log.Info("statefulset " + statefulset.Name + "(id: " + statefulset.ID + ") deleted successfully")
 		return nil
 
 	default:
-		klog.Errorf("Type %s not found", v)
+		log.Errorf("Type %s not found", v)
 	}
 	return nil
 }

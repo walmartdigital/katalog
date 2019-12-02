@@ -5,8 +5,16 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/sirupsen/logrus"
 	"github.com/walmartdigital/katalog/src/server/repositories"
+	"github.com/walmartdigital/katalog/src/utils"
 )
+
+var log = logrus.New()
+
+func init() {
+	utils.LogInit(log)
+}
 
 // HTTPServer ...
 type HTTPServer interface {

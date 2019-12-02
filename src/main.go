@@ -6,7 +6,9 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/sirupsen/logrus"
 	"github.com/walmartdigital/katalog/src/domain"
+	"github.com/walmartdigital/katalog/src/utils"
 
 	"github.com/avast/retry-go"
 	"github.com/gorilla/mux"
@@ -15,12 +17,12 @@ import (
 	"github.com/walmartdigital/katalog/src/server"
 	"github.com/walmartdigital/katalog/src/server/persistence"
 	"github.com/walmartdigital/katalog/src/server/repositories"
-	"k8s.io/klog"
 )
+
+var log = logrus.New()
 
 const roleCollector = "collector"
 const roleServer = "server"
-
 const publisherHTTP = "http"
 
 var role = flag.String("role", roleCollector, "collector or server")
@@ -30,9 +32,9 @@ var publisher = flag.String("publisher", publisherHTTP, "select where to publish
 var configfile = flag.Bool("kubeconfig", false, "true if a $HOME/.kube/config file exists")
 
 func main() {
-	klog.InitFlags(nil)
-	flag.Set("logtostderr", "true")
+	utils.LogInit(log)
 	flag.Parse()
+
 	var kubeconfig string
 
 	if *configfile {
@@ -49,12 +51,12 @@ func main() {
 	case roleServer:
 		mainServer()
 	default:
-		klog.Warning("role should be server or collector")
+		log.Warning("role should be server or collector")
 	}
 }
 
 func mainCollector(kubeconfig string) {
-	klog.Info("collector starting...")
+	log.Info("collector starting...")
 	serviceEvents := make(chan interface{})
 	deploymentEvents := make(chan interface{})
 	statefulsetEvents := make(chan interface{})
@@ -85,7 +87,7 @@ func resolvePublisher() publishers.Publisher {
 }
 
 func mainServer() {
-	klog.Info("server starting...")
+	log.Info("server starting...")
 	memory := make(map[string]interface{})
 	persistence := persistence.BuildMemoryPersistence(memory)
 	resourceRepository := repositories.CreateResourceRepository(persistence)

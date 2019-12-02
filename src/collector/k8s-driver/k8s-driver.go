@@ -3,7 +3,9 @@ package k8sdriver
 import (
 	"reflect"
 
+	"github.com/sirupsen/logrus"
 	"github.com/walmartdigital/katalog/src/domain"
+	"github.com/walmartdigital/katalog/src/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -11,8 +13,13 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/klog"
 )
+
+var log = logrus.New()
+
+func init() {
+	utils.LogInit(log)
+}
 
 const resyncPeriod = 0
 
@@ -40,11 +47,11 @@ func (d *Driver) StartWatchingResources(events chan interface{}, resource domain
 func buildClientSet(kubeconfigPath string) *kubernetes.Clientset {
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
 	if err != nil {
-		klog.Errorln(err)
+		log.Errorln(err)
 	}
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		klog.Errorln(err)
+		log.Errorln(err)
 	}
 	return clientset
 }
@@ -75,7 +82,7 @@ func (d *Driver) buildListWatchForResources(resource domain.Resource) *cache.Lis
 			fields.Everything(),
 		)
 	default:
-		klog.Errorf("Type %s not found", v)
+		log.Errorf("Type %s not found", v)
 	}
 
 	return listWatch
@@ -119,7 +126,7 @@ func (d *Driver) buildController(listWatch *cache.ListWatch, resource domain.Res
 			},
 		)
 	default:
-		klog.Errorf("Type %s not found", v)
+		log.Errorf("Type %s not found", v)
 	}
 
 	return controller
@@ -131,7 +138,7 @@ func (d *Driver) createAddHandler(channel chan interface{}, resource domain.Reso
 		case reflect.TypeOf(new(domain.Service)):
 			k8sService := obj.(*corev1.Service)
 			if d.excludeSystemNamespace && k8sService.Namespace == "kube-system" {
-				klog.Infof("%s excluded because belongs to kube-system namespace", k8sService.Name)
+				log.Infof("%s excluded because belongs to kube-system namespace", k8sService.Name)
 				return
 			}
 			endpoints, _ := d.clientSet.CoreV1().Endpoints(k8sService.Namespace).Get(k8sService.Name, metav1.GetOptions{})
@@ -140,7 +147,7 @@ func (d *Driver) createAddHandler(channel chan interface{}, resource domain.Reso
 		case reflect.TypeOf(new(domain.Deployment)):
 			k8sDeployment := obj.(*appsv1.Deployment)
 			if d.excludeSystemNamespace && k8sDeployment.Namespace == "kube-system" {
-				klog.Infof("%s excluded because belongs to kube-system namespace", k8sDeployment.Name)
+				log.Infof("%s excluded because belongs to kube-system namespace", k8sDeployment.Name)
 				return
 			}
 			deployment := buildOperationFromK8sDeployment(domain.OperationTypeAdd, k8sDeployment)
@@ -148,13 +155,13 @@ func (d *Driver) createAddHandler(channel chan interface{}, resource domain.Reso
 		case reflect.TypeOf(new(domain.StatefulSet)):
 			k8sStatefulSet := obj.(*appsv1.StatefulSet)
 			if d.excludeSystemNamespace && k8sStatefulSet.Namespace == "kube-system" {
-				klog.Infof("%s excluded because belongs to kube-system namespace", k8sStatefulSet.Name)
+				log.Infof("%s excluded because belongs to kube-system namespace", k8sStatefulSet.Name)
 				return
 			}
 			statefulset := buildOperationFromK8sStatefulSet(domain.OperationTypeAdd, k8sStatefulSet)
 			channel <- statefulset
 		default:
-			klog.Errorf("Type %s not found", t)
+			log.Errorf("Type %s not found", t)
 		}
 	}
 }
@@ -176,7 +183,7 @@ func (d *Driver) createDeleteHandler(channel chan interface{}, resource domain.R
 			statefulset := buildOperationFromK8sStatefulSet(domain.OperationTypeDelete, k8sStatefulSet)
 			channel <- statefulset
 		default:
-			klog.Errorf("Type %s not found", t)
+			log.Errorf("Type %s not found", t)
 		}
 	}
 }
@@ -198,7 +205,7 @@ func (d *Driver) createUpdateHandler(channel chan interface{}, resource domain.R
 			statefulset := buildOperationFromK8sStatefulSet(domain.OperationTypeUpdate, k8sStatefulSet)
 			channel <- statefulset
 		default:
-			klog.Errorf("Type %s not found", t)
+			log.Errorf("Type %s not found", t)
 		}
 	}
 }

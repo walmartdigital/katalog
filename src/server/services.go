@@ -9,7 +9,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/walmartdigital/katalog/src/domain"
-	"k8s.io/klog"
 )
 
 func (s *Server) getResourcesByType(resource domain.Resource) ([]interface{}, error) {
@@ -45,7 +44,7 @@ func (s *Server) updateService(w http.ResponseWriter, r *http.Request) {
 	_, err := s.resourcesRepository.UpdateResource(resource)
 
 	if err != nil {
-		klog.Errorf("Error occurred trying to update service (id: %s)", resource.GetID())
+		log.Errorf("Error occurred trying to update service (id: %s)", resource.GetID())
 		return
 	}
 
@@ -57,13 +56,13 @@ func (s *Server) deleteService(w http.ResponseWriter, r *http.Request) {
 	_, err := s.resourcesRepository.GetResource(id)
 	if err != nil {
 		fmt.Fprintf(w, "You provided a non-existing ID: %s", id)
-		klog.Errorf("You provided a non-existing ID: %s", id)
+		log.Errorf("You provided a non-existing ID: %s", id)
 		return
 	}
 	err = s.resourcesRepository.DeleteResource(id)
 	if err != nil {
 		fmt.Fprintf(w, "Deleted service ID: %s", id)
-		klog.Errorf("Deleted service ID: %s", id)
+		log.Errorf("Deleted service ID: %s", id)
 		return
 	}
 	fmt.Fprintf(w, "deleted service id: %s", id)
@@ -73,7 +72,7 @@ func (s *Server) getAllServices(w http.ResponseWriter, r *http.Request) {
 	services, err := s.getResourcesByType(domain.Resource{K8sResource: &domain.Service{}})
 	if err != nil {
 		fmt.Fprint(w, "Resource not found")
-		klog.Error("Resource not found")
+		log.Error("Resource not found")
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -84,7 +83,7 @@ func (s *Server) countServices(w http.ResponseWriter, r *http.Request) {
 	services, err := s.getResourcesByType(domain.Resource{K8sResource: &domain.Service{}})
 	if err != nil {
 		fmt.Fprint(w, "Resource not found")
-		klog.Error("Resource not found")
+		log.Error("Resource not found")
 		return
 	}
 	json.NewEncoder(w).Encode(struct{ Count int }{len(services)})
@@ -106,7 +105,7 @@ func (s *Server) updateDeployment(w http.ResponseWriter, r *http.Request) {
 	result, err := s.resourcesRepository.UpdateResource(resource)
 
 	if err != nil {
-		klog.Errorf("Error occurred trying to update deployment (id: %s)", resource.GetID())
+		log.Errorf("Error occurred trying to update deployment (id: %s)", resource.GetID())
 		return
 	}
 
@@ -121,14 +120,14 @@ func (s *Server) deleteDeployment(w http.ResponseWriter, r *http.Request) {
 	res, err := s.resourcesRepository.GetResource(id)
 	if err != nil {
 		fmt.Fprintf(w, "You provided a non-existing ID: %s", id)
-		klog.Errorf("You provided a non-existing ID: %s", id)
+		log.Errorf("You provided a non-existing ID: %s", id)
 		return
 	}
 	rep := res.(domain.Resource)
 	err = s.resourcesRepository.DeleteResource(id)
 	if err != nil {
 		fmt.Fprintf(w, "Deleted deployment ID: %s", id)
-		klog.Errorf("Deleted deployment ID: %s", id)
+		log.Errorf("Deleted deployment ID: %s", id)
 		return
 	}
 	fmt.Fprintf(w, "deleted deployment id: %s", id)
@@ -139,7 +138,7 @@ func (s *Server) getAllDeployments(w http.ResponseWriter, r *http.Request) {
 	deployments, err := s.getResourcesByType(domain.Resource{K8sResource: &domain.Deployment{}})
 	if err != nil {
 		fmt.Fprint(w, "Resource not found")
-		klog.Error("Resource not found")
+		log.Error("Resource not found")
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -150,7 +149,7 @@ func (s *Server) countDeployments(w http.ResponseWriter, r *http.Request) {
 	deployments, err := s.getResourcesByType(domain.Resource{K8sResource: &domain.Deployment{}})
 	if err != nil {
 		fmt.Fprint(w, "Resource not found")
-		klog.Error("Resource not found")
+		log.Error("Resource not found")
 		return
 	}
 	json.NewEncoder(w).Encode(struct{ Count int }{len(deployments)})
@@ -172,7 +171,7 @@ func (s *Server) updateStatefulSet(w http.ResponseWriter, r *http.Request) {
 	result, err := s.resourcesRepository.UpdateResource(resource)
 
 	if err != nil {
-		klog.Errorf("Error occurred trying to update resource (id: %s)", resource.GetID())
+		log.Errorf("Error occurred trying to update resource (id: %s)", resource.GetID())
 		return
 	}
 
@@ -186,7 +185,7 @@ func (s *Server) deleteStatefulSet(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	res, err := s.resourcesRepository.GetResource(id)
 	if err != nil {
-		klog.Error("You have to provide an ID")
+		log.Error("You have to provide an ID")
 		return
 	}
 	rep := res.(domain.Resource)
@@ -204,7 +203,7 @@ func (s *Server) getAllStatefulSets(w http.ResponseWriter, r *http.Request) {
 	statefulsets, err := s.getResourcesByType(domain.Resource{K8sResource: &domain.StatefulSet{}})
 	if err != nil {
 		fmt.Fprint(w, "Resource not found")
-		klog.Error("Resource not found")
+		log.Error("Resource not found")
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -215,7 +214,7 @@ func (s *Server) countStatefulSets(w http.ResponseWriter, r *http.Request) {
 	statefulsets, err := s.getResourcesByType(domain.Resource{K8sResource: &domain.StatefulSet{}})
 	if err != nil {
 		fmt.Fprint(w, "Resource not found")
-		klog.Error("Resource not found")
+		log.Error("Resource not found")
 		return
 	}
 	json.NewEncoder(w).Encode(struct{ Count int }{len(statefulsets)})

@@ -3,10 +3,17 @@ package repositories
 import (
 	"github.com/emirpasic/gods/lists/arraylist"
 	"github.com/mitchellh/mapstructure"
+	"github.com/sirupsen/logrus"
 	"github.com/walmartdigital/katalog/src/domain"
 	"github.com/walmartdigital/katalog/src/server/persistence"
-	"k8s.io/klog"
+	"github.com/walmartdigital/katalog/src/utils"
 )
+
+var log = logrus.New()
+
+func init() {
+	utils.LogInit(log)
+}
 
 // ResourceRepository ...
 type ResourceRepository struct {
@@ -68,7 +75,7 @@ func (r *ResourceRepository) DeleteResource(obj interface{}) error {
 
 // GetAllResources ...
 func (r *ResourceRepository) GetAllResources() ([]interface{}, error) {
-	klog.Info("get all resourcess called")
+	log.Info("get all resourcess called")
 	list := arraylist.New()
 	resources, err := r.persistence.GetAll()
 	if err != nil {
