@@ -34,7 +34,6 @@ var configfile = flag.Bool("kubeconfig", false, "true if a $HOME/.kube/config fi
 func main() {
 	utils.LogInit(log)
 	flag.Parse()
-
 	var kubeconfig string
 
 	if *configfile {
