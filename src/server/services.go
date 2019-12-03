@@ -10,14 +10,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"github.com/walmartdigital/katalog/src/domain"
-	"github.com/walmartdigital/katalog/src/utils"
 )
-
-var log = logrus.New()
-
-func init() {
-	utils.LogInit(log)
-}
 
 func (s *Server) getResourcesByType(resource domain.Resource) ([]interface{}, error) {
 	resources, err := s.resourcesRepository.GetAllResources()
