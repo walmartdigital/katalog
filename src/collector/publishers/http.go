@@ -67,7 +67,6 @@ func (c *HTTPPublisher) post(resource domain.Resource) error {
 			return errors.New("post service failed")
 		}
 		defer res.Body.Close()
-		log.Info("service " + service.Name + "(id: " + service.ID + ") created successfully")
 		return nil
 
 	case reflect.TypeOf(new(domain.Deployment)):
@@ -81,7 +80,6 @@ func (c *HTTPPublisher) post(resource domain.Resource) error {
 			return errors.New("post deployment failed")
 		}
 		defer res.Body.Close()
-		log.Info("deployment " + deployment.Name + "(id: " + deployment.ID + ") created successfully")
 		return nil
 
 	case reflect.TypeOf(new(domain.StatefulSet)):
@@ -95,7 +93,6 @@ func (c *HTTPPublisher) post(resource domain.Resource) error {
 			return errors.New("post statefulset failed")
 		}
 		defer res.Body.Close()
-		log.Info("statefulset " + statefulset.Name + "(id: " + statefulset.ID + ") created successfully")
 		return nil
 
 	default:
@@ -120,7 +117,6 @@ func (c *HTTPPublisher) put(resource domain.Resource) error {
 			return errors.New("put service failed")
 		}
 		defer res.Body.Close()
-		log.Info("service " + service.Name + "(id: " + service.ID + ") updated successfully")
 		return nil
 
 	case reflect.TypeOf(new(domain.Deployment)):
@@ -134,7 +130,6 @@ func (c *HTTPPublisher) put(resource domain.Resource) error {
 			return errors.New("put deployment failed")
 		}
 		defer res.Body.Close()
-		log.Info("deployment " + deployment.Name + "(id: " + deployment.ID + ") updated successfully")
 		return nil
 
 	case reflect.TypeOf(new(domain.StatefulSet)):
@@ -148,7 +143,6 @@ func (c *HTTPPublisher) put(resource domain.Resource) error {
 			return errors.New("put statefulset failed")
 		}
 		defer res.Body.Close()
-		log.Info("statefulset " + statefulset.Name + "(id: " + statefulset.ID + ") updated successfully")
 		return nil
 
 	default:
@@ -170,7 +164,6 @@ func (c *HTTPPublisher) delete(resource domain.Resource) error {
 			return errors.New("delete service failed")
 		}
 		defer res.Body.Close()
-		log.Info("service " + service.Name + "(id: " + service.ID + ") deleted successfully")
 		return nil
 
 	case reflect.TypeOf(new(domain.Deployment)):
@@ -183,7 +176,6 @@ func (c *HTTPPublisher) delete(resource domain.Resource) error {
 			return errors.New("delete deployment failed")
 		}
 		defer res.Body.Close()
-		log.Info("deployment " + deployment.Name + "(id: " + deployment.ID + ") deleted successfully")
 		return nil
 
 	case reflect.TypeOf(new(domain.StatefulSet)):
@@ -196,7 +188,6 @@ func (c *HTTPPublisher) delete(resource domain.Resource) error {
 			return errors.New("delete statefulset failed")
 		}
 		defer res.Body.Close()
-		log.Info("statefulset " + statefulset.Name + "(id: " + statefulset.ID + ") deleted successfully")
 		return nil
 
 	default:
