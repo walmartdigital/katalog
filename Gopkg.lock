@@ -325,22 +325,6 @@
   version = "1.0.1"
 
 [[projects]]
-  branch = "master"
-  digest = "1:6b8b5bae7a9e5d42f1281592b769d7c9bd381f55825129da59f43715b5284efd"
-  name = "github.com/walmartdigital/katalog"
-  packages = [
-    "src/collector/k8s-driver",
-    "src/collector/publishers",
-    "src/domain",
-    "src/server",
-    "src/server/persistence",
-    "src/server/repositories",
-    "src/utils",
-  ]
-  pruneopts = "UT"
-  revision = "13f6e368a09947c723ac5229ff0d29bf98bc9626"
-
-[[projects]]
   digest = "1:3f3a05ae0b95893d90b9b3b5afdb79a9b3d96e4e36e099d841ae602e4aca0da8"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
@@ -684,13 +668,6 @@
     "github.com/prometheus/client_golang/prometheus/promhttp",
     "github.com/sirupsen/logrus",
     "github.com/verdverm/frisby",
-    "github.com/walmartdigital/katalog/src/collector/k8s-driver",
-    "github.com/walmartdigital/katalog/src/collector/publishers",
-    "github.com/walmartdigital/katalog/src/domain",
-    "github.com/walmartdigital/katalog/src/server",
-    "github.com/walmartdigital/katalog/src/server/persistence",
-    "github.com/walmartdigital/katalog/src/server/repositories",
-    "github.com/walmartdigital/katalog/src/utils",
     "k8s.io/api/apps/v1",
     "k8s.io/api/core/v1",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
