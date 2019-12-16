@@ -2,12 +2,13 @@ package domain
 
 import "reflect"
 
-// Deployment ...
+// StatefulSet ...
 type StatefulSet struct {
-	ID         string `json:",omitempty"`
-	Name       string `json:",omitempty"`
-	Generation int64  `json:",omitempty"`
-	Namespace  string `json:",omitempty"`
+	ID         string            `json:",omitempty"`
+	Name       string            `json:",omitempty"`
+	Generation int64             `json:",omitempty"`
+	Namespace  string            `json:",omitempty"`
+	Labels     map[string]string `json:",omitempty"`
 }
 
 // GetID ...
@@ -38,4 +39,9 @@ func (s *StatefulSet) GetNamespace() string {
 // GetName ...
 func (s *StatefulSet) GetName() string {
 	return s.Name
+}
+
+// GetLabels ...
+func (s *StatefulSet) GetLabels() map[string]string {
+	return s.Labels
 }

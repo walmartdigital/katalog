@@ -4,13 +4,14 @@ import "reflect"
 
 // Service ...
 type Service struct {
-	ID         string     `json:"ID"`
-	Name       string     `json:"Name"`
-	Port       int        `json:"Port"`
-	Address    string     `json:"Address"`
-	Generation int64      `json:"Generation"`
-	Namespace  string     `json:"Namespace"`
-	Instances  []Instance `json:"Instances"`
+	ID         string            `json:"ID"`
+	Name       string            `json:"Name"`
+	Port       int               `json:"Port"`
+	Address    string            `json:"Address"`
+	Generation int64             `json:"Generation"`
+	Namespace  string            `json:"Namespace"`
+	Instances  []Instance        `json:"Instances"`
+	Labels     map[string]string `json:",omitempty"`
 }
 
 // AddInstance ...
@@ -46,4 +47,9 @@ func (s *Service) GetNamespace() string {
 // GetName ...
 func (s *Service) GetName() string {
 	return s.Name
+}
+
+// GetLabels ...
+func (s *Service) GetLabels() map[string]string {
+	return s.Labels
 }

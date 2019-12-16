@@ -12,6 +12,7 @@ func buildServiceFromK8sService(sourceService *corev1.Service) domain.Service {
 		Address:   sourceService.Spec.ClusterIP,
 		Port:      int(sourceService.Spec.Ports[0].Port),
 		Namespace: sourceService.GetNamespace(),
+		Labels:    sourceService.GetLabels(),
 	}
 
 	return *destinationService

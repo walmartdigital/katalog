@@ -11,6 +11,7 @@ func buildStatefulSetFromK8sStatefulSet(sourceStatefulSet *appsv1.StatefulSet) d
 		Name:       sourceStatefulSet.GetName(),
 		Generation: sourceStatefulSet.GetGeneration(),
 		Namespace:  sourceStatefulSet.GetNamespace(),
+		Labels:     sourceStatefulSet.GetLabels(),
 	}
 
 	return *destinationStatefulSet

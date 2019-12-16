@@ -12,6 +12,7 @@ type K8sResource interface {
 	GetGeneration() int64
 	GetNamespace() string
 	GetName() string
+	GetLabels() map[string]string
 }
 
 // Resource ...
@@ -47,4 +48,9 @@ func (r *Resource) GetNamespace() string {
 // GetName ...
 func (r *Resource) GetName() string {
 	return r.K8sResource.GetName()
+}
+
+// GetLabels ...
+func (r *Resource) GetLabels() map[string]string {
+	return r.K8sResource.GetLabels()
 }

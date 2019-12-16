@@ -11,6 +11,7 @@ func buildDeploymentFromK8sDeployment(sourceDeployment *appsv1.Deployment) domai
 		Name:       sourceDeployment.GetName(),
 		Generation: sourceDeployment.GetGeneration(),
 		Namespace:  sourceDeployment.GetNamespace(),
+		Labels:     sourceDeployment.GetLabels(),
 	}
 
 	return *destinationDeployment
