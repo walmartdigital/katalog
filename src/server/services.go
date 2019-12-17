@@ -10,6 +10,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"github.com/walmartdigital/katalog/src/domain"
+	"github.com/walmartdigital/katalog/src/utils"
 )
 
 func (s *Server) getResourcesByType(resource domain.Resource) ([]interface{}, error) {
@@ -102,7 +103,7 @@ func (s *Server) createDeployment(w http.ResponseWriter, r *http.Request) {
 		"k8s-resource-ns":           resource.GetNamespace(),
 		"k8s-resource-name":         resource.GetName(),
 		"k8s-resource-labels":       resource.GetLabels(),
-		"k8s-deployment-containers": deployment.GetContainers(),
+		"k8s-deployment-containers": utils.ContainersToString(deployment.GetContainers()),
 		"k8s-action":                "create",
 	}).Infof("Deployment %s/%s created", resource.GetNamespace(), resource.GetName())
 
@@ -127,7 +128,7 @@ func (s *Server) updateDeployment(w http.ResponseWriter, r *http.Request) {
 		"k8s-resource-ns":           resource.GetNamespace(),
 		"k8s-resource-name":         resource.GetName(),
 		"k8s-resource-labels":       resource.GetLabels(),
-		"k8s-deployment-containers": deployment.GetContainers(),
+		"k8s-deployment-containers": utils.ContainersToString(deployment.GetContainers()),
 		"k8s-action":                "update",
 	}).Infof("Deployment %s/%s updated", resource.GetNamespace(), resource.GetName())
 
@@ -199,7 +200,7 @@ func (s *Server) createStatefulSet(w http.ResponseWriter, r *http.Request) {
 		"k8s-resource-ns":           resource.GetNamespace(),
 		"k8s-resource-name":         resource.GetName(),
 		"k8s-resource-labels":       resource.GetLabels(),
-		"k8s-deployment-containers": statefulset.GetContainers(),
+		"k8s-deployment-containers": utils.ContainersToString(statefulset.GetContainers()),
 		"k8s-action":                "create",
 	}).Infof("Statefulset %s/%s created", resource.GetNamespace(), resource.GetName())
 
@@ -224,7 +225,7 @@ func (s *Server) updateStatefulSet(w http.ResponseWriter, r *http.Request) {
 		"k8s-resource-ns":           resource.GetNamespace(),
 		"k8s-resource-name":         resource.GetName(),
 		"k8s-resource-labels":       resource.GetLabels(),
-		"k8s-deployment-containers": statefulset.GetContainers(),
+		"k8s-deployment-containers": utils.ContainersToString(statefulset.GetContainers()),
 		"k8s-action":                "update",
 	}).Infof("Statefulset %s/%s updated", resource.GetNamespace(), resource.GetName())
 

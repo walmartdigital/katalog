@@ -73,6 +73,19 @@ func DeserializeResource(objMap map[string]*json.RawMessage, objType reflect.Typ
 	return d, nil
 }
 
+// ContainersToString ...
+func ContainersToString(containers map[string]string) string {
+	result := ""
+	for k, v := range containers {
+		if result == "" {
+			result = fmt.Sprintf("%s:%s", k, v)
+		} else {
+			result = result + "," + fmt.Sprintf("%s:%s", k, v)
+		}
+	}
+	return result
+}
+
 // LogInit ...
 func LogInit(log *logrus.Logger) error {
 	log.Formatter = &logrus.JSONFormatter{}
