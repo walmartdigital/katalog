@@ -9,6 +9,7 @@ type StatefulSet struct {
 	Generation int64             `json:",omitempty"`
 	Namespace  string            `json:",omitempty"`
 	Labels     map[string]string `json:",omitempty"`
+	Containers map[string]string `json:",omitempty"`
 }
 
 // GetID ...
@@ -44,4 +45,9 @@ func (s *StatefulSet) GetName() string {
 // GetLabels ...
 func (s *StatefulSet) GetLabels() map[string]string {
 	return s.Labels
+}
+
+// GetContainers ...
+func (s *StatefulSet) GetContainers() map[string]string {
+	return s.Containers
 }

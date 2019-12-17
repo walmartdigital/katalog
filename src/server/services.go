@@ -97,12 +97,13 @@ func (s *Server) createDeployment(w http.ResponseWriter, r *http.Request) {
 	s.resourcesRepository.CreateResource(resource)
 
 	log.WithFields(logrus.Fields{
-		"k8s-resource-id":     resource.GetID(),
-		"k8s-resource-type":   "Deployment",
-		"k8s-resource-ns":     resource.GetNamespace(),
-		"k8s-resource-name":   resource.GetName(),
-		"k8s-resource-labels": resource.GetLabels(),
-		"k8s-action":          "create",
+		"k8s-resource-id":           resource.GetID(),
+		"k8s-resource-type":         "Deployment",
+		"k8s-resource-ns":           resource.GetNamespace(),
+		"k8s-resource-name":         resource.GetName(),
+		"k8s-resource-labels":       resource.GetLabels(),
+		"k8s-deployment-containers": deployment.GetContainers(),
+		"k8s-action":                "create",
 	}).Infof("Deployment %s/%s created", resource.GetNamespace(), resource.GetName())
 
 	(*s.metrics)["createDeployment"].(*prometheus.CounterVec).WithLabelValues(resource.GetID(), resource.GetNamespace(), resource.GetName()).Inc()
@@ -121,12 +122,13 @@ func (s *Server) updateDeployment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.WithFields(logrus.Fields{
-		"k8s-resource-id":     resource.GetID(),
-		"k8s-resource-type":   "Deployment",
-		"k8s-resource-ns":     resource.GetNamespace(),
-		"k8s-resource-name":   resource.GetName(),
-		"k8s-resource-labels": resource.GetLabels(),
-		"k8s-action":          "update",
+		"k8s-resource-id":           resource.GetID(),
+		"k8s-resource-type":         "Deployment",
+		"k8s-resource-ns":           resource.GetNamespace(),
+		"k8s-resource-name":         resource.GetName(),
+		"k8s-resource-labels":       resource.GetLabels(),
+		"k8s-deployment-containers": deployment.GetContainers(),
+		"k8s-action":                "update",
 	}).Infof("Deployment %s/%s updated", resource.GetNamespace(), resource.GetName())
 
 	if result != nil {

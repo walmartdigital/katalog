@@ -9,6 +9,7 @@ type Deployment struct {
 	Generation int64             `json:",omitempty"`
 	Namespace  string            `json:",omitempty"`
 	Labels     map[string]string `json:",omitempty"`
+	Containers map[string]string `json:",omitempty"`
 }
 
 // GetID ...
@@ -44,4 +45,9 @@ func (s *Deployment) GetName() string {
 // GetLabels ...
 func (s *Deployment) GetLabels() map[string]string {
 	return s.Labels
+}
+
+// GetContainers ...
+func (s *Deployment) GetContainers() map[string]string {
+	return s.Containers
 }
