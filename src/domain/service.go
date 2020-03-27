@@ -4,14 +4,15 @@ import "reflect"
 
 // Service ...
 type Service struct {
-	ID         string            `json:"ID"`
-	Name       string            `json:"Name"`
-	Port       int               `json:"Port"`
-	Address    string            `json:"Address"`
-	Generation int64             `json:"Generation"`
-	Namespace  string            `json:"Namespace"`
-	Instances  []Instance        `json:"Instances"`
-	Labels     map[string]string `json:",omitempty"`
+	ID          string            `json:"ID"`
+	Name        string            `json:"Name"`
+	Port        int               `json:"Port"`
+	Address     string            `json:"Address"`
+	Generation  int64             `json:"Generation"`
+	Namespace   string            `json:"Namespace"`
+	Instances   []Instance        `json:"Instances"`
+	Labels      map[string]string `json:",omitempty"`
+	Annotations map[string]string `json:",omitempty"`
 }
 
 // AddInstance ...
@@ -52,4 +53,9 @@ func (s *Service) GetName() string {
 // GetLabels ...
 func (s *Service) GetLabels() map[string]string {
 	return s.Labels
+}
+
+// GetAnnotations ...
+func (s *Service) GetAnnotations() map[string]string {
+	return s.Annotations
 }

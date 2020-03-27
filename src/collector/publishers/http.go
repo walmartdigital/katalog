@@ -16,7 +16,10 @@ import (
 var log = logrus.New()
 
 func init() {
-	utils.LogInit(log)
+	err := utils.LogInit(log)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 }
 
 type httpClient interface {
@@ -58,7 +61,10 @@ func (c *HTTPPublisher) post(resource domain.Resource) error {
 	switch v := resource.GetType(); v {
 	case reflect.TypeOf(new(domain.Service)):
 		service := resource.GetK8sResource().(*domain.Service)
-		json.NewEncoder(reqBodyBytes).Encode(*service)
+		err := json.NewEncoder(reqBodyBytes).Encode(*service)
+		if err != nil {
+			logrus.Fatal(err)
+		}
 		req, _ := http.NewRequest(http.MethodPost, c.url+"/services/"+service.ID, reqBodyBytes)
 		req.Header.Add("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
@@ -71,7 +77,10 @@ func (c *HTTPPublisher) post(resource domain.Resource) error {
 
 	case reflect.TypeOf(new(domain.Deployment)):
 		deployment := resource.GetK8sResource().(*domain.Deployment)
-		json.NewEncoder(reqBodyBytes).Encode(*deployment)
+		err := json.NewEncoder(reqBodyBytes).Encode(*deployment)
+		if err != nil {
+			logrus.Fatal(err)
+		}
 		req, _ := http.NewRequest(http.MethodPost, c.url+"/deployments/"+deployment.ID, reqBodyBytes)
 		req.Header.Add("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
@@ -84,7 +93,10 @@ func (c *HTTPPublisher) post(resource domain.Resource) error {
 
 	case reflect.TypeOf(new(domain.StatefulSet)):
 		statefulset := resource.GetK8sResource().(*domain.StatefulSet)
-		json.NewEncoder(reqBodyBytes).Encode(*statefulset)
+		err := json.NewEncoder(reqBodyBytes).Encode(*statefulset)
+		if err != nil {
+			logrus.Fatal(err)
+		}
 		req, _ := http.NewRequest(http.MethodPost, c.url+"/statefulsets/"+statefulset.ID, reqBodyBytes)
 		req.Header.Add("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
@@ -108,7 +120,10 @@ func (c *HTTPPublisher) put(resource domain.Resource) error {
 	switch v := resource.GetType(); v {
 	case reflect.TypeOf(new(domain.Service)):
 		service := resource.GetK8sResource().(*domain.Service)
-		json.NewEncoder(reqBodyBytes).Encode(*service)
+		err := json.NewEncoder(reqBodyBytes).Encode(*service)
+		if err != nil {
+			logrus.Fatal(err)
+		}
 		req, _ := http.NewRequest(http.MethodPut, c.url+"/services/"+service.ID, reqBodyBytes)
 		req.Header.Add("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
@@ -121,7 +136,10 @@ func (c *HTTPPublisher) put(resource domain.Resource) error {
 
 	case reflect.TypeOf(new(domain.Deployment)):
 		deployment := resource.GetK8sResource().(*domain.Deployment)
-		json.NewEncoder(reqBodyBytes).Encode(*deployment)
+		err := json.NewEncoder(reqBodyBytes).Encode(*deployment)
+		if err != nil {
+			logrus.Fatal(err)
+		}
 		req, _ := http.NewRequest(http.MethodPut, c.url+"/deployments/"+deployment.ID, reqBodyBytes)
 		req.Header.Add("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
@@ -134,7 +152,10 @@ func (c *HTTPPublisher) put(resource domain.Resource) error {
 
 	case reflect.TypeOf(new(domain.StatefulSet)):
 		statefulset := resource.GetK8sResource().(*domain.StatefulSet)
-		json.NewEncoder(reqBodyBytes).Encode(*statefulset)
+		err := json.NewEncoder(reqBodyBytes).Encode(*statefulset)
+		if err != nil {
+			logrus.Fatal(err)
+		}
 		req, _ := http.NewRequest(http.MethodPut, c.url+"/statefulsets/"+statefulset.ID, reqBodyBytes)
 		req.Header.Add("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)

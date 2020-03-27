@@ -18,7 +18,10 @@ import (
 var log = logrus.New()
 
 func init() {
-	utils.LogInit(log)
+	err := utils.LogInit(log)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 }
 
 const resyncPeriod = 0

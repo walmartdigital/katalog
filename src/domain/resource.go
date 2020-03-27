@@ -13,6 +13,7 @@ type K8sResource interface {
 	GetNamespace() string
 	GetName() string
 	GetLabels() map[string]string
+	GetAnnotations() map[string]string
 }
 
 // Resource ...
@@ -53,4 +54,9 @@ func (r *Resource) GetName() string {
 // GetLabels ...
 func (r *Resource) GetLabels() map[string]string {
 	return r.K8sResource.GetLabels()
+}
+
+// GetAnnotations ...
+func (r *Resource) GetAnnotations() map[string]string {
+	return r.K8sResource.GetAnnotations()
 }

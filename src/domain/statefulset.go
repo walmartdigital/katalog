@@ -4,12 +4,13 @@ import "reflect"
 
 // StatefulSet ...
 type StatefulSet struct {
-	ID         string            `json:",omitempty"`
-	Name       string            `json:",omitempty"`
-	Generation int64             `json:",omitempty"`
-	Namespace  string            `json:",omitempty"`
-	Labels     map[string]string `json:",omitempty"`
-	Containers map[string]string `json:",omitempty"`
+	ID          string            `json:",omitempty"`
+	Name        string            `json:",omitempty"`
+	Generation  int64             `json:",omitempty"`
+	Namespace   string            `json:",omitempty"`
+	Labels      map[string]string `json:",omitempty"`
+	Annotations map[string]string `json:",omitempty"`
+	Containers  map[string]string `json:",omitempty"`
 }
 
 // GetID ...
@@ -50,4 +51,9 @@ func (s *StatefulSet) GetLabels() map[string]string {
 // GetContainers ...
 func (s *StatefulSet) GetContainers() map[string]string {
 	return s.Containers
+}
+
+// GetAnnotations ...
+func (s *StatefulSet) GetAnnotations() map[string]string {
+	return s.Annotations
 }

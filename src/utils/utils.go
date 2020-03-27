@@ -13,7 +13,10 @@ import (
 var log = logrus.New()
 
 func init() {
-	LogInit(log)
+	err := LogInit(log)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 }
 
 // Serialize ...
@@ -91,11 +94,11 @@ func LogInit(log *logrus.Logger) error {
 	log.Formatter = &logrus.JSONFormatter{}
 	logLocation := os.Getenv("LOG_FILE")
 
-	file, err := os.OpenFile(logLocation, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	file, err := os.OpenFile(logLocation, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 	if err == nil {
 		log.Out = file
 	} else {
 		log.Info("Failed to log to file, using default stderr")
 	}
-	return err
+	return nil
 }

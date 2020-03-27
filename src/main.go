@@ -32,7 +32,10 @@ var publisher = flag.String("publisher", publisherHTTP, "select where to publish
 var configfile = flag.Bool("kubeconfig", false, "true if a $HOME/.kube/config file exists")
 
 func main() {
-	utils.LogInit(log)
+	err := utils.LogInit(log)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 	flag.Parse()
 	var kubeconfig string
 
@@ -67,11 +70,20 @@ func mainCollector(kubeconfig string) {
 	for {
 		select {
 		case event := <-serviceEvents:
-			publisher.Publish(event)
+			err := publisher.Publish(event)
+			if err != nil {
+				logrus.Fatal(err)
+			}
 		case event := <-deploymentEvents:
-			publisher.Publish(event)
+			err := publisher.Publish(event)
+			if err != nil {
+				logrus.Fatal(err)
+			}
 		case event := <-statefulsetEvents:
-			publisher.Publish(event)
+			err := publisher.Publish(event)
+			if err != nil {
+				logrus.Fatal(err)
+			}
 		}
 	}
 }
