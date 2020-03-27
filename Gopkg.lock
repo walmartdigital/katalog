@@ -301,6 +301,17 @@
   version = "v0.0.3"
 
 [[projects]]
+  digest = "1:7f5dca39c5ab34d86be886f85a3df6de6b1b878f8916f0b1fd9fd6932e4fd876"
+  name = "github.com/segmentio/kafka-go"
+  packages = [
+    ".",
+    "sasl",
+  ]
+  pruneopts = "UT"
+  revision = "9a956db8bd00245835f16007fbfe8ec58b31b8b9"
+  version = "v0.3.5"
+
+[[projects]]
   digest = "1:04457f9f6f3ffc5fea48e71d62f2ca256637dee0a04d710288e27e05c8b41976"
   name = "github.com/sirupsen/logrus"
   packages = ["."]
@@ -666,6 +677,7 @@
     "github.com/onsi/gomega",
     "github.com/prometheus/client_golang/prometheus",
     "github.com/prometheus/client_golang/prometheus/promhttp",
+    "github.com/segmentio/kafka-go",
     "github.com/sirupsen/logrus",
     "github.com/verdverm/frisby",
     "k8s.io/api/apps/v1",
