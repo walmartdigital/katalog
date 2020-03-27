@@ -52,6 +52,16 @@ func (s *DummyK8sResource) GetName() string {
 	return s.GetName()
 }
 
+// GetAnnotations ...
+func (s *DummyK8sResource) GetAnnotations() map[string]string {
+	return s.GetAnnotations()
+}
+
+// GetLabels ...
+func (s *DummyK8sResource) GetLabels() map[string]string {
+	return s.GetLabels()
+}
+
 func TestAll(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "memory persistence")
