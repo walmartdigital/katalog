@@ -8,19 +8,8 @@ import (
 	"reflect"
 
 	"github.com/avast/retry-go"
-	"github.com/sirupsen/logrus"
 	"github.com/walmartdigital/katalog/src/domain"
-	"github.com/walmartdigital/katalog/src/utils"
 )
-
-var log = logrus.New()
-
-func init() {
-	err := utils.LogInit(log)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-}
 
 type httpClient interface {
 }
@@ -63,7 +52,7 @@ func (c *HTTPPublisher) post(resource domain.Resource) error {
 		service := resource.GetK8sResource().(*domain.Service)
 		err := json.NewEncoder(reqBodyBytes).Encode(*service)
 		if err != nil {
-			logrus.Fatal(err)
+			log.Fatal(err)
 		}
 		req, _ := http.NewRequest(http.MethodPost, c.url+"/services/"+service.ID, reqBodyBytes)
 		req.Header.Add("Content-Type", "application/json")
@@ -79,7 +68,7 @@ func (c *HTTPPublisher) post(resource domain.Resource) error {
 		deployment := resource.GetK8sResource().(*domain.Deployment)
 		err := json.NewEncoder(reqBodyBytes).Encode(*deployment)
 		if err != nil {
-			logrus.Fatal(err)
+			log.Fatal(err)
 		}
 		req, _ := http.NewRequest(http.MethodPost, c.url+"/deployments/"+deployment.ID, reqBodyBytes)
 		req.Header.Add("Content-Type", "application/json")
@@ -95,7 +84,7 @@ func (c *HTTPPublisher) post(resource domain.Resource) error {
 		statefulset := resource.GetK8sResource().(*domain.StatefulSet)
 		err := json.NewEncoder(reqBodyBytes).Encode(*statefulset)
 		if err != nil {
-			logrus.Fatal(err)
+			log.Fatal(err)
 		}
 		req, _ := http.NewRequest(http.MethodPost, c.url+"/statefulsets/"+statefulset.ID, reqBodyBytes)
 		req.Header.Add("Content-Type", "application/json")
@@ -122,7 +111,7 @@ func (c *HTTPPublisher) put(resource domain.Resource) error {
 		service := resource.GetK8sResource().(*domain.Service)
 		err := json.NewEncoder(reqBodyBytes).Encode(*service)
 		if err != nil {
-			logrus.Fatal(err)
+			log.Fatal(err)
 		}
 		req, _ := http.NewRequest(http.MethodPut, c.url+"/services/"+service.ID, reqBodyBytes)
 		req.Header.Add("Content-Type", "application/json")
@@ -138,7 +127,7 @@ func (c *HTTPPublisher) put(resource domain.Resource) error {
 		deployment := resource.GetK8sResource().(*domain.Deployment)
 		err := json.NewEncoder(reqBodyBytes).Encode(*deployment)
 		if err != nil {
-			logrus.Fatal(err)
+			log.Fatal(err)
 		}
 		req, _ := http.NewRequest(http.MethodPut, c.url+"/deployments/"+deployment.ID, reqBodyBytes)
 		req.Header.Add("Content-Type", "application/json")
@@ -154,7 +143,7 @@ func (c *HTTPPublisher) put(resource domain.Resource) error {
 		statefulset := resource.GetK8sResource().(*domain.StatefulSet)
 		err := json.NewEncoder(reqBodyBytes).Encode(*statefulset)
 		if err != nil {
-			logrus.Fatal(err)
+			log.Fatal(err)
 		}
 		req, _ := http.NewRequest(http.MethodPut, c.url+"/statefulsets/"+statefulset.ID, reqBodyBytes)
 		req.Header.Add("Content-Type", "application/json")

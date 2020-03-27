@@ -34,7 +34,7 @@ var configfile = flag.Bool("kubeconfig", false, "true if a $HOME/.kube/config fi
 func main() {
 	err := utils.LogInit(log)
 	if err != nil {
-		logrus.Fatal(err)
+		log.Fatal(err)
 	}
 	flag.Parse()
 	var kubeconfig string
@@ -72,17 +72,17 @@ func mainCollector(kubeconfig string) {
 		case event := <-serviceEvents:
 			err := publisher.Publish(event)
 			if err != nil {
-				logrus.Fatal(err)
+				log.Fatal(err)
 			}
 		case event := <-deploymentEvents:
 			err := publisher.Publish(event)
 			if err != nil {
-				logrus.Fatal(err)
+				log.Fatal(err)
 			}
 		case event := <-statefulsetEvents:
 			err := publisher.Publish(event)
 			if err != nil {
-				logrus.Fatal(err)
+				log.Fatal(err)
 			}
 		}
 	}

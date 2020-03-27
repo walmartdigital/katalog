@@ -15,7 +15,7 @@ var log = logrus.New()
 func init() {
 	err := LogInit(log)
 	if err != nil {
-		logrus.Fatal(err)
+		log.Fatal(err)
 	}
 }
 
