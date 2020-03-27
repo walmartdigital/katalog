@@ -104,9 +104,9 @@ func (s *Server) createDeployment(w http.ResponseWriter, r *http.Request) {
 		"k8s-resource-name":                  resource.GetName(),
 		"k8s-resource-labels":                resource.GetLabels(),
 		"k8s-resource-annotations":           resource.GetAnnotations(),
+		"k8s-resource-generation":            resource.GetGeneration(),
 		"k8s-pod-template.containers.images": utils.ContainersToString(deployment.GetContainers()),
 		"k8s-action":                         "create",
-		"k8s-resource-generation":            resource.GetGeneration(),
 	}).Infof("Deployment %s/%s created", resource.GetNamespace(), resource.GetName())
 
 	(*s.metrics)["createDeployment"].(*prometheus.CounterVec).WithLabelValues(resource.GetID(), resource.GetNamespace(), resource.GetName()).Inc()
@@ -130,6 +130,8 @@ func (s *Server) updateDeployment(w http.ResponseWriter, r *http.Request) {
 		"k8s-resource-ns":                    resource.GetNamespace(),
 		"k8s-resource-name":                  resource.GetName(),
 		"k8s-resource-labels":                resource.GetLabels(),
+		"k8s-resource-annotations":           resource.GetAnnotations(),
+		"k8s-resource-generation":            resource.GetGeneration(),
 		"k8s-pod-template.containers.images": utils.ContainersToString(deployment.GetContainers()),
 		"k8s-action":                         "update",
 	}).Infof("Deployment %s/%s updated", resource.GetNamespace(), resource.GetName())
@@ -158,12 +160,14 @@ func (s *Server) deleteDeployment(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "deleted deployment id: %s", id)
 
 	log.WithFields(logrus.Fields{
-		"k8s-resource-id":     rep.GetID(),
-		"k8s-resource-type":   "Deployment",
-		"k8s-resource-ns":     rep.GetNamespace(),
-		"k8s-resource-name":   rep.GetName(),
-		"k8s-resource-labels": rep.GetLabels(),
-		"k8s-action":          "delete",
+		"k8s-resource-id":          rep.GetID(),
+		"k8s-resource-type":        "Deployment",
+		"k8s-resource-ns":          rep.GetNamespace(),
+		"k8s-resource-name":        rep.GetName(),
+		"k8s-resource-labels":      rep.GetLabels(),
+		"k8s-resource-annotations": rep.GetAnnotations(),
+		"k8s-resource-generation":  rep.GetGeneration(),
+		"k8s-action":               "delete",
 	}).Infof("Deployment %s/%s deleted", rep.GetNamespace(), rep.GetName())
 
 	(*s.metrics)["deleteDeployment"].(*prometheus.CounterVec).WithLabelValues(id, rep.GetNamespace(), rep.GetName()).Inc()
@@ -202,6 +206,8 @@ func (s *Server) createStatefulSet(w http.ResponseWriter, r *http.Request) {
 		"k8s-resource-ns":                    resource.GetNamespace(),
 		"k8s-resource-name":                  resource.GetName(),
 		"k8s-resource-labels":                resource.GetLabels(),
+		"k8s-resource-annotations":           resource.GetAnnotations(),
+		"k8s-resource-generation":            resource.GetGeneration(),
 		"k8s-pod-template.containers.images": utils.ContainersToString(statefulset.GetContainers()),
 		"k8s-action":                         "create",
 	}).Infof("Statefulset %s/%s created", resource.GetNamespace(), resource.GetName())
@@ -227,6 +233,8 @@ func (s *Server) updateStatefulSet(w http.ResponseWriter, r *http.Request) {
 		"k8s-resource-ns":                    resource.GetNamespace(),
 		"k8s-resource-name":                  resource.GetName(),
 		"k8s-resource-labels":                resource.GetLabels(),
+		"k8s-resource-annotations":           resource.GetAnnotations(),
+		"k8s-resource-generation":            resource.GetGeneration(),
 		"k8s-pod-template.containers.images": utils.ContainersToString(statefulset.GetContainers()),
 		"k8s-action":                         "update",
 	}).Infof("Statefulset %s/%s updated", resource.GetNamespace(), resource.GetName())
@@ -253,12 +261,14 @@ func (s *Server) deleteStatefulSet(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "deleted statefulset id: %s", id)
 
 	log.WithFields(logrus.Fields{
-		"k8s-resource-id":     rep.GetID(),
-		"k8s-resource-type":   "StatefulSet",
-		"k8s-resource-ns":     rep.GetNamespace(),
-		"k8s-resource-name":   rep.GetName(),
-		"k8s-resource-labels": rep.GetLabels(),
-		"k8s-action":          "delete",
+		"k8s-resource-id":          rep.GetID(),
+		"k8s-resource-type":        "StatefulSet",
+		"k8s-resource-ns":          rep.GetNamespace(),
+		"k8s-resource-name":        rep.GetName(),
+		"k8s-resource-labels":      rep.GetLabels(),
+		"k8s-resource-annotations": rep.GetAnnotations(),
+		"k8s-resource-generation":  rep.GetGeneration(),
+		"k8s-action":               "delete",
 	}).Infof("Statefulset %s/%s deleted", rep.GetNamespace(), rep.GetName())
 
 	(*s.metrics)["deleteStatefulSet"].(*prometheus.CounterVec).WithLabelValues(id, rep.GetNamespace(), rep.GetName()).Inc()
