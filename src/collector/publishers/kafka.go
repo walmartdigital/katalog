@@ -29,9 +29,9 @@ func BuildKafkaPublisher(url string, topicPrefix string) Publisher {
 // CreateProducers ...
 func (c *KafkaPublisher) CreateProducers() error {
 	c.kafkaWriters = map[string]*kafka.Writer{
-		"created": getKafkaWriter(c.url, c.topicPrefix+"created"),
-		"deleted": getKafkaWriter(c.url, c.topicPrefix+"updated"),
-		"updated": getKafkaWriter(c.url, c.topicPrefix+"updated"),
+		"created": getKafkaWriter(c.url, c.topicPrefix+".created"),
+		"deleted": getKafkaWriter(c.url, c.topicPrefix+".updated"),
+		"updated": getKafkaWriter(c.url, c.topicPrefix+".updated"),
 	}
 
 	return nil
