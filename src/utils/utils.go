@@ -92,13 +92,15 @@ func ContainersToString(containers map[string]string) string {
 // LogInit ...
 func LogInit(log *logrus.Logger) error {
 	log.Formatter = &logrus.JSONFormatter{}
-	logLocation := os.Getenv("LOG_FILE")
 
-	file, err := os.OpenFile(logLocation, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
-	if err == nil {
+	if logLocation, ok := os.LookupEnv("LOG_FILE"); ok {
+		file, err := os.OpenFile(logLocation, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
+		if err != nil {
+			log.Info("Failed to log to file, using default stderr")
+			return err
+		}
 		log.Out = file
-	} else {
-		log.Info("Failed to log to file, using default stderr")
 	}
+
 	return nil
 }
