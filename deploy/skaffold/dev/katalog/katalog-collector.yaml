@@ -32,3 +32,9 @@ spec:
             limits:
               memory: 200Mi
               cpu: "100m"
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmp
+      volumes:
+      - name: tmp
+        emptyDir: {}
