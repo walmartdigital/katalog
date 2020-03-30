@@ -161,5 +161,8 @@ func (s *Server) handleRequests() {
 	s.router.HandleFunc("/statefulsets/{id}", s.updateStatefulSet).Methods("PUT")
 	s.router.HandleFunc("/statefulsets/{id}", s.deleteStatefulSet).Methods("DELETE")
 
-	s.httpServer.ListenAndServe()
+	err := s.httpServer.ListenAndServe()
+	if err != nil {
+		log.Fatal(err)
+	}
 }

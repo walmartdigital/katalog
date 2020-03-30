@@ -12,7 +12,10 @@ import (
 var log = logrus.New()
 
 func init() {
-	utils.LogInit(log)
+	err := utils.LogInit(log)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 // ResourceRepository ...
@@ -57,7 +60,11 @@ func (r *ResourceRepository) UpdateResource(resource interface{}) (*domain.Resou
 	sr := savedResource.(domain.Resource)
 	if &sr != nil {
 		if sr.GetGeneration() < res.GetGeneration() {
-			r.persistence.Update(res.GetID(), res)
+			err := r.persistence.Update(res.GetID(), res)
+			if err != nil {
+				log.Fatal(err)
+				return nil, err
+			}
 			return &res, nil
 		}
 	}
@@ -83,7 +90,11 @@ func (r *ResourceRepository) GetAllResources() ([]interface{}, error) {
 	}
 	for _, item := range resources {
 		var resource domain.Resource
-		mapstructure.Decode(item, &resource)
+		err := mapstructure.Decode(item, &resource)
+		if err != nil {
+			log.Fatal(err)
+			return nil, err
+		}
 		list.Add(resource)
 	}
 

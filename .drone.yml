@@ -7,21 +7,71 @@ platform:
   arch: amd64
 
 steps:
-# - name: test
-#   pull: default
-#   image: golang:alpine
-#   commands:
-#     - apk update && apk --no-cache add git dep ca-certificates
-#     - mkdir /go/src/katalog
-#     - cp -R /drone/src/. /go/src/katalog/
-#     - cd /go/src/katalog
-#     - dep ensure
-#     - CGO_ENABLED=0 GOOS=linux go test ./... -v -cover
-#   when:
-#     branch:
-#     - master
-#     event:
-#     - push
+- name: lint
+  pull: default
+  image: golang:1.14
+  environment:
+    - CGO_ENABLED=0
+  commands:
+    - "go get -u golang.org/x/lint/golint"
+    - "/go/bin/golint -set_exit_status ./..."
+  when:
+    event: [push, tag]
+- name: security
+  pull: default
+  image: golang:1.14
+  environment:
+    - CGO_ENABLED=0
+  commands:
+    - "go get github.com/securego/gosec/cmd/gosec"
+    - "/go/bin/gosec ./..."
+  when:
+    event: [push, tag]
+- name: style
+  pull: default
+  image: golang:1.14
+  environment:
+    - CGO_ENABLED=0
+  commands:
+    - "go get github.com/qiniu/checkstyle/gocheckstyle"
+    - "/go/bin/gocheckstyle -config=.go_style ./ server regex"
+  when:
+    event: [push, tag]
+- name: naming
+  pull: default
+  image: golang:1.14
+  environment:
+    - CGO_ENABLED=0
+  commands:
+    - "go get -v github.com/quasilyte/go-namecheck"
+    - "/go/bin/go-namecheck -rules .go_naming_rules ./..."
+  when:
+    event: [push, tag]
+- name: code-duplicates
+  pull: default
+  image: golang:1.14
+  environment:
+    - CGO_ENABLED=0
+  commands:
+    - "go get -u github.com/mibk/dupl"
+    - "dupl -t 200"
+  when:
+    event: [push, tag]
+- name: test
+  pull: default
+  image: golang:alpine
+  commands:
+    - apk update && apk --no-cache add git dep ca-certificates
+    - mkdir /go/src/katalog
+    - cp -R /drone/src/. /go/src/katalog/
+    - cd /go/src/katalog
+    - dep ensure
+    - CGO_ENABLED=0 GOOS=linux go test ./... -v -cover
+  when:
+    branch:
+    - master
+    event:
+    - push
 - name: publish
   pull: default
   image: plugins/docker

@@ -31,17 +31,29 @@ func (s *Server) getResourcesByType(resource domain.Resource) ([]interface{}, er
 
 func (s *Server) createService(w http.ResponseWriter, r *http.Request) {
 	var service domain.Service
-	json.NewDecoder(r.Body).Decode(&service)
+	errDecoding := json.NewDecoder(r.Body).Decode(&service)
+	if errDecoding != nil {
+		log.Fatal(errDecoding)
+	}
 	resource := domain.Resource{
 		K8sResource: &service,
 	}
-	s.resourcesRepository.CreateResource(resource)
-	json.NewEncoder(w).Encode(service)
+	errCreatingResource := s.resourcesRepository.CreateResource(resource)
+	if errCreatingResource != nil {
+		log.Fatal(errCreatingResource)
+	}
+	err := json.NewEncoder(w).Encode(service)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (s *Server) updateService(w http.ResponseWriter, r *http.Request) {
 	var service domain.Service
-	json.NewDecoder(r.Body).Decode(&service)
+	errDecoding := json.NewDecoder(r.Body).Decode(&service)
+	if errDecoding != nil {
+		log.Fatal(errDecoding)
+	}
 	resource := domain.Resource{K8sResource: &service}
 	_, err := s.resourcesRepository.UpdateResource(resource)
 
@@ -50,7 +62,10 @@ func (s *Server) updateService(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(service)
+	errEncoding := json.NewEncoder(w).Encode(service)
+	if errEncoding != nil {
+		log.Fatal(errEncoding)
+	}
 }
 
 func (s *Server) deleteService(w http.ResponseWriter, r *http.Request) {
@@ -78,7 +93,10 @@ func (s *Server) getAllServices(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(services)
+	errEncoding := json.NewEncoder(w).Encode(services)
+	if errEncoding != nil {
+		log.Fatal(errEncoding)
+	}
 }
 
 func (s *Server) countServices(w http.ResponseWriter, r *http.Request) {
@@ -88,7 +106,10 @@ func (s *Server) countServices(w http.ResponseWriter, r *http.Request) {
 		log.Error("Resource not found")
 		return
 	}
-	json.NewEncoder(w).Encode(struct{ Count int }{len(services)})
+	errEncode := json.NewEncoder(w).Encode(struct{ Count int }{len(services)})
+	if errEncode != nil {
+		log.Fatal(errEncode)
+	}
 }
 
 func (s *Server) createDeployment(w http.ResponseWriter, r *http.Request) {
