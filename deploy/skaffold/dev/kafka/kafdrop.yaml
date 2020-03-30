@@ -1,10 +1,15 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kafka
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     app: kafdrop
   name: kafdrop
-  namespace: kafka-connect
+  namespace: kafka
 spec:
   replicas: 1
   strategy:
@@ -42,7 +47,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: kafdrop
-  namespace: kafka-connect
+  namespace: kafka
   labels:
     app: kafdrop
 spec:

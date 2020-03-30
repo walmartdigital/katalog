@@ -24,11 +24,14 @@ var log = logrus.New()
 const roleCollector = "collector"
 const roleServer = "server"
 const publisherHTTP = "http"
+const publisherKafka = "kafka"
 
 var role = flag.String("role", roleCollector, "collector or server")
 var httpURL = flag.String("http-url", "http://127.0.0.1:10000", "http url")
+var kafkaURL = flag.String("kafka-url", "localhost:9092", "kafka url")
+var kafkaTopicPrefix = flag.String("kafka-topic-prefix", "_katalog.artifact", "kafka topic prefix")
 var excludeSystemNamespace = flag.Bool("exclude-system-namespace", false, "exclude all services from kube-system namespace")
-var publisher = flag.String("publisher", publisherHTTP, "select where to publish: http")
+var publisher = flag.String("publisher", publisherKafka, "select where to publish: kafka | http")
 var configfile = flag.Bool("kubeconfig", false, "true if a $HOME/.kube/config file exists")
 
 func main() {
@@ -38,6 +41,22 @@ func main() {
 	}
 	flag.Parse()
 	var kubeconfig string
+
+	if value, ok := os.LookupEnv("PUBLISHER"); ok {
+		publisher = &value
+	}
+
+	if value, ok := os.LookupEnv("HTTP_URL"); ok {
+		httpURL = &value
+	}
+
+	if value, ok := os.LookupEnv("KAFKA_URL"); ok {
+		kafkaURL = &value
+	}
+
+	if value, ok := os.LookupEnv("KAFKA_TOPIC_PREFIX"); ok {
+		kafkaTopicPrefix = &value
+	}
 
 	if *configfile {
 		kubeconfig = filepath.Join(
@@ -90,6 +109,8 @@ func mainCollector(kubeconfig string) {
 
 func resolvePublisher() publishers.Publisher {
 	switch *publisher {
+	case publisherKafka:
+		return publishers.BuildKafkaPublisher(*kafkaURL, *kafkaTopicPrefix)
 	case publisherHTTP:
 		return publishers.BuildHTTPPublisher(*httpURL, retry.Do)
 	default:

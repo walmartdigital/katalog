@@ -29,7 +29,9 @@ type KafkaPublisher struct {
 
 // BuildKafkaPublisher ...
 func BuildKafkaPublisher(url string, topicPrefix string) Publisher {
-	return &KafkaPublisher{url: url, topicPrefix: topicPrefix}
+	publisher := &KafkaPublisher{url: url, topicPrefix: topicPrefix}
+	publisher.CreateProducers()
+	return publisher
 }
 
 // CreateProducers ...
