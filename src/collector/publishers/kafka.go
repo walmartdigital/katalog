@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"reflect"
 
 	"github.com/walmartdigital/katalog/src/domain"
@@ -22,9 +23,10 @@ func getKafkaWriter(kafkaURL, topic string) *kafka.Writer {
 
 // KafkaPublisher ...
 type KafkaPublisher struct {
-	url          string
-	topicPrefix  string //katalog.artifact.[created|deleted|updated]
-	kafkaWriters map[string]*kafka.Writer
+	url           string
+	topicPrefix   string //katalog.artifact.[created|deleted|updated]
+	kafkaWriters  map[string]*kafka.Writer
+	healthCounter int
 }
 
 // BuildKafkaPublisher ...
@@ -40,6 +42,7 @@ func (c *KafkaPublisher) CreateProducers() error {
 		"created": getKafkaWriter(c.url, c.topicPrefix+".created"),
 		"deleted": getKafkaWriter(c.url, c.topicPrefix+".updated"),
 		"updated": getKafkaWriter(c.url, c.topicPrefix+".updated"),
+		"health":  getKafkaWriter(c.url, c.topicPrefix+".health"),
 	}
 
 	return nil
@@ -143,6 +146,30 @@ func (c *KafkaPublisher) getKey(resource domain.Resource) string {
 		log.Errorf("Type %s not found", v)
 		panic(errors.New("Type %s not found"))
 	}
+}
+
+// Check ...
+func (c *KafkaPublisher) Check() bool {
+	if c.kafkaWriters == nil {
+		return false
+	}
+
+	writer := c.kafkaWriters["health"]
+
+	c.healthCounter++
+	err := writer.WriteMessages(
+		context.Background(),
+		kafka.Message{
+			Key:   []byte("check"),
+			Value: []byte(fmt.Sprintf("{\"count\": %d}", c.healthCounter)),
+		},
+	)
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
+
+	return true
 }
 
 // Publish ...

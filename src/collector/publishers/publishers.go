@@ -17,4 +17,5 @@ func init() {
 // Publisher ...
 type Publisher interface {
 	Publish(obj interface{}) error
+	Check() bool
 }

@@ -1,10 +1,12 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"github.com/walmartdigital/katalog/src/domain"
@@ -83,6 +85,7 @@ func mainCollector(kubeconfig string) {
 	statefulsetEvents := make(chan interface{})
 	k8sDriver := k8sdriver.BuildDriver(kubeconfig, *excludeSystemNamespace)
 	publisher := resolvePublisher()
+	defer closeProbes()
 	go k8sDriver.StartWatchingResources(serviceEvents, domain.Resource{K8sResource: &domain.Service{}})
 	go k8sDriver.StartWatchingResources(deploymentEvents, domain.Resource{K8sResource: &domain.Deployment{}})
 	go k8sDriver.StartWatchingResources(statefulsetEvents, domain.Resource{K8sResource: &domain.StatefulSet{}})
@@ -107,15 +110,52 @@ func mainCollector(kubeconfig string) {
 	}
 }
 
+var ticker *time.Ticker
+var done chan bool
+
 func resolvePublisher() publishers.Publisher {
+	var current publishers.Publisher
 	switch *publisher {
 	case publisherKafka:
-		return publishers.BuildKafkaPublisher(*kafkaURL, *kafkaTopicPrefix)
+		current = publishers.BuildKafkaPublisher(*kafkaURL, *kafkaTopicPrefix)
 	case publisherHTTP:
-		return publishers.BuildHTTPPublisher(*httpURL, retry.Do)
+		current = publishers.BuildHTTPPublisher(*httpURL, retry.Do)
 	default:
-		return nil
+		panic(errors.New("A publusher must be selected"))
 	}
+
+	// Liveness probe
+	ticker = time.NewTicker(30 * time.Second)
+	done = make(chan bool)
+	go func() {
+		select {
+		case <-done:
+			return
+		case t := <-ticker.C:
+			if current.Check() {
+				log.Debug("(LIVE) Health check at " + t.Local().String())
+				_, errOpen := os.OpenFile("/tmp/imlive", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
+				if errOpen != nil {
+					log.Fatal(errOpen)
+				}
+
+			} else {
+				log.Debug("(DEAD) Health check at " + t.Local().String())
+				errRemove := os.Remove("/tmp/imlive")
+				if errRemove != nil {
+					log.Fatal(errRemove)
+				}
+			}
+		}
+	}()
+
+	return current
+}
+
+func closeProbes() {
+	log.Info("Closing health checks")
+	ticker.Stop()
+	done <- true
 }
 
 func mainServer() {

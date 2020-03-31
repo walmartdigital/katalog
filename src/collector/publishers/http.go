@@ -25,6 +25,11 @@ func BuildHTTPPublisher(url string, retry func(retry.RetryableFunc, ...retry.Opt
 	return &HTTPPublisher{url: url, retry: retry}
 }
 
+// Check ...
+func (c *HTTPPublisher) Check() bool {
+	return true
+}
+
 // Publish ...
 func (c *HTTPPublisher) Publish(obj interface{}) error {
 	operation := obj.(domain.Operation)

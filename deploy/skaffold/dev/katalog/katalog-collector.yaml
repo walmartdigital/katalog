@@ -74,6 +74,15 @@ spec:
         volumeMounts:
         - mountPath: /tmp
           name: tmp
+        livenessProbe:
+            failureThreshold: 3
+            exec:
+              command:
+                - /bin/stat
+                - /tmp/imlive
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            
       volumes:
       - name: tmp
         emptyDir: {}
