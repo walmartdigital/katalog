@@ -41,14 +41,17 @@ go run src/main.go -kubeconfig
 
 A development environment is avalaible using skaffold.
 
-- brew install minikube
-- minikube start
-- brew install skaffold
-- skaffold dev
+```shell
+$ brew install minikube
+$ minikube start
+$ brew install skaffold
+$ skaffold dev
+```
 
 Alternative with kind:
-
-- brew install kind
-- kind create cluster
-- brew install skaffold
-- skaffold dev
+```shell
+$ brew install kind
+$ kind create cluster
+$ brew install skaffold
+$ skaffold dev
+```
