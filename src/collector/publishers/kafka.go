@@ -159,6 +159,8 @@ func (c *KafkaPublisher) Publish(obj interface{}) error {
 		return errGettingValue
 	}
 
+	log.Debug("Sending message with key" + key + "and value" + value)
+
 	errWritingMessage := writer.WriteMessages(
 		context.Background(),
 		kafka.Message{

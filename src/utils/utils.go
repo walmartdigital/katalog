@@ -92,6 +92,31 @@ func ContainersToString(containers map[string]string) string {
 // LogInit ...
 func LogInit(log *logrus.Logger) error {
 	log.Formatter = &logrus.JSONFormatter{}
+	log.SetOutput(os.Stdout)
+
+	if logLevel, ok := os.LookupEnv("LOG_LEVEL"); ok {
+		switch logLevel {
+		case "DEBUG":
+			log.Info("Setting log level to DEBUG")
+			log.SetLevel(logrus.DebugLevel)
+
+		case "WARN":
+			log.Info("Setting log level to WARN")
+			log.SetLevel(logrus.WarnLevel)
+
+		case "INFO":
+			log.Info("Setting log level to WARN")
+			log.SetLevel(logrus.InfoLevel)
+
+		case "ERROR":
+			log.Info("Setting log level to ERROR")
+			log.SetLevel(logrus.ErrorLevel)
+
+		default:
+			log.Info("Setting log level to ERROR")
+			log.SetLevel(logrus.ErrorLevel)
+		}
+	}
 
 	if logLocation, ok := os.LookupEnv("LOG_FILE"); ok {
 		file, err := os.OpenFile(logLocation, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
