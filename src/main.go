@@ -16,7 +16,8 @@ import (
 	"github.com/gorilla/mux"
 	k8sdriver "github.com/walmartdigital/katalog/src/collector/k8s-driver"
 	"github.com/walmartdigital/katalog/src/collector/publishers"
-	"github.com/walmartdigital/katalog/src/server"
+	webhookServer "github.com/walmartdigital/katalog/src/server/http"
+	kafkaServer "github.com/walmartdigital/katalog/src/server/kafka"
 	"github.com/walmartdigital/katalog/src/server/persistence"
 	"github.com/walmartdigital/katalog/src/server/repositories"
 )
@@ -33,7 +34,7 @@ var httpURL = flag.String("http-url", "http://127.0.0.1:10000", "http url")
 var kafkaURL = flag.String("kafka-url", "localhost:9092", "kafka url")
 var kafkaTopicPrefix = flag.String("kafka-topic-prefix", "_katalog.artifact", "kafka topic prefix")
 var excludeSystemNamespace = flag.Bool("exclude-system-namespace", false, "exclude all services from kube-system namespace")
-var publisher = flag.String("publisher", publisherKafka, "select where to publish: kafka | http")
+var publisher = flag.String("publisher", publisherHTTP, "select where to publish: kafka | http")
 var configfile = flag.Bool("kubeconfig", false, "true if a $HOME/.kube/config file exists")
 
 func main() {
@@ -72,9 +73,16 @@ func main() {
 	case roleCollector:
 		mainCollector(kubeconfig)
 	case roleServer:
-		mainServer()
+		switch *publisher {
+		case publisherHTTP:
+			mainServer()
+		case publisherKafka:
+			mainConsumer()
+		default:
+			mainServer()
+		}
 	default:
-		log.Warning("role should be server or collector")
+		panic(errors.New("role should be server or collector"))
 	}
 }
 
@@ -159,23 +167,28 @@ func closeProbes() {
 }
 
 func mainServer() {
-	log.Info("server starting...")
+	log.Info("http (webhook) server starting...")
 	memory := make(map[string]interface{})
 	persistence := persistence.BuildMemoryPersistence(memory)
 	resourceRepository := repositories.CreateResourceRepository(persistence)
 	router := mux.NewRouter().StrictSlash(true)
 	routerWrapper := &routerWrapper{router: router}
 	httpServer := &http.Server{Addr: ":10000", Handler: router}
-	server := server.CreateServer(httpServer, resourceRepository, routerWrapper)
+	webhookServer := webhookServer.CreateServer(httpServer, resourceRepository, routerWrapper)
 
-	server.Run()
+	webhookServer.Run()
+}
+
+func mainConsumer() {
+	log.Info("kafka consumer starting...")
+	kafkaServer.CreateConsumer()
 }
 
 type routerWrapper struct {
 	router *mux.Router
 }
 
-func (r *routerWrapper) HandleFunc(path string, f func(http.ResponseWriter, *http.Request)) server.Route {
+func (r *routerWrapper) HandleFunc(path string, f func(http.ResponseWriter, *http.Request)) webhookServer.Route {
 	return &routeWrapper{route: r.router.HandleFunc(path, f)}
 }
 
@@ -183,7 +196,7 @@ type routeWrapper struct {
 	route *mux.Route
 }
 
-func (r *routeWrapper) Methods(methods ...string) server.Route {
+func (r *routeWrapper) Methods(methods ...string) webhookServer.Route {
 	r.route.Methods(methods[0])
 	return r
 }
