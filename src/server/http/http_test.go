@@ -1,4 +1,4 @@
-package server_test
+package http_test
 
 import (
 	"bytes"
@@ -666,6 +666,5 @@ var _ = Describe("run server", func() {
 	})
 
 	AfterEach(func() {
-		katalogServer.DestroyMetrics()
 	})
 })

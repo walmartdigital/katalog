@@ -7,10 +7,7 @@ import (
 
 	"github.com/emirpasic/gods/lists/arraylist"
 	"github.com/gorilla/mux"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/sirupsen/logrus"
 	"github.com/walmartdigital/katalog/src/domain"
-	"github.com/walmartdigital/katalog/src/utils"
 )
 
 func (s *Server) getResourcesByType(resource domain.Resource) ([]interface{}, error) {
@@ -29,38 +26,15 @@ func (s *Server) getResourcesByType(resource domain.Resource) ([]interface{}, er
 	return list.Values(), nil
 }
 
-func (s *Server) createService(w http.ResponseWriter, r *http.Request) {
+// CreateService ...
+func (s *Server) CreateService(w http.ResponseWriter, r *http.Request) {
 	var service domain.Service
 	errDecoding := json.NewDecoder(r.Body).Decode(&service)
 	if errDecoding != nil {
 		log.Fatal(errDecoding)
 	}
-	resource := domain.Resource{
-		K8sResource: &service,
-	}
-	errCreatingResource := s.resourcesRepository.CreateResource(resource)
-	if errCreatingResource != nil {
-		log.Fatal(errCreatingResource)
-	}
-	err := json.NewEncoder(w).Encode(service)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
 
-func (s *Server) updateService(w http.ResponseWriter, r *http.Request) {
-	var service domain.Service
-	errDecoding := json.NewDecoder(r.Body).Decode(&service)
-	if errDecoding != nil {
-		log.Fatal(errDecoding)
-	}
-	resource := domain.Resource{K8sResource: &service}
-	_, err := s.resourcesRepository.UpdateResource(resource)
-
-	if err != nil {
-		log.Errorf("Error occurred trying to update service (id: %s)", resource.GetID())
-		return
-	}
+	s.service.CreateService(service)
 
 	errEncoding := json.NewEncoder(w).Encode(service)
 	if errEncoding != nil {
@@ -68,21 +42,29 @@ func (s *Server) updateService(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Server) deleteService(w http.ResponseWriter, r *http.Request) {
+// UpdateService ...
+func (s *Server) UpdateService(w http.ResponseWriter, r *http.Request) {
+	var service domain.Service
+	errDecoding := json.NewDecoder(r.Body).Decode(&service)
+	if errDecoding != nil {
+		log.Fatal(errDecoding)
+	}
+
+	s.service.UpdateService(service)
+
+	errEncoding := json.NewEncoder(w).Encode(service)
+	if errEncoding != nil {
+		log.Fatal(errEncoding)
+	}
+}
+
+// DeleteService ...
+func (s *Server) DeleteService(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
-	_, err := s.resourcesRepository.GetResource(id)
-	if err != nil {
-		fmt.Fprintf(w, "You provided a non-existing ID: %s", id)
-		log.Errorf("You provided a non-existing ID: %s", id)
-		return
-	}
-	err = s.resourcesRepository.DeleteResource(id)
-	if err != nil {
-		fmt.Fprintf(w, "Deleted service ID: %s", id)
-		log.Errorf("Deleted service ID: %s", id)
-		return
-	}
-	fmt.Fprintf(w, "deleted service id: %s", id)
+
+	s.service.DeleteService(id)
+
+	fmt.Fprintf(w, "service id: %s", id)
 }
 
 func (s *Server) getAllServices(w http.ResponseWriter, r *http.Request) {
@@ -112,86 +94,29 @@ func (s *Server) countServices(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Server) createDeployment(w http.ResponseWriter, r *http.Request) {
+// CreateDeployment ...
+func (s *Server) CreateDeployment(w http.ResponseWriter, r *http.Request) {
 	var deployment domain.Deployment
 	json.NewDecoder(r.Body).Decode(&deployment)
-	resource := domain.Resource{K8sResource: &deployment}
-	s.resourcesRepository.CreateResource(resource)
 
-	log.WithFields(logrus.Fields{
-		"k8s-resource-id":                    resource.GetID(),
-		"k8s-resource-type":                  "Deployment",
-		"k8s-resource-ns":                    resource.GetNamespace(),
-		"k8s-resource-name":                  resource.GetName(),
-		"k8s-resource-labels":                resource.GetLabels(),
-		"k8s-resource-annotations":           resource.GetAnnotations(),
-		"k8s-resource-generation":            resource.GetGeneration(),
-		"k8s-pod-template.containers.images": utils.ContainersToString(deployment.GetContainers()),
-		"k8s-action":                         "create",
-	}).Infof("Deployment %s/%s created", resource.GetNamespace(), resource.GetName())
-
-	(*s.metrics)["createDeployment"].(*prometheus.CounterVec).WithLabelValues(resource.GetID(), resource.GetNamespace(), resource.GetName()).Inc()
-	json.NewEncoder(w).Encode(deployment)
+	s.service.CreateDeployment(deployment)
 }
 
-func (s *Server) updateDeployment(w http.ResponseWriter, r *http.Request) {
+// UpdateDeployment ...
+func (s *Server) UpdateDeployment(w http.ResponseWriter, r *http.Request) {
 	var deployment domain.Deployment
 	json.NewDecoder(r.Body).Decode(&deployment)
-	resource := domain.Resource{K8sResource: &deployment}
-	result, err := s.resourcesRepository.UpdateResource(resource)
 
-	if err != nil {
-		log.Errorf("Error occurred trying to update deployment (id: %s)", resource.GetID())
-		return
-	}
-
-	log.WithFields(logrus.Fields{
-		"k8s-resource-id":                    resource.GetID(),
-		"k8s-resource-type":                  "Deployment",
-		"k8s-resource-ns":                    resource.GetNamespace(),
-		"k8s-resource-name":                  resource.GetName(),
-		"k8s-resource-labels":                resource.GetLabels(),
-		"k8s-resource-annotations":           resource.GetAnnotations(),
-		"k8s-resource-generation":            resource.GetGeneration(),
-		"k8s-pod-template.containers.images": utils.ContainersToString(deployment.GetContainers()),
-		"k8s-action":                         "update",
-	}).Infof("Deployment %s/%s updated", resource.GetNamespace(), resource.GetName())
-
-	if result != nil {
-		(*s.metrics)["updateDeployment"].(*prometheus.CounterVec).WithLabelValues(resource.GetID(), resource.GetNamespace(), resource.GetName()).Inc()
-	}
-	json.NewEncoder(w).Encode(deployment)
+	s.service.UpdateDeployment(deployment)
 }
 
-func (s *Server) deleteDeployment(w http.ResponseWriter, r *http.Request) {
+// DeleteDeployment ...
+func (s *Server) DeleteDeployment(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
-	res, err := s.resourcesRepository.GetResource(id)
-	if err != nil {
-		fmt.Fprintf(w, "You provided a non-existing ID: %s", id)
-		log.Errorf("You provided a non-existing ID: %s", id)
-		return
-	}
-	rep := res.(domain.Resource)
-	err = s.resourcesRepository.DeleteResource(id)
-	if err != nil {
-		fmt.Fprintf(w, "Deleted deployment ID: %s", id)
-		log.Errorf("Deleted deployment ID: %s", id)
-		return
-	}
-	fmt.Fprintf(w, "deleted deployment id: %s", id)
 
-	log.WithFields(logrus.Fields{
-		"k8s-resource-id":          rep.GetID(),
-		"k8s-resource-type":        "Deployment",
-		"k8s-resource-ns":          rep.GetNamespace(),
-		"k8s-resource-name":        rep.GetName(),
-		"k8s-resource-labels":      rep.GetLabels(),
-		"k8s-resource-annotations": rep.GetAnnotations(),
-		"k8s-resource-generation":  rep.GetGeneration(),
-		"k8s-action":               "delete",
-	}).Infof("Deployment %s/%s deleted", rep.GetNamespace(), rep.GetName())
+	s.service.DeleteDeployment(id)
 
-	(*s.metrics)["deleteDeployment"].(*prometheus.CounterVec).WithLabelValues(id, rep.GetNamespace(), rep.GetName()).Inc()
+	fmt.Fprintf(w, "deployment id: %s", id)
 }
 
 func (s *Server) getAllDeployments(w http.ResponseWriter, r *http.Request) {
@@ -215,84 +140,29 @@ func (s *Server) countDeployments(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(struct{ Count int }{len(deployments)})
 }
 
-func (s *Server) createStatefulSet(w http.ResponseWriter, r *http.Request) {
+// CreateStatefulSet ...
+func (s *Server) CreateStatefulSet(w http.ResponseWriter, r *http.Request) {
 	var statefulset domain.StatefulSet
 	json.NewDecoder(r.Body).Decode(&statefulset)
-	resource := domain.Resource{K8sResource: &statefulset}
-	s.resourcesRepository.CreateResource(resource)
 
-	log.WithFields(logrus.Fields{
-		"k8s-resource-id":                    resource.GetID(),
-		"k8s-resource-type":                  "StatefulSet",
-		"k8s-resource-ns":                    resource.GetNamespace(),
-		"k8s-resource-name":                  resource.GetName(),
-		"k8s-resource-labels":                resource.GetLabels(),
-		"k8s-resource-annotations":           resource.GetAnnotations(),
-		"k8s-resource-generation":            resource.GetGeneration(),
-		"k8s-pod-template.containers.images": utils.ContainersToString(statefulset.GetContainers()),
-		"k8s-action":                         "create",
-	}).Infof("Statefulset %s/%s created", resource.GetNamespace(), resource.GetName())
-
-	(*s.metrics)["createStatefulSet"].(*prometheus.CounterVec).WithLabelValues(resource.GetID(), resource.GetNamespace(), resource.GetName()).Inc()
-	json.NewEncoder(w).Encode(statefulset)
+	s.service.CreateStatefulSet(statefulset)
 }
 
-func (s *Server) updateStatefulSet(w http.ResponseWriter, r *http.Request) {
+// UpdateStatefulSet ...
+func (s *Server) UpdateStatefulSet(w http.ResponseWriter, r *http.Request) {
 	var statefulset domain.StatefulSet
 	json.NewDecoder(r.Body).Decode(&statefulset)
-	resource := domain.Resource{K8sResource: &statefulset}
-	result, err := s.resourcesRepository.UpdateResource(resource)
 
-	if err != nil {
-		log.Errorf("Error occurred trying to update resource (id: %s)", resource.GetID())
-		return
-	}
-
-	log.WithFields(logrus.Fields{
-		"k8s-resource-id":                    resource.GetID(),
-		"k8s-resource-type":                  "StatefulSet",
-		"k8s-resource-ns":                    resource.GetNamespace(),
-		"k8s-resource-name":                  resource.GetName(),
-		"k8s-resource-labels":                resource.GetLabels(),
-		"k8s-resource-annotations":           resource.GetAnnotations(),
-		"k8s-resource-generation":            resource.GetGeneration(),
-		"k8s-pod-template.containers.images": utils.ContainersToString(statefulset.GetContainers()),
-		"k8s-action":                         "update",
-	}).Infof("Statefulset %s/%s updated", resource.GetNamespace(), resource.GetName())
-
-	if result != nil {
-		(*s.metrics)["updateStatefulSet"].(*prometheus.CounterVec).WithLabelValues(resource.GetID(), resource.GetNamespace(), resource.GetName()).Inc()
-	}
-	json.NewEncoder(w).Encode(statefulset)
+	s.service.UpdateStatefulSet(statefulset)
 }
 
-func (s *Server) deleteStatefulSet(w http.ResponseWriter, r *http.Request) {
+// DeleteStatefulSet ...
+func (s *Server) DeleteStatefulSet(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
-	res, err := s.resourcesRepository.GetResource(id)
-	if err != nil {
-		log.Error("You have to provide an ID")
-		return
-	}
-	rep := res.(domain.Resource)
-	err = s.resourcesRepository.DeleteResource(id)
-	if err != nil {
-		fmt.Fprintf(w, "deleted statefulset id: %s", id)
-		return
-	}
-	fmt.Fprintf(w, "deleted statefulset id: %s", id)
 
-	log.WithFields(logrus.Fields{
-		"k8s-resource-id":          rep.GetID(),
-		"k8s-resource-type":        "StatefulSet",
-		"k8s-resource-ns":          rep.GetNamespace(),
-		"k8s-resource-name":        rep.GetName(),
-		"k8s-resource-labels":      rep.GetLabels(),
-		"k8s-resource-annotations": rep.GetAnnotations(),
-		"k8s-resource-generation":  rep.GetGeneration(),
-		"k8s-action":               "delete",
-	}).Infof("Statefulset %s/%s deleted", rep.GetNamespace(), rep.GetName())
+	s.service.DeleteStatefulSet(id)
 
-	(*s.metrics)["deleteStatefulSet"].(*prometheus.CounterVec).WithLabelValues(id, rep.GetNamespace(), rep.GetName()).Inc()
+	fmt.Fprintf(w, "deployment id: %s", id)
 }
 
 func (s *Server) getAllStatefulSets(w http.ResponseWriter, r *http.Request) {

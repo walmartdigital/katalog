@@ -181,7 +181,11 @@ func mainServer() {
 
 func mainConsumer() {
 	log.Info("kafka consumer starting...")
-	kafkaServer.CreateConsumer()
+	memory := make(map[string]interface{})
+	persistence := persistence.BuildMemoryPersistence(memory)
+	resourceRepository := repositories.CreateResourceRepository(persistence)
+	consumerServer := kafkaServer.CreateConsumer(*kafkaURL, *kafkaTopicPrefix, resourceRepository)
+	consumerServer.Run()
 }
 
 type routerWrapper struct {
