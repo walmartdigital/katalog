@@ -134,14 +134,14 @@ func resolvePublisher() publishers.Publisher {
 		case t := <-ticker.C:
 			if current.Check() {
 				log.Debug("(LIVE) Health check at " + t.Local().String())
-				_, errOpen := os.OpenFile("/tmp/imlive", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
+				_, errOpen := os.OpenFile("/tmp/imalive", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 				if errOpen != nil {
 					log.Fatal(errOpen)
 				}
 
 			} else {
 				log.Debug("(DEAD) Health check at " + t.Local().String())
-				errRemove := os.Remove("/tmp/imlive")
+				errRemove := os.Remove("/tmp/imalive")
 				if errRemove != nil {
 					log.Fatal(errRemove)
 				}

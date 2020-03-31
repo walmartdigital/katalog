@@ -79,7 +79,7 @@ spec:
             exec:
               command:
                 - /bin/stat
-                - /tmp/imlive
+                - /tmp/imalive
             initialDelaySeconds: 5
             periodSeconds: 30
             
