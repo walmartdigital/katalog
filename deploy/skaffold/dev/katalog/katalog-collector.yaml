@@ -67,6 +67,8 @@ spec:
           value: "kafka.kafka:9092"
         - name: LOG_LEVEL
           value: "DEBUG"
+        - name: ROLE
+          value: "COLLECTOR"
         resources:
             limits:
               memory: 200Mi

@@ -22,6 +22,11 @@ func init() {
 	}
 }
 
+// Check ...
+func (c *Consumer) Check() bool {
+	return true
+}
+
 func getKafkaReader(kafkaURL string, topic string) *kafka.Reader {
 	return kafka.NewReader(kafka.ReaderConfig{
 		Brokers:   []string{kafkaURL},
@@ -43,8 +48,8 @@ type Consumer struct {
 }
 
 // CreateConsumer ...
-func CreateConsumer(kafkaURL string, topicPrefix string, repository repositories.Repository) Consumer {
-	current := Consumer{
+func CreateConsumer(kafkaURL string, topicPrefix string, repository repositories.Repository) *Consumer {
+	current := &Consumer{
 		url:                 kafkaURL,
 		topicPrefix:         topicPrefix,
 		resourcesRepository: repository,

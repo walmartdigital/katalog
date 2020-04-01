@@ -10,6 +10,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"github.com/walmartdigital/katalog/src/domain"
+	"github.com/walmartdigital/katalog/src/server"
 	"github.com/walmartdigital/katalog/src/utils"
 
 	"github.com/avast/retry-go"
@@ -44,6 +45,17 @@ func main() {
 	}
 	flag.Parse()
 	var kubeconfig string
+
+	if value, ok := os.LookupEnv("ROLE"); ok {
+		switch value {
+		case "SERVER":
+			*role = roleServer
+		case "COLLECTOR":
+			*role = roleCollector
+		default:
+			panic("Role not supported")
+		}
+	}
 
 	if value, ok := os.LookupEnv("PUBLISHER"); ok {
 		publisher = &value
@@ -121,17 +133,7 @@ func mainCollector(kubeconfig string) {
 var ticker *time.Ticker
 var done chan bool
 
-func resolvePublisher() publishers.Publisher {
-	var current publishers.Publisher
-	switch *publisher {
-	case publisherKafka:
-		current = publishers.BuildKafkaPublisher(*kafkaURL, *kafkaTopicPrefix)
-	case publisherHTTP:
-		current = publishers.BuildHTTPPublisher(*httpURL, retry.Do)
-	default:
-		panic(errors.New("A publusher must be selected"))
-	}
-
+func check(checkable server.Checkable) {
 	// Liveness probe
 	ticker = time.NewTicker(30 * time.Second)
 	done = make(chan bool)
@@ -140,7 +142,7 @@ func resolvePublisher() publishers.Publisher {
 		case <-done:
 			return
 		case t := <-ticker.C:
-			if current.Check() {
+			if checkable.Check() {
 				log.Debug("(LIVE) Health check at " + t.Local().String())
 				_, errOpen := os.OpenFile("/tmp/imalive", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 				if errOpen != nil {
@@ -156,6 +158,20 @@ func resolvePublisher() publishers.Publisher {
 			}
 		}
 	}()
+}
+
+func resolvePublisher() publishers.Publisher {
+	var current publishers.Publisher
+	switch *publisher {
+	case publisherKafka:
+		current = publishers.BuildKafkaPublisher(*kafkaURL, *kafkaTopicPrefix)
+	case publisherHTTP:
+		current = publishers.BuildHTTPPublisher(*httpURL, retry.Do)
+	default:
+		panic(errors.New("A publusher must be selected"))
+	}
+
+	check(current)
 
 	return current
 }
@@ -175,7 +191,7 @@ func mainServer() {
 	routerWrapper := &routerWrapper{router: router}
 	httpServer := &http.Server{Addr: ":10000", Handler: router}
 	webhookServer := webhookServer.CreateServer(httpServer, resourceRepository, routerWrapper)
-
+	check(webhookServer)
 	webhookServer.Run()
 }
 
@@ -185,6 +201,7 @@ func mainConsumer() {
 	persistence := persistence.BuildMemoryPersistence(memory)
 	resourceRepository := repositories.CreateResourceRepository(persistence)
 	consumerServer := kafkaServer.CreateConsumer(*kafkaURL, *kafkaTopicPrefix, resourceRepository)
+	check(consumerServer)
 	consumerServer.Run()
 }
 

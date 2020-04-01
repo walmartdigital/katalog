@@ -34,6 +34,11 @@ type Server struct {
 	service             server.Service
 }
 
+// Check ...
+func (s *Server) Check() bool {
+	return true
+}
+
 // Router ...
 type Router interface {
 	HandleFunc(path string, f func(http.ResponseWriter, *http.Request)) Route
@@ -45,8 +50,8 @@ type Route interface {
 }
 
 // CreateServer ...
-func CreateServer(webhook WebhookServer, repository repositories.Repository, router Router) Server {
-	current := Server{
+func CreateServer(webhook WebhookServer, repository repositories.Repository, router Router) *Server {
+	current := &Server{
 		httpServer:          webhook,
 		resourcesRepository: repository,
 		router:              router,
