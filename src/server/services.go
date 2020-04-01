@@ -32,7 +32,7 @@ func MakeService(resourcesRepository repositories.Repository, metrics *map[strin
 }
 
 // CreateService ...
-func (s *Service) CreateService(service domain.Service) {
+func (s *Service) CreateService(service domain.Service) error {
 	log.WithFields(logrus.Fields{
 		"id":   service.GetID(),
 		"name": service.GetName(),
@@ -41,54 +41,65 @@ func (s *Service) CreateService(service domain.Service) {
 	resource := domain.Resource{
 		K8sResource: &service,
 	}
+
 	errCreatingResource := s.resourcesRepository.CreateResource(resource)
 	if errCreatingResource != nil {
 		log.Fatal(errCreatingResource)
+		return errCreatingResource
 	}
+
+	return nil
 }
 
 // UpdateService ...
-func (s *Service) UpdateService(service domain.Service) {
+func (s *Service) UpdateService(service domain.Service) error {
 	log.WithFields(logrus.Fields{
 		"id":   service.GetID(),
 		"name": service.GetName(),
 	}).Debug("Updating Service")
 
 	resource := domain.Resource{K8sResource: &service}
+
 	_, err := s.resourcesRepository.UpdateResource(resource)
 
 	if err != nil {
 		log.Errorf("Error occurred trying to update service (id: %s)", resource.GetID())
-		return
+		return err
 	}
+
+	return nil
 }
 
 // DeleteService ...
-func (s *Service) DeleteService(id string) {
+func (s *Service) DeleteService(id string) error {
 	log.WithFields(logrus.Fields{
 		"id": id,
 	}).Debug("Deleting Service")
 
-	_, err := s.resourcesRepository.GetResource(id)
+	res, err := s.resourcesRepository.GetResource(id)
 	if err != nil {
 		log.Errorf("You provided a non-existing ID: %s", id)
-		return
+		return err
 	}
-	err = s.resourcesRepository.DeleteResource(id)
+	rep := res.(domain.Resource)
+	err = s.resourcesRepository.DeleteResource(rep)
 	if err != nil {
 		log.Errorf("Deleted service ID: %s", id)
-		return
+		return err
 	}
+
+	return nil
 }
 
 // CreateDeployment ...
-func (s *Service) CreateDeployment(deployment domain.Deployment) {
+func (s *Service) CreateDeployment(deployment domain.Deployment) error {
 	log.WithFields(logrus.Fields{
 		"id":   deployment.GetID(),
 		"name": deployment.GetName(),
 	}).Debug("Creating Deployment")
 
 	resource := domain.Resource{K8sResource: &deployment}
+
 	s.resourcesRepository.CreateResource(resource)
 
 	log.WithFields(logrus.Fields{
@@ -104,21 +115,23 @@ func (s *Service) CreateDeployment(deployment domain.Deployment) {
 	}).Infof("Deployment %s/%s created", resource.GetNamespace(), resource.GetName())
 
 	(*s.metrics)["createDeployment"].(*prometheus.CounterVec).WithLabelValues(resource.GetID(), resource.GetNamespace(), resource.GetName()).Inc()
+
+	return nil
 }
 
 // UpdateDeployment ...
-func (s *Service) UpdateDeployment(deployment domain.Deployment) {
+func (s *Service) UpdateDeployment(deployment domain.Deployment) error {
 	log.WithFields(logrus.Fields{
 		"id":   deployment.GetID(),
 		"name": deployment.GetName(),
 	}).Debug("Updating Deployment")
 
 	resource := domain.Resource{K8sResource: &deployment}
-	result, err := s.resourcesRepository.UpdateResource(resource)
 
+	result, err := s.resourcesRepository.UpdateResource(resource)
 	if err != nil {
 		log.Errorf("Error occurred trying to update deployment (id: %s)", resource.GetID())
-		return
+		return err
 	}
 
 	log.WithFields(logrus.Fields{
@@ -136,10 +149,12 @@ func (s *Service) UpdateDeployment(deployment domain.Deployment) {
 	if result != nil {
 		(*s.metrics)["updateDeployment"].(*prometheus.CounterVec).WithLabelValues(resource.GetID(), resource.GetNamespace(), resource.GetName()).Inc()
 	}
+
+	return nil
 }
 
 // DeleteDeployment ...
-func (s *Service) DeleteDeployment(id string) {
+func (s *Service) DeleteDeployment(id string) error {
 	log.WithFields(logrus.Fields{
 		"id": id,
 	}).Debug("Deleting Deployment")
@@ -147,13 +162,13 @@ func (s *Service) DeleteDeployment(id string) {
 	res, err := s.resourcesRepository.GetResource(id)
 	if err != nil {
 		log.Errorf("You provided a non-existing ID: %s", id)
-		return
+		return err
 	}
 	rep := res.(domain.Resource)
-	err = s.resourcesRepository.DeleteResource(id)
+	err = s.resourcesRepository.DeleteResource(rep)
 	if err != nil {
 		log.Errorf("Deleted deployment ID: %s", id)
-		return
+		return err
 	}
 
 	log.WithFields(logrus.Fields{
@@ -168,16 +183,19 @@ func (s *Service) DeleteDeployment(id string) {
 	}).Infof("Deployment %s/%s deleted", rep.GetNamespace(), rep.GetName())
 
 	(*s.metrics)["deleteDeployment"].(*prometheus.CounterVec).WithLabelValues(id, rep.GetNamespace(), rep.GetName()).Inc()
+
+	return nil
 }
 
 // CreateStatefulSet ...
-func (s *Service) CreateStatefulSet(statefulset domain.StatefulSet) {
+func (s *Service) CreateStatefulSet(statefulset domain.StatefulSet) error {
 	log.WithFields(logrus.Fields{
 		"id":   statefulset.GetID(),
 		"name": statefulset.GetName(),
 	}).Debug("Creating Statefulset")
 
 	resource := domain.Resource{K8sResource: &statefulset}
+
 	s.resourcesRepository.CreateResource(resource)
 
 	log.WithFields(logrus.Fields{
@@ -193,21 +211,24 @@ func (s *Service) CreateStatefulSet(statefulset domain.StatefulSet) {
 	}).Infof("Statefulset %s/%s created", resource.GetNamespace(), resource.GetName())
 
 	(*s.metrics)["createStatefulSet"].(*prometheus.CounterVec).WithLabelValues(resource.GetID(), resource.GetNamespace(), resource.GetName()).Inc()
+
+	return nil
 }
 
 // UpdateStatefulSet ...
-func (s *Service) UpdateStatefulSet(statefulset domain.StatefulSet) {
+func (s *Service) UpdateStatefulSet(statefulset domain.StatefulSet) error {
 	log.WithFields(logrus.Fields{
 		"id":   statefulset.GetID(),
 		"name": statefulset.GetName(),
 	}).Debug("Updating Statefulset")
 
 	resource := domain.Resource{K8sResource: &statefulset}
+
 	result, err := s.resourcesRepository.UpdateResource(resource)
 
 	if err != nil {
 		log.Errorf("Error occurred trying to update resource (id: %s)", resource.GetID())
-		return
+		return err
 	}
 
 	log.WithFields(logrus.Fields{
@@ -225,10 +246,12 @@ func (s *Service) UpdateStatefulSet(statefulset domain.StatefulSet) {
 	if result != nil {
 		(*s.metrics)["updateStatefulSet"].(*prometheus.CounterVec).WithLabelValues(resource.GetID(), resource.GetNamespace(), resource.GetName()).Inc()
 	}
+
+	return nil
 }
 
 // DeleteStatefulSet ...
-func (s *Service) DeleteStatefulSet(id string) {
+func (s *Service) DeleteStatefulSet(id string) error {
 	log.WithFields(logrus.Fields{
 		"id": id,
 	}).Debug("Deleting Statefulset")
@@ -236,13 +259,13 @@ func (s *Service) DeleteStatefulSet(id string) {
 	res, err := s.resourcesRepository.GetResource(id)
 	if err != nil {
 		log.Error("You have to provide an ID")
-		return
+		return err
 	}
 	rep := res.(domain.Resource)
-	err = s.resourcesRepository.DeleteResource(id)
+	err = s.resourcesRepository.DeleteResource(rep)
 	if err != nil {
 		log.Error("deleted statefulset id: %s", id)
-		return
+		return err
 	}
 
 	log.WithFields(logrus.Fields{
@@ -257,4 +280,6 @@ func (s *Service) DeleteStatefulSet(id string) {
 	}).Infof("Statefulset %s/%s deleted", rep.GetNamespace(), rep.GetName())
 
 	(*s.metrics)["deleteStatefulSet"].(*prometheus.CounterVec).WithLabelValues(id, rep.GetNamespace(), rep.GetName()).Inc()
+
+	return nil
 }

@@ -130,7 +130,7 @@ func (c *Consumer) ConsumeEvent(event string) {
 				}).Warn("Artifact not recognized")
 			}
 		case "updated":
-			switch "artifact" {
+			switch artifact {
 			case "services":
 				go c.UpdateService(value)
 			case "deployments":
@@ -144,7 +144,7 @@ func (c *Consumer) ConsumeEvent(event string) {
 				}).Warn("Artifact not recognized")
 			}
 		case "deleted":
-			switch "artifact" {
+			switch artifact {
 			case "services":
 				go c.DeleteService(id)
 			case "deployments":
