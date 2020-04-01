@@ -15,3 +15,4 @@ deploy:
     - deploy/skaffold/dev/kafka/nginx.yaml
     - deploy/skaffold/dev/kafka/zookeeper.yaml
     - deploy/skaffold/dev/katalog/katalog-collector.yaml
+    - deploy/skaffold/dev/katalog/katalog-consumer.yaml

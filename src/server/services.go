@@ -33,6 +33,11 @@ func MakeService(resourcesRepository repositories.Repository, metrics *map[strin
 
 // CreateService ...
 func (s *Service) CreateService(service domain.Service) {
+	log.WithFields(logrus.Fields{
+		"id":   service.GetID(),
+		"name": service.GetName(),
+	}).Debug("Creating Service")
+
 	resource := domain.Resource{
 		K8sResource: &service,
 	}
@@ -44,6 +49,11 @@ func (s *Service) CreateService(service domain.Service) {
 
 // UpdateService ...
 func (s *Service) UpdateService(service domain.Service) {
+	log.WithFields(logrus.Fields{
+		"id":   service.GetID(),
+		"name": service.GetName(),
+	}).Debug("Updating Service")
+
 	resource := domain.Resource{K8sResource: &service}
 	_, err := s.resourcesRepository.UpdateResource(resource)
 
@@ -55,6 +65,10 @@ func (s *Service) UpdateService(service domain.Service) {
 
 // DeleteService ...
 func (s *Service) DeleteService(id string) {
+	log.WithFields(logrus.Fields{
+		"id": id,
+	}).Debug("Deleting Service")
+
 	_, err := s.resourcesRepository.GetResource(id)
 	if err != nil {
 		log.Errorf("You provided a non-existing ID: %s", id)
@@ -69,6 +83,11 @@ func (s *Service) DeleteService(id string) {
 
 // CreateDeployment ...
 func (s *Service) CreateDeployment(deployment domain.Deployment) {
+	log.WithFields(logrus.Fields{
+		"id":   deployment.GetID(),
+		"name": deployment.GetName(),
+	}).Debug("Creating Deployment")
+
 	resource := domain.Resource{K8sResource: &deployment}
 	s.resourcesRepository.CreateResource(resource)
 
@@ -89,6 +108,11 @@ func (s *Service) CreateDeployment(deployment domain.Deployment) {
 
 // UpdateDeployment ...
 func (s *Service) UpdateDeployment(deployment domain.Deployment) {
+	log.WithFields(logrus.Fields{
+		"id":   deployment.GetID(),
+		"name": deployment.GetName(),
+	}).Debug("Updating Deployment")
+
 	resource := domain.Resource{K8sResource: &deployment}
 	result, err := s.resourcesRepository.UpdateResource(resource)
 
@@ -116,6 +140,10 @@ func (s *Service) UpdateDeployment(deployment domain.Deployment) {
 
 // DeleteDeployment ...
 func (s *Service) DeleteDeployment(id string) {
+	log.WithFields(logrus.Fields{
+		"id": id,
+	}).Debug("Deleting Deployment")
+
 	res, err := s.resourcesRepository.GetResource(id)
 	if err != nil {
 		log.Errorf("You provided a non-existing ID: %s", id)
@@ -144,6 +172,11 @@ func (s *Service) DeleteDeployment(id string) {
 
 // CreateStatefulSet ...
 func (s *Service) CreateStatefulSet(statefulset domain.StatefulSet) {
+	log.WithFields(logrus.Fields{
+		"id":   statefulset.GetID(),
+		"name": statefulset.GetName(),
+	}).Debug("Creating Statefulset")
+
 	resource := domain.Resource{K8sResource: &statefulset}
 	s.resourcesRepository.CreateResource(resource)
 
@@ -164,6 +197,11 @@ func (s *Service) CreateStatefulSet(statefulset domain.StatefulSet) {
 
 // UpdateStatefulSet ...
 func (s *Service) UpdateStatefulSet(statefulset domain.StatefulSet) {
+	log.WithFields(logrus.Fields{
+		"id":   statefulset.GetID(),
+		"name": statefulset.GetName(),
+	}).Debug("Updating Statefulset")
+
 	resource := domain.Resource{K8sResource: &statefulset}
 	result, err := s.resourcesRepository.UpdateResource(resource)
 
@@ -191,6 +229,10 @@ func (s *Service) UpdateStatefulSet(statefulset domain.StatefulSet) {
 
 // DeleteStatefulSet ...
 func (s *Service) DeleteStatefulSet(id string) {
+	log.WithFields(logrus.Fields{
+		"id": id,
+	}).Debug("Deleting Statefulset")
+
 	res, err := s.resourcesRepository.GetResource(id)
 	if err != nil {
 		log.Error("You have to provide an ID")

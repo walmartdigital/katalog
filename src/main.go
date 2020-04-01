@@ -193,6 +193,7 @@ func mainServer() {
 	webhookServer := webhookServer.CreateServer(httpServer, resourceRepository, routerWrapper)
 	check(webhookServer)
 	webhookServer.Run()
+	log.Info("http (webhook) server started...")
 }
 
 func mainConsumer() {
@@ -203,6 +204,7 @@ func mainConsumer() {
 	consumerServer := kafkaServer.CreateConsumer(*kafkaURL, *kafkaTopicPrefix, resourceRepository)
 	check(consumerServer)
 	consumerServer.Run()
+	log.Info("kafka consumer started...")
 }
 
 type routerWrapper struct {

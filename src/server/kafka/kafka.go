@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	"sync"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -66,15 +67,21 @@ func CreateConsumer(kafkaURL string, topicPrefix string, repository repositories
 	return current
 }
 
+var wg sync.WaitGroup
+
 // Run ...
 func (c *Consumer) Run() {
+	wg.Add(3)
 	go c.ConsumeEvent("created")
 	go c.ConsumeEvent("deleted")
 	go c.ConsumeEvent("updated")
+	wg.Wait()
 }
 
 // ConsumeEvent ...
 func (c *Consumer) ConsumeEvent(event string) {
+	defer wg.Done()
+
 	consumer := c.KafkaReaders[event]
 
 	defer consumer.Close()
@@ -88,7 +95,10 @@ func (c *Consumer) ConsumeEvent(event string) {
 		key := string(m.Key)
 		value := string(m.Value)
 
-		log.Debug("message at offset %d: %s = %s\n", m.Offset, key, value)
+		log.WithFields(logrus.Fields{
+			"key":    key,
+			"offset": m.Offset,
+		}).Debug("Message Received")
 
 		matchedNamedGroups := regex.GetParams(
 			"/(?P<artifact>.+)/(?P<id>.+)",
@@ -98,35 +108,67 @@ func (c *Consumer) ConsumeEvent(event string) {
 		artifact := matchedNamedGroups["artifact"]
 		id := matchedNamedGroups["id"]
 
+		log.WithFields(logrus.Fields{
+			"event":    event,
+			"artifact": artifact,
+			"id":       id,
+		}).Debug("Event processing")
+
 		switch event {
-		case "create":
+		case "created":
 			switch artifact {
-			case "service":
-				c.CreateService(value)
-			case "deployment":
-				c.CreateDeployment(value)
-			case "statefulset":
-				c.CreateStatefulSet(value)
+			case "services":
+				go c.CreateService(value)
+			case "deployments":
+				go c.CreateDeployment(value)
+			case "statefulsets":
+				go c.CreateStatefulSet(value)
+			default:
+				log.WithFields(logrus.Fields{
+					"event":    event,
+					"artifact": artifact,
+				}).Warn("Artifact not recognized")
 			}
-		case "update":
+		case "updated":
 			switch "artifact" {
-			case "service":
-				c.UpdateService(value)
-			case "deployment":
-				c.UpdateDeployment(value)
-			case "statefulset":
-				c.UpdateStatefulSet(value)
+			case "services":
+				go c.UpdateService(value)
+			case "deployments":
+				go c.UpdateDeployment(value)
+			case "statefulsets":
+				go c.UpdateStatefulSet(value)
+			default:
+				log.WithFields(logrus.Fields{
+					"event":    event,
+					"artifact": artifact,
+				}).Warn("Artifact not recognized")
 			}
-		case "delete":
+		case "deleted":
 			switch "artifact" {
-			case "service":
-				c.DeleteService(id)
-			case "deployment":
-				c.DeleteDeployment(id)
-			case "statefulset":
-				c.DeleteStatefulSet(id)
+			case "services":
+				go c.DeleteService(id)
+			case "deployments":
+				go c.DeleteDeployment(id)
+			case "statefulsets":
+				go c.DeleteStatefulSet(id)
+			default:
+				log.WithFields(logrus.Fields{
+					"event":    event,
+					"artifact": artifact,
+				}).Warn("Artifact not recognized")
 			}
+		default:
+			log.WithFields(logrus.Fields{
+				"event":    event,
+				"artifact": artifact,
+			}).Warn("Event not recognized")
 		}
+
+		log.WithFields(logrus.Fields{
+			"event":    event,
+			"artifact": artifact,
+			"id":       id,
+		}).Debug("Event process task launched")
 	}
 }
 

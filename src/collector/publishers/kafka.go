@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/sirupsen/logrus"
 	"github.com/walmartdigital/katalog/src/domain"
 
 	kafka "github.com/segmentio/kafka-go"
@@ -186,7 +187,9 @@ func (c *KafkaPublisher) Publish(obj interface{}) error {
 		return errGettingValue
 	}
 
-	log.Debug("Sending message with key" + key + "and value" + value)
+	log.WithFields(logrus.Fields{
+		"key": key,
+	}).Debug("Sending message")
 
 	errWritingMessage := writer.WriteMessages(
 		context.Background(),
