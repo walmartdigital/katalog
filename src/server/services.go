@@ -1,6 +1,8 @@
 package server
 
 import (
+	"errors"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"github.com/walmartdigital/katalog/src/domain"
@@ -76,13 +78,13 @@ func (s *Service) DeleteService(id string) error {
 		"id": id,
 	}).Debug("Deleting Service")
 
-	res, err := s.resourcesRepository.GetResource(id)
+	_, err := s.resourcesRepository.GetResource(id)
 	if err != nil {
 		log.Errorf("You provided a non-existing ID: %s", id)
 		return err
 	}
-	rep := res.(domain.Resource)
-	err = s.resourcesRepository.DeleteResource(rep)
+
+	err = s.resourcesRepository.DeleteResource(id)
 	if err != nil {
 		log.Errorf("Deleted service ID: %s", id)
 		return err
@@ -164,8 +166,17 @@ func (s *Service) DeleteDeployment(id string) error {
 		log.Errorf("You provided a non-existing ID: %s", id)
 		return err
 	}
+
+	if res == nil {
+		log.WithFields(logrus.Fields{
+			"id": id,
+		}).Error("Delete Deployment Resource is null")
+
+		return errors.New("Delete Deployment Resource null:" + id)
+	}
+
 	rep := res.(domain.Resource)
-	err = s.resourcesRepository.DeleteResource(rep)
+	err = s.resourcesRepository.DeleteResource(id)
 	if err != nil {
 		log.Errorf("Deleted deployment ID: %s", id)
 		return err
@@ -261,8 +272,17 @@ func (s *Service) DeleteStatefulSet(id string) error {
 		log.Error("You have to provide an ID")
 		return err
 	}
+
+	if res == nil {
+		log.WithFields(logrus.Fields{
+			"id": id,
+		}).Error("Delete StatefulSet Resource is null")
+
+		return errors.New("Delete StatefulSet Resource null:" + id)
+	}
+
 	rep := res.(domain.Resource)
-	err = s.resourcesRepository.DeleteResource(rep)
+	err = s.resourcesRepository.DeleteResource(id)
 	if err != nil {
 		log.Error("deleted statefulset id: %s", id)
 		return err

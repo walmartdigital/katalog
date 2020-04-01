@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"errors"
+
 	"github.com/emirpasic/gods/lists/arraylist"
 	"github.com/mitchellh/mapstructure"
 	"github.com/sirupsen/logrus"
@@ -57,6 +59,16 @@ func (r *ResourceRepository) UpdateResource(resource interface{}) (*domain.Resou
 	if err != nil {
 		return nil, err
 	}
+
+	if savedResource == nil {
+		log.WithFields(logrus.Fields{
+			"id":   res.GetID(),
+			"name": res.GetName(),
+		}).Error("Saved Resource Null")
+
+		return nil, errors.New("Saved Resource Null")
+	}
+
 	sr := savedResource.(domain.Resource)
 	if &sr != nil {
 		if sr.GetGeneration() < res.GetGeneration() {
