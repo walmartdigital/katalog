@@ -72,7 +72,3 @@
 [[constraint]]
   go-tests = "github.com/segmentio/kafka-go"
   version = "0.3.5"
-
-[prune]
-  go-tests = true
-  unused-packages = true

@@ -25,6 +25,11 @@ steps:
     CGO_ENABLED: 0
   commands:
     - "go get github.com/securego/gosec/cmd/gosec"
+    - "apt-get update; apt-get install -y go-dep"
+    - "mkdir -p /go/src/github.com/walmartdigital/katalog"
+    - "cp -r * /go/src/github.com/walmartdigital/katalog/"
+    - "cd /go/src/github.com/walmartdigital/katalog/"
+    - "dep ensure"
     - "/go/bin/gosec ./..."
   when:
     event: [push, tag]
