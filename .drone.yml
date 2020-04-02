@@ -12,7 +12,7 @@ steps:
   pull: default
   image: golang:1.14
   environment:
-    CGO_ENABLED=0
+    CGO_ENABLED: 0
   commands:
     - "go get -u golang.org/x/lint/golint"
     - "/go/bin/golint -set_exit_status ./..."
@@ -22,7 +22,7 @@ steps:
   pull: default
   image: golang:1.14
   environment:
-    CGO_ENABLED=0
+    CGO_ENABLED: 0
   commands:
     - "go get github.com/securego/gosec/cmd/gosec"
     - "/go/bin/gosec ./..."
@@ -32,7 +32,7 @@ steps:
   pull: default
   image: golang:1.14
   environment:
-    CGO_ENABLED=0
+    CGO_ENABLED: 0
   commands:
     - "go get github.com/qiniu/checkstyle/gocheckstyle"
     - "/go/bin/gocheckstyle -config=.go_style ./ server regex"
@@ -42,7 +42,7 @@ steps:
   pull: default
   image: golang:1.14
   environment:
-    CGO_ENABLED=0
+    CGO_ENABLED: 0
   commands:
     - "go get -v github.com/quasilyte/go-namecheck"
     - "/go/bin/go-namecheck -rules .go_naming_rules ./..."
@@ -52,7 +52,7 @@ steps:
   pull: default
   image: golang:1.14
   environment:
-    CGO_ENABLED=0
+    CGO_ENABLED: 0
   commands:
     - "go get -u github.com/mibk/dupl"
     - "dupl -t 200"
