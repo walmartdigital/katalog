@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -85,14 +86,20 @@ func main() {
 	case roleCollector:
 		mainCollector(kubeconfig)
 	case roleServer:
+		var wg sync.WaitGroup
 		switch *publisher {
 		case publisherHTTP:
-			mainServer()
+			wg.Add(1)
+			go mainServer(wg)
 		case publisherKafka:
-			mainConsumer()
+			wg.Add(2)
+			go mainServer(wg)
+			go mainConsumer(wg)
 		default:
-			mainServer()
+			wg.Add(1)
+			go mainServer(wg)
 		}
+		wg.Wait()
 	default:
 		panic(errors.New("role should be server or collector"))
 	}
@@ -182,7 +189,8 @@ func closeProbes() {
 	done <- true
 }
 
-func mainServer() {
+func mainServer(wg sync.WaitGroup) {
+	defer wg.Done()
 	log.Info("http (webhook) server starting...")
 	memory := make(map[string]interface{})
 	persistence := persistence.BuildMemoryPersistence(memory)
@@ -196,7 +204,8 @@ func mainServer() {
 	log.Info("http (webhook) server started...")
 }
 
-func mainConsumer() {
+func mainConsumer(wg sync.WaitGroup) {
+	defer wg.Done()
 	log.Info("kafka consumer starting...")
 	memory := make(map[string]interface{})
 	persistence := persistence.BuildMemoryPersistence(memory)
