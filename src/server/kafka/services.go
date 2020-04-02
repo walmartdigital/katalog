@@ -3,6 +3,7 @@ package kafka
 import (
 	"encoding/json"
 
+	"github.com/sirupsen/logrus"
 	"github.com/walmartdigital/katalog/src/domain"
 )
 
@@ -14,7 +15,10 @@ func (c *Consumer) CreateService(body string) {
 		log.Fatal(errDecoding)
 	}
 
-	c.service.CreateService(service)
+	err := c.service.CreateService(service)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 }
 
 // UpdateService ...
@@ -25,12 +29,18 @@ func (c *Consumer) UpdateService(body string) {
 		log.Fatal(errDecoding)
 	}
 
-	c.service.UpdateService(service)
+	err := c.service.UpdateService(service)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 }
 
 // DeleteService ...
 func (c *Consumer) DeleteService(id string) {
-	c.service.DeleteService(id)
+	err := c.service.DeleteService(id)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 }
 
 // CreateDeployment ...
@@ -41,7 +51,10 @@ func (c *Consumer) CreateDeployment(body string) {
 		log.Fatal(errDecoding)
 	}
 
-	c.service.CreateDeployment(deployment)
+	err := c.service.CreateDeployment(deployment)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 }
 
 // UpdateDeployment ...
@@ -52,12 +65,18 @@ func (c *Consumer) UpdateDeployment(body string) {
 		log.Fatal(errDecoding)
 	}
 
-	c.service.UpdateDeployment(deployment)
+	err := c.service.UpdateDeployment(deployment)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 }
 
 // DeleteDeployment ...
 func (c *Consumer) DeleteDeployment(id string) {
-	c.service.DeleteDeployment(id)
+	err := c.service.DeleteDeployment(id)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 }
 
 // CreateStatefulSet ...
@@ -68,7 +87,10 @@ func (c *Consumer) CreateStatefulSet(body string) {
 		log.Fatal(errDecoding)
 	}
 
-	c.service.CreateStatefulSet(statefulset)
+	err := c.service.CreateStatefulSet(statefulset)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 }
 
 // UpdateStatefulSet ...
@@ -79,10 +101,16 @@ func (c *Consumer) UpdateStatefulSet(body string) {
 		log.Fatal(errDecoding)
 	}
 
-	c.service.UpdateStatefulSet(statefulset)
+	err := c.service.UpdateStatefulSet(statefulset)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 }
 
 // DeleteStatefulSet ...
 func (c *Consumer) DeleteStatefulSet(id string) {
-	c.service.DeleteStatefulSet(id)
+	err := c.service.DeleteStatefulSet(id)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 }

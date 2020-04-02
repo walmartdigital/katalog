@@ -7,6 +7,7 @@ import (
 
 	"github.com/emirpasic/gods/lists/arraylist"
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 	"github.com/walmartdigital/katalog/src/domain"
 )
 
@@ -34,7 +35,10 @@ func (s *Server) CreateService(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(errDecoding)
 	}
 
-	s.service.CreateService(service)
+	err := s.service.CreateService(service)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 
 	errEncoding := json.NewEncoder(w).Encode(service)
 	if errEncoding != nil {
@@ -50,7 +54,10 @@ func (s *Server) UpdateService(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(errDecoding)
 	}
 
-	s.service.UpdateService(service)
+	err := s.service.UpdateService(service)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 
 	errEncoding := json.NewEncoder(w).Encode(service)
 	if errEncoding != nil {
@@ -62,7 +69,10 @@ func (s *Server) UpdateService(w http.ResponseWriter, r *http.Request) {
 func (s *Server) DeleteService(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 
-	s.service.DeleteService(id)
+	err := s.service.DeleteService(id)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 
 	fmt.Fprintf(w, "service id: %s", id)
 }
@@ -97,24 +107,39 @@ func (s *Server) countServices(w http.ResponseWriter, r *http.Request) {
 // CreateDeployment ...
 func (s *Server) CreateDeployment(w http.ResponseWriter, r *http.Request) {
 	var deployment domain.Deployment
-	json.NewDecoder(r.Body).Decode(&deployment)
+	err := json.NewDecoder(r.Body).Decode(&deployment)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 
-	s.service.CreateDeployment(deployment)
+	err = s.service.CreateDeployment(deployment)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 }
 
 // UpdateDeployment ...
 func (s *Server) UpdateDeployment(w http.ResponseWriter, r *http.Request) {
 	var deployment domain.Deployment
-	json.NewDecoder(r.Body).Decode(&deployment)
+	err := json.NewDecoder(r.Body).Decode(&deployment)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 
-	s.service.UpdateDeployment(deployment)
+	err = s.service.UpdateDeployment(deployment)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 }
 
 // DeleteDeployment ...
 func (s *Server) DeleteDeployment(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 
-	s.service.DeleteDeployment(id)
+	err := s.service.DeleteDeployment(id)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 
 	fmt.Fprintf(w, "deployment id: %s", id)
 }
@@ -127,7 +152,10 @@ func (s *Server) getAllDeployments(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(deployments)
+	err = json.NewEncoder(w).Encode(deployments)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 }
 
 func (s *Server) countDeployments(w http.ResponseWriter, r *http.Request) {
@@ -137,30 +165,48 @@ func (s *Server) countDeployments(w http.ResponseWriter, r *http.Request) {
 		log.Error("Resource not found")
 		return
 	}
-	json.NewEncoder(w).Encode(struct{ Count int }{len(deployments)})
+	err = json.NewEncoder(w).Encode(struct{ Count int }{len(deployments)})
+	if err != nil {
+		logrus.Fatal(err)
+	}
 }
 
 // CreateStatefulSet ...
 func (s *Server) CreateStatefulSet(w http.ResponseWriter, r *http.Request) {
 	var statefulset domain.StatefulSet
-	json.NewDecoder(r.Body).Decode(&statefulset)
+	err := json.NewDecoder(r.Body).Decode(&statefulset)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 
-	s.service.CreateStatefulSet(statefulset)
+	err = s.service.CreateStatefulSet(statefulset)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 }
 
 // UpdateStatefulSet ...
 func (s *Server) UpdateStatefulSet(w http.ResponseWriter, r *http.Request) {
 	var statefulset domain.StatefulSet
-	json.NewDecoder(r.Body).Decode(&statefulset)
+	err := json.NewDecoder(r.Body).Decode(&statefulset)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 
-	s.service.UpdateStatefulSet(statefulset)
+	err = s.service.UpdateStatefulSet(statefulset)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 }
 
 // DeleteStatefulSet ...
 func (s *Server) DeleteStatefulSet(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 
-	s.service.DeleteStatefulSet(id)
+	err := s.service.DeleteStatefulSet(id)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 
 	fmt.Fprintf(w, "deployment id: %s", id)
 }
@@ -173,7 +219,10 @@ func (s *Server) getAllStatefulSets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(statefulsets)
+	err = json.NewEncoder(w).Encode(statefulsets)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 }
 
 func (s *Server) countStatefulSets(w http.ResponseWriter, r *http.Request) {
@@ -183,5 +232,8 @@ func (s *Server) countStatefulSets(w http.ResponseWriter, r *http.Request) {
 		log.Error("Resource not found")
 		return
 	}
-	json.NewEncoder(w).Encode(struct{ Count int }{len(statefulsets)})
+	err = json.NewEncoder(w).Encode(struct{ Count int }{len(statefulsets)})
+	if err != nil {
+		logrus.Fatal(err)
+	}
 }

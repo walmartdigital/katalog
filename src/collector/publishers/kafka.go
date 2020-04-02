@@ -33,7 +33,10 @@ type KafkaPublisher struct {
 // BuildKafkaPublisher ...
 func BuildKafkaPublisher(url string, topicPrefix string) Publisher {
 	publisher := &KafkaPublisher{url: url, topicPrefix: topicPrefix}
-	publisher.CreateProducers()
+	err := publisher.CreateProducers()
+	if err != nil {
+		logrus.Fatal(err)
+	}
 	return publisher
 }
 

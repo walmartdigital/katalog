@@ -102,7 +102,11 @@ func (s *Service) CreateDeployment(deployment domain.Deployment) error {
 
 	resource := domain.Resource{K8sResource: &deployment}
 
-	s.resourcesRepository.CreateResource(resource)
+	err := s.resourcesRepository.CreateResource(resource)
+	if err != nil {
+		logrus.Fatal("Create Deployment error")
+		return err
+	}
 
 	log.WithFields(logrus.Fields{
 		"k8s-resource-id":                    resource.GetID(),
@@ -207,7 +211,11 @@ func (s *Service) CreateStatefulSet(statefulset domain.StatefulSet) error {
 
 	resource := domain.Resource{K8sResource: &statefulset}
 
-	s.resourcesRepository.CreateResource(resource)
+	err := s.resourcesRepository.CreateResource(resource)
+	if err != nil {
+		logrus.Fatal("Create Stateful error")
+		return err
+	}
 
 	log.WithFields(logrus.Fields{
 		"k8s-resource-id":                    resource.GetID(),
