@@ -16,7 +16,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/walmartdigital/katalog/src/domain"
-	"github.com/walmartdigital/katalog/src/server"
+	webhookServer "github.com/walmartdigital/katalog/src/server/http"
 	"github.com/walmartdigital/katalog/src/utils"
 )
 
@@ -90,7 +90,7 @@ type fakeRouter struct{}
 
 var routes = make(map[string]func(http.ResponseWriter, *http.Request))
 
-func (r *fakeRouter) HandleFunc(path string, f func(http.ResponseWriter, *http.Request)) server.Route {
+func (r *fakeRouter) HandleFunc(path string, f func(http.ResponseWriter, *http.Request)) webhookServer.Route {
 	routes[path] = f
 	return &fakeRoute{path}
 }
@@ -99,7 +99,7 @@ type fakeRoute struct {
 	path string
 }
 
-func (r *fakeRoute) Methods(methods ...string) server.Route {
+func (r *fakeRoute) Methods(methods ...string) webhookServer.Route {
 	routes[r.path+"@"+methods[0]] = routes[r.path]
 	return r
 }
@@ -121,7 +121,7 @@ var _ = Describe("run server", func() {
 		repository    fakeRepository
 		router        fakeRouter
 		httpServer    fakeHTTPServer
-		katalogServer server.Server
+		katalogServer *webhookServer.Server
 	)
 
 	BeforeEach(func() {
@@ -129,7 +129,7 @@ var _ = Describe("run server", func() {
 		repository = fakeRepository{persistence: persistence, fail: false}
 		router = fakeRouter{}
 		httpServer = fakeHTTPServer{}
-		katalogServer = server.CreateServer(&httpServer, &repository, &router)
+		katalogServer = webhookServer.CreateServer(&httpServer, &repository, &router)
 		katalogServer.Run()
 	})
 

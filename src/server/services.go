@@ -292,7 +292,7 @@ func (s *Service) DeleteStatefulSet(id string) error {
 	rep := res.(domain.Resource)
 	err = s.resourcesRepository.DeleteResource(id)
 	if err != nil {
-		log.Error("deleted statefulset id: %s", id)
+		log.Error("deleted statefulset id:" + id)
 		return err
 	}
 
