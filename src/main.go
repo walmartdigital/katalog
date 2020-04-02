@@ -90,14 +90,14 @@ func main() {
 		switch *publisher {
 		case publisherHTTP:
 			wg.Add(1)
-			go mainServer(wg)
+			go mainServer(wg, true)
 		case publisherKafka:
 			wg.Add(2)
-			go mainServer(wg)
-			go mainConsumer(wg)
+			go mainServer(wg, false)
+			go mainConsumer(wg, true)
 		default:
 			wg.Add(1)
-			go mainServer(wg)
+			go mainServer(wg, true)
 		}
 		wg.Wait()
 	default:
@@ -189,7 +189,7 @@ func closeProbes() {
 	done <- true
 }
 
-func mainServer(wg sync.WaitGroup) {
+func mainServer(wg sync.WaitGroup, doCheck bool) {
 	defer wg.Done()
 	log.Info("http (webhook) server starting...")
 	memory := make(map[string]interface{})
@@ -199,19 +199,23 @@ func mainServer(wg sync.WaitGroup) {
 	routerWrapper := &routerWrapper{router: router}
 	httpServer := &http.Server{Addr: ":10000", Handler: router}
 	webhookServer := webhookServer.CreateServer(httpServer, resourceRepository, routerWrapper)
-	check(webhookServer)
+	if doCheck {
+		check(webhookServer)
+	}
 	webhookServer.Run()
 	log.Info("http (webhook) server started...")
 }
 
-func mainConsumer(wg sync.WaitGroup) {
+func mainConsumer(wg sync.WaitGroup, doCheck bool) {
 	defer wg.Done()
 	log.Info("kafka consumer starting...")
 	memory := make(map[string]interface{})
 	persistence := persistence.BuildMemoryPersistence(memory)
 	resourceRepository := repositories.CreateResourceRepository(persistence)
 	consumerServer := kafkaServer.CreateConsumer(*kafkaURL, *kafkaTopicPrefix, resourceRepository)
-	check(consumerServer)
+	if doCheck {
+		check(consumerServer)
+	}
 	consumerServer.Run()
 	log.Info("kafka consumer started...")
 }

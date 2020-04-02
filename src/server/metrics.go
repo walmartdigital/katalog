@@ -1,9 +1,22 @@
 package server
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"sync"
+
+	"github.com/prometheus/client_golang/prometheus"
+)
+
+var mutex = &sync.Mutex{}
+var currentMetricsMap *map[string]interface{}
 
 // InitMetrics ...
 func InitMetrics() *map[string]interface{} {
+	mutex.Lock()
+
+	if currentMetricsMap != nil {
+		return currentMetricsMap
+	}
+
 	metricsmap := make(map[string]interface{})
 
 	metricsmap["createDeployment"] = prometheus.NewCounterVec(
@@ -78,5 +91,8 @@ func InitMetrics() *map[string]interface{} {
 	metricsmap["deleteStatefulSet"].(*prometheus.CounterVec).WithLabelValues("", "", "")
 	prometheus.MustRegister(metricsmap["deleteStatefulSet"].(*prometheus.CounterVec))
 
+	currentMetricsMap = &metricsmap
+
+	mutex.Unlock()
 	return &metricsmap
 }
