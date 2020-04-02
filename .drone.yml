@@ -40,7 +40,7 @@ steps:
     CGO_ENABLED: 0
   commands:
     - "go get github.com/qiniu/checkstyle/gocheckstyle"
-    - "/go/bin/gocheckstyle -config=.go_style ./ server regex"
+    - "/go/bin/gocheckstyle -config=.go_style ./ src/"
   when:
     event: [push, tag]
 - name: naming
@@ -50,7 +50,7 @@ steps:
     CGO_ENABLED: 0
   commands:
     - "go get -v github.com/quasilyte/go-namecheck"
-    - "/go/bin/go-namecheck -rules .go_naming_rules ./..."
+    - "/go/bin/go-namecheck -rules .go_naming_rules src/"
   when:
     event: [push, tag]
 - name: code-duplicates
