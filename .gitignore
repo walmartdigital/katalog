@@ -2,6 +2,5 @@
 bolt.db
 vendor/
 .vscode/
-deploy/
 sandbox/
 main
