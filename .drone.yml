@@ -17,7 +17,7 @@ steps:
     - "go get -u golang.org/x/lint/golint"
     - "/go/bin/golint -set_exit_status ./..."
   when:
-    event: [push, tag]
+    event: [push, tag, pull_request]
 - name: security
   pull: default
   image: golang:1.14
@@ -32,7 +32,7 @@ steps:
     - "dep ensure"
     - "/go/bin/gosec ./..."
   when:
-    event: [push, tag]
+    event: [push, tag, pull_request]
 - name: style
   pull: default
   image: golang:1.14
@@ -42,7 +42,7 @@ steps:
     - "go get github.com/qiniu/checkstyle/gocheckstyle"
     - "/go/bin/gocheckstyle -config=.go_style ./ src/"
   when:
-    event: [push, tag]
+    event: [push, tag, pull_request]
 - name: naming
   pull: default
   image: golang:1.14
@@ -62,7 +62,7 @@ steps:
     - "go get -u github.com/mibk/dupl"
     - "dupl -t 200"
   when:
-    event: [push, tag]
+    event: [push, tag, pull_request]
 # - name: test
 #   pull: default
 #   image: golang:alpine
@@ -98,7 +98,6 @@ steps:
     - master
     event:
     - push
-    - pull_request
     - tag
 
 
