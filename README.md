@@ -2,6 +2,13 @@
 
 Catalog all your kubernetes services in order to understand what is running and where is running
 
+## Tagging and version
+
+> The repository now **MUST** be tagged using semantic version. The Docker image will build on tag. To tag branches .rc[number]. Examples:
+
+_Tag Release:_ v1.0.1
+_Tag Branch for testing:_ v1.0.1.rc2
+
 ## Roles
 
 * collector: read k8s and publish to a server

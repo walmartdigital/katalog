@@ -86,8 +86,7 @@ steps:
     repo: walmartdigital.azurecr.io/katalog
     tags:
     - latest
-    - c-${DRONE_COMMIT_SHA}
-    - b-${DRONE_BUILD_NUMBER}
+    - ${DRONE_TAG}
   environment:
     DOCKER_PASSWORD:
       from_secret: docker_password
@@ -97,7 +96,6 @@ steps:
     branch:
     - master
     event:
-    - push
     - tag
 
 
