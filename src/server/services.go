@@ -21,14 +21,14 @@ func init() {
 // Service ...
 type Service struct {
 	resourcesRepository repositories.Repository
-	metricsWrapper      *MetricsWrapper
+	metrics             Metrics
 }
 
 // MakeService ...
-func MakeService(resourcesRepository repositories.Repository, metricsfactory MetricsWrapperFactory) Service {
+func MakeService(resourcesRepository repositories.Repository, metricsfactory MetricsFactory) Service {
 	return Service{
 		resourcesRepository: resourcesRepository,
-		metricsWrapper:      metricsfactory.Create(),
+		metrics:             metricsfactory.Create(),
 	}
 }
 
@@ -118,7 +118,7 @@ func (s *Service) CreateDeployment(deployment domain.Deployment) error {
 		"k8s-pod-template.containers.images": utils.ContainersToString(deployment.GetContainers()),
 		"k8s-action":                         "create",
 	}).Infof("Deployment %s/%s created", resource.GetNamespace(), resource.GetName())
-	s.metricsWrapper.Metrics.IncrementCounter("createDeployment", resource.GetID(), resource.GetNamespace(), resource.GetName())
+	s.metrics.IncrementCounter("createDeployment", resource.GetID(), resource.GetNamespace(), resource.GetName())
 
 	return nil
 }
@@ -151,7 +151,7 @@ func (s *Service) UpdateDeployment(deployment domain.Deployment) error {
 	}).Infof("Deployment %s/%s updated", resource.GetNamespace(), resource.GetName())
 
 	if result != nil {
-		s.metricsWrapper.Metrics.IncrementCounter("updateDeployment", resource.GetID(), resource.GetNamespace(), resource.GetName())
+		s.metrics.IncrementCounter("updateDeployment", resource.GetID(), resource.GetNamespace(), resource.GetName())
 	}
 
 	return nil
@@ -195,7 +195,7 @@ func (s *Service) DeleteDeployment(id string) error {
 		"k8s-action":               "delete",
 	}).Infof("Deployment %s/%s deleted", rep.GetNamespace(), rep.GetName())
 
-	s.metricsWrapper.Metrics.IncrementCounter("deleteDeployment", id, rep.GetNamespace(), rep.GetName())
+	s.metrics.IncrementCounter("deleteDeployment", id, rep.GetNamespace(), rep.GetName())
 
 	return nil
 }
@@ -227,7 +227,7 @@ func (s *Service) CreateStatefulSet(statefulset domain.StatefulSet) error {
 		"k8s-action":                         "create",
 	}).Infof("Statefulset %s/%s created", resource.GetNamespace(), resource.GetName())
 
-	s.metricsWrapper.Metrics.IncrementCounter("createStatefulSet", resource.GetID(), resource.GetNamespace(), resource.GetName())
+	s.metrics.IncrementCounter("createStatefulSet", resource.GetID(), resource.GetNamespace(), resource.GetName())
 
 	return nil
 }
@@ -261,7 +261,7 @@ func (s *Service) UpdateStatefulSet(statefulset domain.StatefulSet) error {
 	}).Infof("Statefulset %s/%s updated", resource.GetNamespace(), resource.GetName())
 
 	if result != nil {
-		s.metricsWrapper.Metrics.IncrementCounter("updateStatefulSet", resource.GetID(), resource.GetNamespace(), resource.GetName())
+		s.metrics.IncrementCounter("updateStatefulSet", resource.GetID(), resource.GetNamespace(), resource.GetName())
 	}
 
 	return nil
@@ -305,7 +305,7 @@ func (s *Service) DeleteStatefulSet(id string) error {
 		"k8s-action":               "delete",
 	}).Infof("Statefulset %s/%s deleted", rep.GetNamespace(), rep.GetName())
 
-	s.metricsWrapper.Metrics.IncrementCounter("deleteStatefulSet", id, rep.GetNamespace(), rep.GetName())
+	s.metrics.IncrementCounter("deleteStatefulSet", id, rep.GetNamespace(), rep.GetName())
 
 	return nil
 }

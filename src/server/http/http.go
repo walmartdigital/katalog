@@ -48,7 +48,7 @@ type Route interface {
 }
 
 // CreateServer ...
-func CreateServer(webhook WebhookServer, repository repositories.Repository, router Router, mfactory server.MetricsWrapperFactory) *Server {
+func CreateServer(webhook WebhookServer, repository repositories.Repository, router Router, mfactory server.MetricsFactory) *Server {
 	current := &Server{
 		httpServer:          webhook,
 		resourcesRepository: repository,

@@ -198,7 +198,7 @@ func mainServer(wg sync.WaitGroup, doCheck bool) {
 	router := mux.NewRouter().StrictSlash(true)
 	routerWrapper := &routerWrapper{router: router}
 	httpServer := &http.Server{Addr: ":10000", Handler: router}
-	webhookServer := webhookServer.CreateServer(httpServer, resourceRepository, routerWrapper, PrometheusMetricsWrapperFactory{})
+	webhookServer := webhookServer.CreateServer(httpServer, resourceRepository, routerWrapper, PrometheusMetricsFactory{})
 	if doCheck {
 		check(webhookServer)
 	}
@@ -212,7 +212,7 @@ func mainConsumer(wg sync.WaitGroup, doCheck bool) {
 	memory := make(map[string]interface{})
 	persistence := persistence.BuildMemoryPersistence(memory)
 	resourceRepository := repositories.CreateResourceRepository(persistence)
-	consumerServer := kafkaServer.CreateConsumer(*kafkaURL, *kafkaTopicPrefix, resourceRepository, PrometheusMetricsWrapperFactory{})
+	consumerServer := kafkaServer.CreateConsumer(*kafkaURL, *kafkaTopicPrefix, resourceRepository, PrometheusMetricsFactory{})
 	if doCheck {
 		check(consumerServer)
 	}
@@ -237,14 +237,14 @@ func (r *routeWrapper) Methods(methods ...string) webhookServer.Route {
 	return r
 }
 
-// PrometheusMetricsWrapperFactory ...
-type PrometheusMetricsWrapperFactory struct {
+// PrometheusMetricsFactory ...
+type PrometheusMetricsFactory struct {
 }
 
 // Create ...
-func (p PrometheusMetricsWrapperFactory) Create() *server.MetricsWrapper {
-	metricsWrapper := new(server.MetricsWrapper)
-	metricsWrapper.Metrics = server.PrometheusMetrics{}
-	metricsWrapper.Metrics.InitMetrics()
-	return metricsWrapper
+func (p PrometheusMetricsFactory) Create() server.Metrics {
+	var metrics server.Metrics
+	metrics = server.PrometheusMetrics{}
+	metrics.InitMetrics()
+	return metrics
 }

@@ -9,11 +9,6 @@ import (
 var mutex = &sync.Mutex{}
 var metrics map[string]interface{}
 
-// MetricsWrapper ...
-type MetricsWrapper struct {
-	Metrics Metrics
-}
-
 // Metrics ...
 type Metrics interface {
 	InitMetrics()
@@ -21,9 +16,9 @@ type Metrics interface {
 	DestroyMetrics()
 }
 
-// MetricsWrapperFactory ...
-type MetricsWrapperFactory interface {
-	Create() *MetricsWrapper
+// MetricsFactory ...
+type MetricsFactory interface {
+	Create() Metrics
 }
 
 // PrometheusMetrics ...
