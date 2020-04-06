@@ -47,7 +47,7 @@ type Consumer struct {
 }
 
 // CreateConsumer ...
-func CreateConsumer(kafkaURL string, topicPrefix string, repository repositories.Repository) *Consumer {
+func CreateConsumer(kafkaURL string, topicPrefix string, repository repositories.Repository, mfactory server.MetricsWrapperFactory) *Consumer {
 	current := &Consumer{
 		url:                 kafkaURL,
 		topicPrefix:         topicPrefix,
@@ -59,7 +59,7 @@ func CreateConsumer(kafkaURL string, topicPrefix string, repository repositories
 		},
 	}
 
-	current.service = server.MakeService(current.resourcesRepository)
+	current.service = server.MakeService(current.resourcesRepository, mfactory)
 
 	return current
 }

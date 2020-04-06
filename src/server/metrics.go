@@ -7,99 +7,120 @@ import (
 )
 
 var mutex = &sync.Mutex{}
-var currentMetricsMap *map[string]interface{}
+var metrics map[string]interface{}
+
+// MetricsWrapper ...
+type MetricsWrapper struct {
+	Metrics Metrics
+}
+
+// Metrics ...
+type Metrics interface {
+	InitMetrics()
+	IncrementCounter(string, ...string)
+	DestroyMetrics()
+}
+
+// MetricsWrapperFactory ...
+type MetricsWrapperFactory interface {
+	Create() *MetricsWrapper
+}
+
+// PrometheusMetrics ...
+type PrometheusMetrics struct {
+}
 
 // InitMetrics ...
-func InitMetrics() *map[string]interface{} {
+func (p PrometheusMetrics) InitMetrics() {
 	mutex.Lock()
+	if metrics == nil {
+		metrics = make(map[string]interface{})
 
-	if currentMetricsMap != nil {
-		return currentMetricsMap
+		metrics["createDeployment"] = prometheus.NewCounterVec(
+			prometheus.CounterOpts{
+				Namespace: "katalog",
+				Subsystem: "deployment",
+				Name:      "create",
+				Help:      "Total number of deployment creations",
+			},
+			[]string{"id", "ns", "rn"},
+		)
+		metrics["createDeployment"].(*prometheus.CounterVec).WithLabelValues("", "", "")
+		prometheus.MustRegister(metrics["createDeployment"].(*prometheus.CounterVec))
+
+		metrics["updateDeployment"] = prometheus.NewCounterVec(
+			prometheus.CounterOpts{
+				Namespace: "katalog",
+				Subsystem: "deployment",
+				Name:      "update",
+				Help:      "Total number of deployment updates",
+			},
+			[]string{"id", "ns", "rn"},
+		)
+		metrics["updateDeployment"].(*prometheus.CounterVec).WithLabelValues("", "", "")
+		prometheus.MustRegister(metrics["updateDeployment"].(*prometheus.CounterVec))
+
+		metrics["deleteDeployment"] = prometheus.NewCounterVec(
+			prometheus.CounterOpts{
+				Namespace: "katalog",
+				Subsystem: "deployment",
+				Name:      "delete",
+				Help:      "Total number of deployment deletes",
+			},
+			[]string{"id", "ns", "rn"},
+		)
+		metrics["deleteDeployment"].(*prometheus.CounterVec).WithLabelValues("", "", "")
+		prometheus.MustRegister(metrics["deleteDeployment"].(*prometheus.CounterVec))
+
+		metrics["createStatefulSet"] = prometheus.NewCounterVec(
+			prometheus.CounterOpts{
+				Namespace: "katalog",
+				Subsystem: "statefulset",
+				Name:      "create",
+				Help:      "Total number of statefulset creations",
+			},
+			[]string{"id", "ns", "rn"},
+		)
+		metrics["createStatefulSet"].(*prometheus.CounterVec).WithLabelValues("", "", "")
+		prometheus.MustRegister(metrics["createStatefulSet"].(*prometheus.CounterVec))
+
+		metrics["updateStatefulSet"] = prometheus.NewCounterVec(
+			prometheus.CounterOpts{
+				Namespace: "katalog",
+				Subsystem: "statefulset",
+				Name:      "update",
+				Help:      "Total number of statefulset updates",
+			},
+			[]string{"id", "ns", "rn"},
+		)
+		metrics["updateStatefulSet"].(*prometheus.CounterVec).WithLabelValues("", "", "")
+		prometheus.MustRegister(metrics["updateStatefulSet"].(*prometheus.CounterVec))
+
+		metrics["deleteStatefulSet"] = prometheus.NewCounterVec(
+			prometheus.CounterOpts{
+				Namespace: "katalog",
+				Subsystem: "statefulset",
+				Name:      "delete",
+				Help:      "Total number of statefulset deletes",
+			},
+			[]string{"id", "ns", "rn"},
+		)
+		metrics["deleteStatefulSet"].(*prometheus.CounterVec).WithLabelValues("", "", "")
+		prometheus.MustRegister(metrics["deleteStatefulSet"].(*prometheus.CounterVec))
 	}
-
-	metricsmap := make(map[string]interface{})
-
-	metricsmap["createDeployment"] = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: "katalog",
-			Subsystem: "deployment",
-			Name:      "create",
-			Help:      "Total number of deployment creations",
-		},
-		[]string{"id", "ns", "rn"},
-	)
-	metricsmap["createDeployment"].(*prometheus.CounterVec).WithLabelValues("", "", "")
-	prometheus.MustRegister(metricsmap["createDeployment"].(*prometheus.CounterVec))
-
-	metricsmap["updateDeployment"] = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: "katalog",
-			Subsystem: "deployment",
-			Name:      "update",
-			Help:      "Total number of deployment updates",
-		},
-		[]string{"id", "ns", "rn"},
-	)
-	metricsmap["updateDeployment"].(*prometheus.CounterVec).WithLabelValues("", "", "")
-	prometheus.MustRegister(metricsmap["updateDeployment"].(*prometheus.CounterVec))
-
-	metricsmap["deleteDeployment"] = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: "katalog",
-			Subsystem: "deployment",
-			Name:      "delete",
-			Help:      "Total number of deployment deletes",
-		},
-		[]string{"id", "ns", "rn"},
-	)
-	metricsmap["deleteDeployment"].(*prometheus.CounterVec).WithLabelValues("", "", "")
-	prometheus.MustRegister(metricsmap["deleteDeployment"].(*prometheus.CounterVec))
-
-	metricsmap["createStatefulSet"] = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: "katalog",
-			Subsystem: "statefulset",
-			Name:      "create",
-			Help:      "Total number of statefulset creations",
-		},
-		[]string{"id", "ns", "rn"},
-	)
-	metricsmap["createStatefulSet"].(*prometheus.CounterVec).WithLabelValues("", "", "")
-	prometheus.MustRegister(metricsmap["createStatefulSet"].(*prometheus.CounterVec))
-
-	metricsmap["updateStatefulSet"] = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: "katalog",
-			Subsystem: "statefulset",
-			Name:      "update",
-			Help:      "Total number of statefulset updates",
-		},
-		[]string{"id", "ns", "rn"},
-	)
-	metricsmap["updateStatefulSet"].(*prometheus.CounterVec).WithLabelValues("", "", "")
-	prometheus.MustRegister(metricsmap["updateStatefulSet"].(*prometheus.CounterVec))
-
-	metricsmap["deleteStatefulSet"] = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: "katalog",
-			Subsystem: "statefulset",
-			Name:      "delete",
-			Help:      "Total number of statefulset deletes",
-		},
-		[]string{"id", "ns", "rn"},
-	)
-	metricsmap["deleteStatefulSet"].(*prometheus.CounterVec).WithLabelValues("", "", "")
-	prometheus.MustRegister(metricsmap["deleteStatefulSet"].(*prometheus.CounterVec))
-
-	currentMetricsMap = &metricsmap
-
 	mutex.Unlock()
-	return &metricsmap
+}
+
+// IncrementCounter ...
+func (p PrometheusMetrics) IncrementCounter(key string, labels ...string) {
+	metrics[key].(*prometheus.CounterVec).WithLabelValues(labels...).Inc()
 }
 
 // DestroyMetrics ...
-func DestroyMetrics() {
-	for _, v := range *(currentMetricsMap) {
+func (p PrometheusMetrics) DestroyMetrics() {
+	mutex.Lock()
+	for _, v := range metrics {
 		prometheus.Unregister(v.(prometheus.Collector))
 	}
+	mutex.Unlock()
 }

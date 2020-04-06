@@ -29,7 +29,6 @@ type Server struct {
 	httpServer          WebhookServer
 	resourcesRepository repositories.Repository
 	router              Router
-	metrics             *map[string]interface{}
 	service             server.Service
 }
 
@@ -49,14 +48,14 @@ type Route interface {
 }
 
 // CreateServer ...
-func CreateServer(webhook WebhookServer, repository repositories.Repository, router Router) *Server {
+func CreateServer(webhook WebhookServer, repository repositories.Repository, router Router, mfactory server.MetricsWrapperFactory) *Server {
 	current := &Server{
 		httpServer:          webhook,
 		resourcesRepository: repository,
 		router:              router,
 	}
 
-	current.service = server.MakeService(current.resourcesRepository)
+	current.service = server.MakeService(current.resourcesRepository, mfactory)
 
 	return current
 }
