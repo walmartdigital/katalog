@@ -96,3 +96,10 @@ func InitMetrics() *map[string]interface{} {
 	mutex.Unlock()
 	return &metricsmap
 }
+
+// DestroyMetrics ...
+func DestroyMetrics() {
+	for _, v := range *(currentMetricsMap) {
+		prometheus.Unregister(v.(prometheus.Collector))
+	}
+}

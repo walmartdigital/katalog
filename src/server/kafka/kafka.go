@@ -4,7 +4,6 @@ import (
 	"context"
 	"sync"
 
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"github.com/walmartdigital/katalog/src/regex"
 	"github.com/walmartdigital/katalog/src/server"
@@ -44,7 +43,6 @@ type Consumer struct {
 	topicPrefix         string //katalog.artifact.[created|deleted|updated]
 	KafkaReaders        map[string]*kafka.Reader
 	resourcesRepository repositories.Repository
-	metrics             *map[string]interface{}
 	service             server.Service
 }
 
@@ -59,10 +57,9 @@ func CreateConsumer(kafkaURL string, topicPrefix string, repository repositories
 			"deleted": getKafkaReader(kafkaURL, topicPrefix+".updated"),
 			"updated": getKafkaReader(kafkaURL, topicPrefix+".updated"),
 		},
-		metrics: server.InitMetrics(),
 	}
 
-	current.service = server.MakeService(current.resourcesRepository, current.metrics)
+	current.service = server.MakeService(current.resourcesRepository)
 
 	return current
 }
@@ -169,12 +166,5 @@ func (c *Consumer) ConsumeEvent(event string) {
 			"artifact": artifact,
 			"id":       id,
 		}).Debug("Event process task launched")
-	}
-}
-
-// DestroyMetrics ...
-func (c *Consumer) DestroyMetrics() {
-	for _, v := range *(c.metrics) {
-		prometheus.Unregister(v.(prometheus.Collector))
 	}
 }

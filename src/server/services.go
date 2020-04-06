@@ -26,10 +26,10 @@ type Service struct {
 }
 
 // MakeService ...
-func MakeService(resourcesRepository repositories.Repository, metrics *map[string]interface{}) Service {
+func MakeService(resourcesRepository repositories.Repository) Service {
 	return Service{
 		resourcesRepository: resourcesRepository,
-		metrics:             metrics,
+		metrics:             InitMetrics(),
 	}
 }
 

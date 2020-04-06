@@ -3,6 +3,8 @@ kind: Config
 metadata:
   name: katalog
 build:
+  local:
+    push: false
   artifacts:
   - image: katalog
     docker:

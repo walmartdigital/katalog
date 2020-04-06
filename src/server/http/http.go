@@ -3,7 +3,6 @@ package http
 import (
 	"net/http"
 
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"github.com/walmartdigital/katalog/src/server"
@@ -55,19 +54,11 @@ func CreateServer(webhook WebhookServer, repository repositories.Repository, rou
 		httpServer:          webhook,
 		resourcesRepository: repository,
 		router:              router,
-		metrics:             server.InitMetrics(),
 	}
 
-	current.service = server.MakeService(current.resourcesRepository, current.metrics)
+	current.service = server.MakeService(current.resourcesRepository)
 
 	return current
-}
-
-// DestroyMetrics ...
-func (s *Server) DestroyMetrics() {
-	for _, v := range *(s.metrics) {
-		prometheus.Unregister(v.(prometheus.Collector))
-	}
 }
 
 // Run ...
