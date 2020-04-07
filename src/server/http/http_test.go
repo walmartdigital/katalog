@@ -114,12 +114,11 @@ func (s *fakeHTTPServer) ListenAndServe() error {
 }
 
 var fakeMetricsFactory *mock_server.MockMetricsFactory
+var ctrl *gomock.Controller
 
 func TestAll(t *testing.T) {
-	ctrl := gomock.NewController(t)
+	ctrl = gomock.NewController(t)
 	defer ctrl.Finish()
-
-	fakeMetricsFactory = mock_server.NewMockMetricsFactory(ctrl)
 
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Server")
@@ -139,6 +138,8 @@ var _ = Describe("run server", func() {
 		repository = fakeRepository{persistence: persistence, fail: false}
 		router = fakeRouter{}
 		httpServer = fakeHTTPServer{}
+		fakeMetricsFactory = mock_server.NewMockMetricsFactory(ctrl)
+		fakeMetricsFactory.EXPECT().Create().Times(1)
 		katalogServer = webhookServer.CreateServer(&httpServer, &repository, &router, fakeMetricsFactory)
 		katalogServer.Run()
 	})
@@ -160,8 +161,6 @@ var _ = Describe("run server", func() {
 		resource := repository.persistence[id].(domain.Resource)
 		output := resource.GetK8sResource().(*domain.Service)
 		Expect(srv).To(Equal(*output))
-
-		fakeMetricsFactory.EXPECT().Create().Times(1)
 	})
 
 	It("should update a service", func() {
@@ -192,7 +191,10 @@ var _ = Describe("run server", func() {
 		body := new(bytes.Buffer)
 		json.NewEncoder(body).Encode(newService)
 		path := "/services/{id}"
-		req, _ := http.NewRequest(http.MethodPut, "/services/"+id, body)
+		req, err := http.NewRequest(http.MethodPut, "/services/"+id, body)
+
+		Expect(err).NotTo(BeNil())
+
 		req = mux.SetURLVars(req, map[string]string{"id": id})
 		rec := httptest.NewRecorder()
 
