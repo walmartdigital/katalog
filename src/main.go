@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
 	"github.com/walmartdigital/katalog/src/domain"
 	"github.com/walmartdigital/katalog/src/server"
@@ -167,11 +168,23 @@ func check(checkable server.Checkable) {
 	}()
 }
 
+// KafkaWriterFactory ...
+type KafkaWriterFactory struct{}
+
+// Create ...
+func (f KafkaWriterFactory) Create(kafkaURL string, topic string) publishers.Writer {
+	return kafka.NewWriter(kafka.WriterConfig{
+		Brokers:  []string{kafkaURL},
+		Topic:    topic,
+		Balancer: &kafka.LeastBytes{},
+	})
+}
+
 func resolvePublisher() publishers.Publisher {
 	var current publishers.Publisher
 	switch *publisher {
 	case publisherKafka:
-		current = publishers.BuildKafkaPublisher(*kafkaURL, *kafkaTopicPrefix)
+		current = publishers.BuildKafkaPublisher(*kafkaURL, *kafkaTopicPrefix, KafkaWriterFactory{})
 	case publisherHTTP:
 		current = publishers.BuildHTTPPublisher(*httpURL, retry.Do)
 	default:

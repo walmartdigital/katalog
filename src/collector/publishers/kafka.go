@@ -14,26 +14,29 @@ import (
 	kafka "github.com/segmentio/kafka-go"
 )
 
-func getKafkaWriter(kafkaURL, topic string) *kafka.Writer {
-	return kafka.NewWriter(kafka.WriterConfig{
-		Brokers:  []string{kafkaURL},
-		Topic:    topic,
-		Balancer: &kafka.LeastBytes{},
-	})
+// Writer ...
+type Writer interface {
+	Close() error
+	WriteMessages(context.Context, ...kafka.Message) error
+}
+
+// WriterFactory ...
+type WriterFactory interface {
+	Create(string, string) Writer
 }
 
 // KafkaPublisher ...
 type KafkaPublisher struct {
 	url           string
 	topicPrefix   string //katalog.artifact.[created|deleted|updated]
-	kafkaWriters  map[string]*kafka.Writer
+	kafkaWriters  map[string]*Writer
 	healthCounter int
 }
 
 // BuildKafkaPublisher ...
-func BuildKafkaPublisher(url string, topicPrefix string) Publisher {
+func BuildKafkaPublisher(url string, topicPrefix string, factory WriterFactory) Publisher {
 	publisher := &KafkaPublisher{url: url, topicPrefix: topicPrefix}
-	err := publisher.CreateProducers()
+	err := publisher.CreateProducers(factory)
 	if err != nil {
 		logrus.Fatal(err)
 	}
@@ -41,31 +44,34 @@ func BuildKafkaPublisher(url string, topicPrefix string) Publisher {
 }
 
 // CreateProducers ...
-func (c *KafkaPublisher) CreateProducers() error {
-	c.kafkaWriters = map[string]*kafka.Writer{
-		"created": getKafkaWriter(c.url, c.topicPrefix+".created"),
-		"deleted": getKafkaWriter(c.url, c.topicPrefix+".updated"),
-		"updated": getKafkaWriter(c.url, c.topicPrefix+".updated"),
-		"health":  getKafkaWriter(c.url, c.topicPrefix+".health"),
+func (c *KafkaPublisher) CreateProducers(factory WriterFactory) error {
+	created := factory.Create(c.url, c.topicPrefix+".created")
+	deleted := factory.Create(c.url, c.topicPrefix+".deleted")
+	updated := factory.Create(c.url, c.topicPrefix+".updated")
+	health := factory.Create(c.url, c.topicPrefix+".health")
+	c.kafkaWriters = map[string]*Writer{
+		"created": &created,
+		"deleted": &deleted,
+		"updated": &updated,
+		"health":  &health,
 	}
-
 	return nil
 }
 
 // Close ...
 func (c *KafkaPublisher) Close() error {
 	var err error
-	errCreated := c.kafkaWriters["created"].Close()
+	errCreated := (*c.kafkaWriters["created"]).Close()
 	if errCreated != nil {
 		err = errCreated
 	}
 
-	errDeleted := c.kafkaWriters["deleted"].Close()
+	errDeleted := (*c.kafkaWriters["deleted"]).Close()
 	if errDeleted != nil {
 		err = errDeleted
 	}
 
-	errUpdated := c.kafkaWriters["updated"].Close()
+	errUpdated := (*c.kafkaWriters["updated"]).Close()
 	if errUpdated != nil {
 		err = errUpdated
 	}
@@ -78,7 +84,7 @@ func (c *KafkaPublisher) Close() error {
 }
 
 // getWriter ...
-func (c *KafkaPublisher) getWriter(operation domain.Operation) *kafka.Writer {
+func (c *KafkaPublisher) getWriter(operation domain.Operation) *Writer {
 	if c.kafkaWriters == nil {
 		panic(errors.New("Writers not created, call GetProducers first"))
 	}
@@ -162,7 +168,7 @@ func (c *KafkaPublisher) Check() bool {
 	writer := c.kafkaWriters["health"]
 
 	c.healthCounter++
-	err := writer.WriteMessages(
+	err := (*writer).WriteMessages(
 		context.Background(),
 		kafka.Message{
 			Key:   []byte("check"),
@@ -195,7 +201,7 @@ func (c *KafkaPublisher) Publish(obj interface{}) error {
 		"key": key,
 	}).Debug("Sending message")
 
-	errWritingMessage := writer.WriteMessages(
+	errWritingMessage := (*writer).WriteMessages(
 		context.Background(),
 		kafka.Message{
 			Key:   []byte(key),
