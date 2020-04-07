@@ -74,7 +74,9 @@ func (r *ResourceRepository) UpdateResource(resource interface{}) (*domain.Resou
 		if sr.GetGeneration() < res.GetGeneration() {
 			err := r.persistence.Update(res.GetID(), res)
 			if err != nil {
-				log.Fatal(err)
+				log.WithFields(logrus.Fields{
+					"msg": err.Error(),
+				}).Debug("Saving Resource")
 				return nil, err
 			}
 			return &res, nil
@@ -104,7 +106,9 @@ func (r *ResourceRepository) GetAllResources() ([]interface{}, error) {
 		var resource domain.Resource
 		err := mapstructure.Decode(item, &resource)
 		if err != nil {
-			log.Fatal(err)
+			log.WithFields(logrus.Fields{
+				"msg": err.Error(),
+			}).Debug("Saving Resource")
 			return nil, err
 		}
 		list.Add(resource)
