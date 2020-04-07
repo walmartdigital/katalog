@@ -48,7 +48,7 @@ func (s *Server) CreateService(w http.ResponseWriter, r *http.Request) {
 	if errEncoding != nil {
 		log.WithFields(logrus.Fields{
 			"msg": errEncoding.Error(),
-		}).Error("Deserializing Service")
+		}).Error("Encoding Service")
 	}
 }
 
@@ -74,7 +74,7 @@ func (s *Server) UpdateService(w http.ResponseWriter, r *http.Request) {
 	if errEncoding != nil {
 		log.WithFields(logrus.Fields{
 			"msg": errEncoding.Error(),
-		}).Error("Deserializing Service")
+		}).Error("Encoding Service")
 	}
 }
 
@@ -140,8 +140,6 @@ func (s *Server) CreateDeployment(w http.ResponseWriter, r *http.Request) {
 		}).Error("Creating Deployment")
 	}
 
-	json.NewEncoder(w).Encode(deployment)
-
 	errEncode := json.NewEncoder(w).Encode(deployment)
 	if errEncode != nil {
 		log.WithFields(logrus.Fields{
@@ -165,6 +163,13 @@ func (s *Server) UpdateDeployment(w http.ResponseWriter, r *http.Request) {
 		log.WithFields(logrus.Fields{
 			"msg": err.Error(),
 		}).Error("Updating Deployment")
+	}
+
+	errEncode := json.NewEncoder(w).Encode(deployment)
+	if errEncode != nil {
+		log.WithFields(logrus.Fields{
+			"msg": errEncode.Error(),
+		}).Error("Encoding Update Deployment")
 	}
 }
 
@@ -229,6 +234,13 @@ func (s *Server) CreateStatefulSet(w http.ResponseWriter, r *http.Request) {
 			"msg": err.Error(),
 		}).Error("Creating StatefulSet")
 	}
+
+	errEncode := json.NewEncoder(w).Encode(statefulset)
+	if errEncode != nil {
+		log.WithFields(logrus.Fields{
+			"msg": errEncode.Error(),
+		}).Error("Encoding Create StatefulSet")
+	}
 }
 
 // UpdateStatefulSet ...
@@ -246,6 +258,13 @@ func (s *Server) UpdateStatefulSet(w http.ResponseWriter, r *http.Request) {
 		log.WithFields(logrus.Fields{
 			"msg": err.Error(),
 		}).Error("Updating StatefulSet")
+	}
+
+	errEncode := json.NewEncoder(w).Encode(statefulset)
+	if errEncode != nil {
+		log.WithFields(logrus.Fields{
+			"msg": errEncode.Error(),
+		}).Error("Encoding Update StatefulSet")
 	}
 }
 
