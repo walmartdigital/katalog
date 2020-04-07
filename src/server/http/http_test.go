@@ -113,7 +113,6 @@ func (s *fakeHTTPServer) ListenAndServe() error {
 	return nil
 }
 
-var fakeMetricsFactory *mock_server.MockMetricsFactory
 var ctrl *gomock.Controller
 
 func TestAll(t *testing.T) {
@@ -138,8 +137,12 @@ var _ = Describe("run server", func() {
 		repository = fakeRepository{persistence: persistence, fail: false}
 		router = fakeRouter{}
 		httpServer = fakeHTTPServer{}
-		fakeMetricsFactory = mock_server.NewMockMetricsFactory(ctrl)
-		fakeMetricsFactory.EXPECT().Create().Times(1)
+		fakeMetricsFactory := mock_server.NewMockMetricsFactory(ctrl)
+		fakeMetrics := mock_server.NewMockMetrics(ctrl)
+		fakeMetrics.EXPECT().IncrementCounter(gomock.Any(), gomock.Any()).AnyTimes()
+		fakeMetricsFactory.EXPECT().Create().Return(
+			fakeMetrics,
+		).Times(1)
 		katalogServer = webhookServer.CreateServer(&httpServer, &repository, &router, fakeMetricsFactory)
 		katalogServer.Run()
 	})
@@ -191,9 +194,7 @@ var _ = Describe("run server", func() {
 		body := new(bytes.Buffer)
 		json.NewEncoder(body).Encode(newService)
 		path := "/services/{id}"
-		req, err := http.NewRequest(http.MethodPut, "/services/"+id, body)
-
-		Expect(err).NotTo(BeNil())
+		req, _ := http.NewRequest(http.MethodPut, "/services/"+id, body)
 
 		req = mux.SetURLVars(req, map[string]string{"id": id})
 		rec := httptest.NewRecorder()

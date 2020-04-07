@@ -139,6 +139,15 @@ func (s *Server) CreateDeployment(w http.ResponseWriter, r *http.Request) {
 			"msg": err.Error(),
 		}).Error("Creating Deployment")
 	}
+
+	json.NewEncoder(w).Encode(deployment)
+
+	errEncode := json.NewEncoder(w).Encode(deployment)
+	if errEncode != nil {
+		log.WithFields(logrus.Fields{
+			"msg": errEncode.Error(),
+		}).Error("Encoding Create Deployment")
+	}
 }
 
 // UpdateDeployment ...
