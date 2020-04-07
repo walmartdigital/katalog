@@ -45,7 +45,10 @@ func (s *Service) CreateService(service domain.Service) error {
 
 	errCreatingResource := s.resourcesRepository.CreateResource(resource)
 	if errCreatingResource != nil {
-		log.Fatal(errCreatingResource)
+		log.WithFields(logrus.Fields{
+			"msg": errCreatingResource.Error(),
+		}).Error("Creating Service")
+
 		return errCreatingResource
 	}
 
@@ -103,7 +106,9 @@ func (s *Service) CreateDeployment(deployment domain.Deployment) error {
 
 	err := s.resourcesRepository.CreateResource(resource)
 	if err != nil {
-		logrus.Fatal("Create Deployment error")
+		log.WithFields(logrus.Fields{
+			"msg": err.Error(),
+		}).Error("Creating Deployment")
 		return err
 	}
 
@@ -211,7 +216,9 @@ func (s *Service) CreateStatefulSet(statefulset domain.StatefulSet) error {
 
 	err := s.resourcesRepository.CreateResource(resource)
 	if err != nil {
-		logrus.Fatal("Create Stateful error")
+		log.WithFields(logrus.Fields{
+			"msg": err.Error(),
+		}).Error("Create StatefulSet")
 		return err
 	}
 

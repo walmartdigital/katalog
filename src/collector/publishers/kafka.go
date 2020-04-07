@@ -57,21 +57,22 @@ func (c *KafkaPublisher) Close() error {
 	var err error
 	errCreated := c.kafkaWriters["created"].Close()
 	if errCreated != nil {
-		log.Fatal(errCreated)
 		err = errCreated
 	}
 
 	errDeleted := c.kafkaWriters["deleted"].Close()
 	if errDeleted != nil {
-		log.Fatal(errDeleted)
 		err = errDeleted
 	}
 
 	errUpdated := c.kafkaWriters["updated"].Close()
 	if errUpdated != nil {
-		log.Fatal(errUpdated)
 		err = errUpdated
 	}
+
+	log.WithFields(logrus.Fields{
+		"msg": err.Error(),
+	}).Error("Closing kafka publishers")
 
 	return err
 }
@@ -103,7 +104,7 @@ func (c *KafkaPublisher) getPayload(resource domain.Resource) (string, error) {
 		service := resource.GetK8sResource().(*domain.Service)
 		err := json.NewEncoder(payloadBytes).Encode(*service)
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
 			return "", err
 		}
 
@@ -111,7 +112,7 @@ func (c *KafkaPublisher) getPayload(resource domain.Resource) (string, error) {
 		deployment := resource.GetK8sResource().(*domain.Deployment)
 		err := json.NewEncoder(payloadBytes).Encode(*deployment)
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
 			return "", err
 		}
 
@@ -119,7 +120,7 @@ func (c *KafkaPublisher) getPayload(resource domain.Resource) (string, error) {
 		statefulset := resource.GetK8sResource().(*domain.StatefulSet)
 		err := json.NewEncoder(payloadBytes).Encode(*statefulset)
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
 			return "", err
 		}
 
@@ -169,7 +170,7 @@ func (c *KafkaPublisher) Check() bool {
 		},
 	)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 		return false
 	}
 
@@ -186,7 +187,7 @@ func (c *KafkaPublisher) Publish(obj interface{}) error {
 
 	value, errGettingValue := c.getPayload(operation.Resource)
 	if errGettingValue != nil {
-		log.Fatal(errGettingValue)
+		log.Error(errGettingValue)
 		return errGettingValue
 	}
 
@@ -202,7 +203,7 @@ func (c *KafkaPublisher) Publish(obj interface{}) error {
 		},
 	)
 	if errWritingMessage != nil {
-		log.Fatal(errWritingMessage)
+		log.Error(errWritingMessage)
 		return errWritingMessage
 	}
 
