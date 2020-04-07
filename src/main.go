@@ -121,17 +121,17 @@ func mainCollector(kubeconfig string) {
 		case event := <-serviceEvents:
 			err := publisher.Publish(event)
 			if err != nil {
-				log.Fatal(err)
+				log.Error(err)
 			}
 		case event := <-deploymentEvents:
 			err := publisher.Publish(event)
 			if err != nil {
-				log.Fatal(err)
+				log.Error(err)
 			}
 		case event := <-statefulsetEvents:
 			err := publisher.Publish(event)
 			if err != nil {
-				log.Fatal(err)
+				log.Error(err)
 			}
 		}
 	}
@@ -153,14 +153,14 @@ func check(checkable server.Checkable) {
 				log.Debug("(LIVE) Health check at " + t.Local().String())
 				_, errOpen := os.OpenFile("/tmp/imalive", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 				if errOpen != nil {
-					log.Fatal(errOpen)
+					log.Error("Error opening health check file", errOpen)
 				}
 
 			} else {
 				log.Debug("(DEAD) Health check at " + t.Local().String())
 				errRemove := os.Remove("/tmp/imalive")
 				if errRemove != nil {
-					log.Fatal(errRemove)
+					log.Error("Error removing health check file", errRemove)
 				}
 			}
 		}
