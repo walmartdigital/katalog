@@ -97,6 +97,7 @@ func (s *Server) getAllServices(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprint(w, "Resource not found")
 		log.Error("Resource not found")
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	errEncoding := json.NewEncoder(w).Encode(services)
@@ -112,6 +113,7 @@ func (s *Server) countServices(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprint(w, "Resource not found")
 		log.Error("Resource not found")
+		return
 	}
 	errEncode := json.NewEncoder(w).Encode(struct{ Count int }{len(services)})
 	if errEncode != nil {
@@ -176,6 +178,7 @@ func (s *Server) getAllDeployments(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprint(w, "Resource not found")
 		log.Error("Resource not found")
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(deployments)
@@ -191,6 +194,7 @@ func (s *Server) countDeployments(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprint(w, "Resource not found")
 		log.Error("Resource not found")
+		return
 	}
 	err = json.NewEncoder(w).Encode(struct{ Count int }{len(deployments)})
 	if err != nil {
@@ -255,6 +259,7 @@ func (s *Server) getAllStatefulSets(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprint(w, "Resource not found")
 		log.Error("Resource not found")
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(statefulsets)
@@ -270,6 +275,7 @@ func (s *Server) countStatefulSets(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprint(w, "Resource not found")
 		log.Error("Resource not found")
+		return
 	}
 	err = json.NewEncoder(w).Encode(struct{ Count int }{len(statefulsets)})
 	if err != nil {
