@@ -57,7 +57,8 @@ func (c *HTTPPublisher) post(resource domain.Resource) error {
 		service := resource.GetK8sResource().(*domain.Service)
 		err := json.NewEncoder(reqBodyBytes).Encode(*service)
 		if err != nil {
-			log.Fatal(err)
+			log.Error("Error serializing HTTP request body")
+			return err
 		}
 		req, _ := http.NewRequest(http.MethodPost, c.url+"/services/"+service.ID, reqBodyBytes)
 		req.Header.Add("Content-Type", "application/json")
@@ -73,7 +74,8 @@ func (c *HTTPPublisher) post(resource domain.Resource) error {
 		deployment := resource.GetK8sResource().(*domain.Deployment)
 		err := json.NewEncoder(reqBodyBytes).Encode(*deployment)
 		if err != nil {
-			log.Fatal(err)
+			log.Error("Error serializing HTTP request body")
+			return err
 		}
 		req, _ := http.NewRequest(http.MethodPost, c.url+"/deployments/"+deployment.ID, reqBodyBytes)
 		req.Header.Add("Content-Type", "application/json")
@@ -89,7 +91,8 @@ func (c *HTTPPublisher) post(resource domain.Resource) error {
 		statefulset := resource.GetK8sResource().(*domain.StatefulSet)
 		err := json.NewEncoder(reqBodyBytes).Encode(*statefulset)
 		if err != nil {
-			log.Fatal(err)
+			log.Error("Error serializing HTTP request body")
+			return err
 		}
 		req, _ := http.NewRequest(http.MethodPost, c.url+"/statefulsets/"+statefulset.ID, reqBodyBytes)
 		req.Header.Add("Content-Type", "application/json")
@@ -116,7 +119,8 @@ func (c *HTTPPublisher) put(resource domain.Resource) error {
 		service := resource.GetK8sResource().(*domain.Service)
 		err := json.NewEncoder(reqBodyBytes).Encode(*service)
 		if err != nil {
-			log.Fatal(err)
+			log.Error("Error serializing HTTP request body")
+			return err
 		}
 		req, _ := http.NewRequest(http.MethodPut, c.url+"/services/"+service.ID, reqBodyBytes)
 		req.Header.Add("Content-Type", "application/json")
@@ -132,7 +136,8 @@ func (c *HTTPPublisher) put(resource domain.Resource) error {
 		deployment := resource.GetK8sResource().(*domain.Deployment)
 		err := json.NewEncoder(reqBodyBytes).Encode(*deployment)
 		if err != nil {
-			log.Fatal(err)
+			log.Error("Error serializing HTTP request body")
+			return err
 		}
 		req, _ := http.NewRequest(http.MethodPut, c.url+"/deployments/"+deployment.ID, reqBodyBytes)
 		req.Header.Add("Content-Type", "application/json")
@@ -148,7 +153,8 @@ func (c *HTTPPublisher) put(resource domain.Resource) error {
 		statefulset := resource.GetK8sResource().(*domain.StatefulSet)
 		err := json.NewEncoder(reqBodyBytes).Encode(*statefulset)
 		if err != nil {
-			log.Fatal(err)
+			log.Error("Error serializing HTTP request body")
+			return err
 		}
 		req, _ := http.NewRequest(http.MethodPut, c.url+"/statefulsets/"+statefulset.ID, reqBodyBytes)
 		req.Header.Add("Content-Type", "application/json")
