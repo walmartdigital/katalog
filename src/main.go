@@ -233,13 +233,31 @@ func (f KafkaReaderFactory) Create(kafkaURL string, topic string) kafkaServer.Re
 	})
 }
 
+// ResourceRepositoryFactory ...
+type ResourceRepositoryFactory struct {
+	persistenceFactory MemoryPersistenceFactory
+}
+
+// Create ...
+func (f ResourceRepositoryFactory) Create() repositories.Repository {
+	persistence := f.persistenceFactory.Create()
+	return repositories.CreateResourceRepository(persistence)
+}
+
+// MemoryPersistenceFactory ...
+type MemoryPersistenceFactory struct{}
+
+// Create ...
+func (f MemoryPersistenceFactory) Create() persistence.Persistence {
+	memory := make(map[string]interface{})
+	return persistence.BuildMemoryPersistence(memory)
+}
+
 func mainConsumer(wg sync.WaitGroup, doCheck bool) {
 	defer wg.Done()
 	log.Info("kafka consumer starting...")
-	memory := make(map[string]interface{})
-	persistence := persistence.BuildMemoryPersistence(memory)
-	resourceRepository := repositories.CreateResourceRepository(persistence)
-	consumerServer := kafkaServer.CreateConsumer(*kafkaURL, *kafkaTopicPrefix, KafkaReaderFactory{}, resourceRepository, PrometheusMetricsFactory{})
+	memFactory := MemoryPersistenceFactory{}
+	consumerServer := kafkaServer.CreateConsumer(*kafkaURL, *kafkaTopicPrefix, KafkaReaderFactory{}, ResourceRepositoryFactory{persistenceFactory: memFactory}, PrometheusMetricsFactory{})
 	if doCheck {
 		check(consumerServer)
 	}

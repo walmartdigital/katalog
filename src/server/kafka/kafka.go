@@ -48,15 +48,15 @@ type Consumer struct {
 }
 
 // CreateConsumer ...
-func CreateConsumer(kafkaURL string, topicPrefix string, rfactory ReaderFactory, repository repositories.Repository, mfactory server.MetricsFactory) *Consumer {
-	created := rfactory.Create(kafkaURL, topicPrefix+".created")
-	deleted := rfactory.Create(kafkaURL, topicPrefix+".deleted")
-	updated := rfactory.Create(kafkaURL, topicPrefix+".updated")
+func CreateConsumer(kafkaURL string, topicPrefix string, readerFactory ReaderFactory, repoFactory repositories.RepositoryFactory, metricsFactory server.MetricsFactory) *Consumer {
+	created := readerFactory.Create(kafkaURL, topicPrefix+".created")
+	deleted := readerFactory.Create(kafkaURL, topicPrefix+".deleted")
+	updated := readerFactory.Create(kafkaURL, topicPrefix+".updated")
 
 	current := &Consumer{
 		url:                 kafkaURL,
 		topicPrefix:         topicPrefix,
-		resourcesRepository: repository,
+		resourcesRepository: repoFactory.Create(),
 		KafkaReaders: map[string]*Reader{
 			"created": &created,
 			"deleted": &deleted,
@@ -64,7 +64,7 @@ func CreateConsumer(kafkaURL string, topicPrefix string, rfactory ReaderFactory,
 		},
 	}
 
-	current.service = server.MakeService(current.resourcesRepository, mfactory)
+	current.service = server.MakeService(current.resourcesRepository, metricsFactory)
 
 	return current
 }
