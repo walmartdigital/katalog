@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/walmartdigital/katalog/src/mocks/mock_kafka"
+	"github.com/walmartdigital/katalog/src/mocks/mock_repositories"
 	"github.com/walmartdigital/katalog/src/mocks/mock_server"
 	"github.com/walmartdigital/katalog/src/server/kafka"
 )
@@ -29,8 +30,15 @@ var _ = Describe("run server", func() {
 		// Initialize the mocked Kafka related objects
 		fakeReaderFactory := mock_kafka.NewMockReaderFactory(ctrl)
 		fakeReader := mock_kafka.NewMockReader(ctrl)
-		fakeReaderFactory.EXPECT().Create("", "").Return(
+		fakeReaderFactory.EXPECT().Create(gomock.Any(), gomock.Any()).Return(
 			fakeReader,
+		).Times(3)
+
+		// Initialize the mocked Repository related objects
+		fakeRepoFactory := mock_repositories.NewMockRepositoryFactory(ctrl)
+		fakeRepo := mock_repositories.NewMockRepository(ctrl)
+		fakeRepoFactory.EXPECT().Create().Return(
+			fakeRepo,
 		).Times(1)
 
 		// Initialize the mocked Metrics related objects
@@ -41,7 +49,8 @@ var _ = Describe("run server", func() {
 			fakeMetrics,
 		).Times(1)
 
-		consumer := kafka.CreateConsumer("", "", fakeReaderFactory, fakeMetricsFactory, fakeMetricsFactory)
+		consumer := kafka.CreateConsumer("", "", fakeReaderFactory, fakeRepoFactory, fakeMetricsFactory)
+		_ = consumer
 	})
 
 	It("should create a service", func() {
