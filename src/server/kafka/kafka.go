@@ -38,16 +38,6 @@ type ReaderFactory interface {
 	Create(string, string) Reader
 }
 
-func getKafkaReader(kafkaURL string, topic string) *kafka.Reader {
-	return kafka.NewReader(kafka.ReaderConfig{
-		Brokers:   []string{kafkaURL},
-		Topic:     topic,
-		Partition: 0,
-		MinBytes:  10e3, // 10KB
-		MaxBytes:  10e6, // 10MB
-	})
-}
-
 // Consumer ...
 type Consumer struct {
 	url                 string
