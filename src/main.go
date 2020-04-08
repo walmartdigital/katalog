@@ -219,13 +219,27 @@ func mainServer(wg sync.WaitGroup, doCheck bool) {
 	log.Info("http (webhook) server started...")
 }
 
+// KafkaReaderFactory ...
+type KafkaReaderFactory struct{}
+
+// Create ...
+func (f KafkaReaderFactory) Create(kafkaURL string, topic string) kafkaServer.Reader {
+	return kafka.NewReader(kafka.ReaderConfig{
+		Brokers:   []string{kafkaURL},
+		Topic:     topic,
+		Partition: 0,
+		MinBytes:  10e3, // 10KB
+		MaxBytes:  10e6, // 10MB
+	})
+}
+
 func mainConsumer(wg sync.WaitGroup, doCheck bool) {
 	defer wg.Done()
 	log.Info("kafka consumer starting...")
 	memory := make(map[string]interface{})
 	persistence := persistence.BuildMemoryPersistence(memory)
 	resourceRepository := repositories.CreateResourceRepository(persistence)
-	consumerServer := kafkaServer.CreateConsumer(*kafkaURL, *kafkaTopicPrefix, resourceRepository, PrometheusMetricsFactory{})
+	consumerServer := kafkaServer.CreateConsumer(*kafkaURL, *kafkaTopicPrefix, KafkaReaderFactory{}, resourceRepository, PrometheusMetricsFactory{})
 	if doCheck {
 		check(consumerServer)
 	}

@@ -27,6 +27,17 @@ func (c *Consumer) Check() bool {
 	return true
 }
 
+// Reader ...
+type Reader interface {
+	Close() error
+	ReadMessage(context.Context) (kafka.Message, error)
+}
+
+// ReaderFactory ...
+type ReaderFactory interface {
+	Create(string, string) Reader
+}
+
 func getKafkaReader(kafkaURL string, topic string) *kafka.Reader {
 	return kafka.NewReader(kafka.ReaderConfig{
 		Brokers:   []string{kafkaURL},
@@ -41,21 +52,25 @@ func getKafkaReader(kafkaURL string, topic string) *kafka.Reader {
 type Consumer struct {
 	url                 string
 	topicPrefix         string //katalog.artifact.[created|deleted|updated]
-	KafkaReaders        map[string]*kafka.Reader
+	KafkaReaders        map[string]*Reader
 	resourcesRepository repositories.Repository
 	service             server.Service
 }
 
 // CreateConsumer ...
-func CreateConsumer(kafkaURL string, topicPrefix string, repository repositories.Repository, mfactory server.MetricsFactory) *Consumer {
+func CreateConsumer(kafkaURL string, topicPrefix string, rfactory ReaderFactory, repository repositories.Repository, mfactory server.MetricsFactory) *Consumer {
+	created := rfactory.Create(kafkaURL, topicPrefix+".created")
+	deleted := rfactory.Create(kafkaURL, topicPrefix+".deleted")
+	updated := rfactory.Create(kafkaURL, topicPrefix+".updated")
+
 	current := &Consumer{
 		url:                 kafkaURL,
 		topicPrefix:         topicPrefix,
 		resourcesRepository: repository,
-		KafkaReaders: map[string]*kafka.Reader{
-			"created": getKafkaReader(kafkaURL, topicPrefix+".created"),
-			"deleted": getKafkaReader(kafkaURL, topicPrefix+".updated"),
-			"updated": getKafkaReader(kafkaURL, topicPrefix+".updated"),
+		KafkaReaders: map[string]*Reader{
+			"created": &created,
+			"deleted": &deleted,
+			"updated": &updated,
 		},
 	}
 
@@ -81,10 +96,10 @@ func (c *Consumer) ConsumeEvent(event string) {
 
 	consumer := c.KafkaReaders[event]
 
-	defer consumer.Close()
+	defer (*consumer).Close()
 
 	for {
-		m, err := consumer.ReadMessage(context.Background())
+		m, err := (*consumer).ReadMessage(context.Background())
 		if err != nil {
 			break
 		}
