@@ -1,6 +1,7 @@
 package persistence_test
 
 import (
+	"sync"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -15,7 +16,7 @@ func TestAll(t *testing.T) {
 
 var _ = Describe("get", func() {
 	It("should get an object", func() {
-		memory := make(map[string]interface{})
+		memory := new(sync.Map)
 		persistence := persistence.BuildMemoryPersistence(memory)
 		id := "4128cbf6-b279-46b3-ae19-9f90ea190978"
 		value := struct{ id string }{id}
@@ -28,7 +29,7 @@ var _ = Describe("get", func() {
 	})
 
 	It("should fail when id is empty", func() {
-		memory := make(map[string]interface{})
+		memory := new(sync.Map)
 		persistence := persistence.BuildMemoryPersistence(memory)
 		id := ""
 
@@ -40,7 +41,7 @@ var _ = Describe("get", func() {
 
 var _ = Describe("create", func() {
 	It("should add a single object", func() {
-		memory := make(map[string]interface{})
+		memory := new(sync.Map)
 		persistence := persistence.BuildMemoryPersistence(memory)
 		id := "4128cbf6-b279-46b3-ae19-9f90ea190978"
 		value := struct{ id string }{id}
@@ -48,11 +49,12 @@ var _ = Describe("create", func() {
 		error := persistence.Create(id, value)
 
 		Expect(error).To(BeNil())
-		Expect(memory["4128cbf6-b279-46b3-ae19-9f90ea190978"]).To(Equal(value))
+		expectedValue, _ := memory.Load("4128cbf6-b279-46b3-ae19-9f90ea190978")
+		Expect(value).To(Equal(expectedValue))
 	})
 
 	It("should fail when id is empty", func() {
-		memory := make(map[string]interface{})
+		memory := new(sync.Map)
 		persistence := persistence.BuildMemoryPersistence(memory)
 		id := ""
 
@@ -64,7 +66,7 @@ var _ = Describe("create", func() {
 
 var _ = Describe("update", func() {
 	It("should update a existent object", func() {
-		memory := make(map[string]interface{})
+		memory := new(sync.Map)
 		persistence := persistence.BuildMemoryPersistence(memory)
 		id := "4128cbf6-b279-46b3-ae19-9f90ea190978"
 		value := struct{ id string }{id}
@@ -75,11 +77,12 @@ var _ = Describe("update", func() {
 		error = persistence.Update(id, value2)
 		Expect(error).To(BeNil())
 
-		Expect(memory["4128cbf6-b279-46b3-ae19-9f90ea190978"]).To(Equal(value2))
+		expectedValue, _ := memory.Load("4128cbf6-b279-46b3-ae19-9f90ea190978")
+		Expect(expectedValue).To(Equal(value2))
 	})
 
 	It("should fail when id is empty", func() {
-		memory := make(map[string]interface{})
+		memory := new(sync.Map)
 		persistence := persistence.BuildMemoryPersistence(memory)
 		id := ""
 
@@ -91,43 +94,44 @@ var _ = Describe("update", func() {
 
 var _ = Describe("delete", func() {
 	It("should remove one item", func() {
-		memory := make(map[string]interface{})
+		memory := new(sync.Map)
 		persistence := persistence.BuildMemoryPersistence(memory)
 		id := "7879d950-e511-4798-a074-a951d9eddbb8"
 		value := struct{ id string }{id: id}
-		memory[id] = value
+		memory.Store(id, value)
 		expected := make([]interface{}, 1)
 		expected[0] = value
 
 		error := persistence.Delete(id)
 
 		Expect(error).To(BeNil())
-		Expect(len(memory)).To(Equal(0))
-		Expect(memory[id]).To(BeNil())
+		expectedValue, _ := memory.Load(id)
+		Expect(expectedValue).To(BeNil())
 	})
 
 	It("should fail when id is empty", func() {
-		memory := make(map[string]interface{})
+		memory := new(sync.Map)
 		persistence := persistence.BuildMemoryPersistence(memory)
 		id := ""
 		value := struct{ id string }{id: id}
-		memory[id] = value
+		memory.Store(id, value)
 		expected := make([]interface{}, 1)
 		expected[0] = value
 
 		error := persistence.Delete(id)
 
 		Expect(error).NotTo(BeNil())
-		Expect(memory[id]).NotTo(BeNil())
+		expectedValue, _ := memory.Load(id)
+		Expect(expectedValue).NotTo(BeNil())
 	})
 })
 
 var _ = Describe("get all", func() {
 	It("should return all values", func() {
-		memory := make(map[string]interface{})
+		memory := new(sync.Map)
 		persistence := persistence.BuildMemoryPersistence(memory)
 		value := struct{ id string }{""}
-		memory[""] = value
+		memory.Store("", value)
 		expected := make([]interface{}, 1)
 		expected[0] = value
 
