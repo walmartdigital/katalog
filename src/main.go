@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"net/http"
@@ -91,14 +92,14 @@ func main() {
 		switch *publisher {
 		case publisherHTTP:
 			wg.Add(1)
-			go mainServer(wg, true)
+			go mainServer(&wg, true)
 		case publisherKafka:
 			wg.Add(2)
-			go mainServer(wg, false)
-			go mainConsumer(wg, true)
+			go mainServer(&wg, false)
+			go mainConsumer(&wg, true)
 		default:
 			wg.Add(1)
-			go mainServer(wg, true)
+			go mainServer(&wg, true)
 		}
 		wg.Wait()
 	default:
@@ -202,7 +203,7 @@ func closeProbes() {
 	done <- true
 }
 
-func mainServer(wg sync.WaitGroup, doCheck bool) {
+func mainServer(wg *sync.WaitGroup, doCheck bool) {
 	defer wg.Done()
 	log.Info("http (webhook) server starting...")
 	memory := make(map[string]interface{})
@@ -253,11 +254,11 @@ func (f MemoryPersistenceFactory) Create() persistence.Persistence {
 	return persistence.BuildMemoryPersistence(memory)
 }
 
-func mainConsumer(wg sync.WaitGroup, doCheck bool) {
+func mainConsumer(wg *sync.WaitGroup, doCheck bool) {
 	defer wg.Done()
 	log.Info("kafka consumer starting...")
 	memFactory := MemoryPersistenceFactory{}
-	consumerServer := kafkaServer.CreateConsumer(*kafkaURL, *kafkaTopicPrefix, KafkaReaderFactory{}, ResourceRepositoryFactory{persistenceFactory: memFactory}, PrometheusMetricsFactory{})
+	consumerServer := kafkaServer.CreateConsumer(context.Background(), *kafkaURL, *kafkaTopicPrefix, KafkaReaderFactory{}, ResourceRepositoryFactory{persistenceFactory: memFactory}, PrometheusMetricsFactory{})
 	if doCheck {
 		check(consumerServer)
 	}
