@@ -2,17 +2,18 @@ package persistence
 
 import (
 	"errors"
+	"sync"
 
 	"github.com/emirpasic/gods/lists/arraylist"
 )
 
 // MemoryPersistence is a memory implementantion of persistence
 type MemoryPersistence struct {
-	memory map[string]interface{}
+	memory *sync.Map
 }
 
 // BuildMemoryPersistence ...
-func BuildMemoryPersistence(memory map[string]interface{}) Persistence {
+func BuildMemoryPersistence(memory *sync.Map) Persistence {
 	return &MemoryPersistence{
 		memory: memory,
 	}
@@ -23,7 +24,10 @@ func (p *MemoryPersistence) Get(id string) (interface{}, error) {
 	if id == "" {
 		return nil, errors.New("you must provide an id")
 	}
-	return p.memory[id], nil
+
+	value, _ := p.memory.Load(id)
+
+	return value, nil
 }
 
 // Create ...
@@ -31,7 +35,8 @@ func (p *MemoryPersistence) Create(id string, obj interface{}) error {
 	if id == "" {
 		return errors.New("you must provide an id")
 	}
-	p.memory[id] = obj
+	p.memory.Store(id, obj)
+
 	return nil
 }
 
@@ -40,7 +45,9 @@ func (p *MemoryPersistence) Update(id string, obj interface{}) error {
 	if id == "" {
 		return errors.New("you must provide an id")
 	}
-	p.memory[id] = obj
+
+	p.memory.Store(id, obj)
+
 	return nil
 }
 
@@ -49,15 +56,21 @@ func (p *MemoryPersistence) Delete(id string) error {
 	if id == "" {
 		return errors.New("you must provide an id")
 	}
-	delete(p.memory, id)
+
+	p.memory.Delete(id)
+
 	return nil
 }
 
 // GetAll ...
 func (p *MemoryPersistence) GetAll() ([]interface{}, error) {
 	list := arraylist.New()
-	for _, value := range p.memory {
+
+	p.memory.Range(func(key interface{}, value interface{}) bool {
 		list.Add(value)
-	}
+
+		return true
+	})
+
 	return list.Values(), nil
 }

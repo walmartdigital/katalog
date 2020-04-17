@@ -206,7 +206,7 @@ func closeProbes() {
 func mainServer(wg *sync.WaitGroup, doCheck bool) {
 	defer wg.Done()
 	log.Info("http (webhook) server starting...")
-	memory := make(map[string]interface{})
+	memory := new(sync.Map)
 	persistence := persistence.BuildMemoryPersistence(memory)
 	resourceRepository := repositories.CreateResourceRepository(persistence)
 	router := mux.NewRouter().StrictSlash(true)
@@ -250,7 +250,7 @@ type MemoryPersistenceFactory struct{}
 
 // Create ...
 func (f MemoryPersistenceFactory) Create() persistence.Persistence {
-	memory := make(map[string]interface{})
+	memory := new(sync.Map)
 	return persistence.BuildMemoryPersistence(memory)
 }
 

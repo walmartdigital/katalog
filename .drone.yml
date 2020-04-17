@@ -52,7 +52,7 @@ steps:
     - "go get -v github.com/quasilyte/go-namecheck"
     - "/go/bin/go-namecheck -rules .go_naming_rules src/"
   when:
-    event: [push, tag]
+    event: [push, tag, pull_request]
 - name: code-duplicates
   pull: default
   image: golang:1.14
@@ -63,21 +63,18 @@ steps:
     - "dupl -t 200"
   when:
     event: [push, tag, pull_request]
-# - name: test
-#   pull: default
-#   image: golang:alpine
-#   commands:
-#     - apk update && apk --no-cache add git dep ca-certificates
-#     - mkdir /go/src/katalog
-#     - cp -R /drone/src/. /go/src/katalog/
-#     - cd /go/src/katalog
-#     - dep ensure
-#     - CGO_ENABLED=0 GOOS=linux go test ./... -v -cover
-#   when:
-#     branch:
-#     - master
-#     event:
-#     - push
+- name: test
+  pull: default
+  image: golang:alpine
+  commands:
+    - apk update && apk --no-cache add git dep ca-certificates
+    - mkdir /go/src/katalog
+    - cp -R /drone/src/. /go/src/katalog/
+    - cd /go/src/katalog
+    - dep ensure
+    - CGO_ENABLED=0 GOOS=linux go test ./... -v -cover
+  when:
+    event: [push, tag, pull_request]
 - name: publish
   pull: default
   image: plugins/docker
@@ -93,9 +90,5 @@ steps:
     DOCKER_USERNAME:
       from_secret: docker_username
   when:
-    branch:
-    - master
     event:
     - tag
-
-
