@@ -1,12 +1,19 @@
 package kafka_test
 
 import (
+	"context"
+	"encoding/json"
+	"os"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	kafgo "github.com/segmentio/kafka-go"
+	"github.com/walmartdigital/katalog/src/domain"
 	"github.com/walmartdigital/katalog/src/mocks/mock_kafka"
 	"github.com/walmartdigital/katalog/src/mocks/mock_repositories"
 	"github.com/walmartdigital/katalog/src/mocks/mock_server"
@@ -14,8 +21,12 @@ import (
 )
 
 var ctrl *gomock.Controller
+var ctx context.Context
+var cancel context.CancelFunc
+var wg sync.WaitGroup
 
 func TestAll(t *testing.T) {
+	os.Setenv("LOG_LEVEL", "DEBUG")
 	ctrl = gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -23,7 +34,13 @@ func TestAll(t *testing.T) {
 	RunSpecs(t, "Server")
 }
 
-var _ = Describe("run server", func() {
+func sendCancelIfAllTopicsActivated(c *kafka.Consumer) {
+	if c.IsTopicActive("created") && c.IsTopicActive("deleted") && c.IsTopicActive("updated") {
+		cancel()
+	}
+}
+
+var _ = Describe("run consumer", func() {
 	var (
 		fakeReaderFactory  *mock_kafka.MockReaderFactory
 		fakeReader         *mock_kafka.MockReader
@@ -57,11 +74,54 @@ var _ = Describe("run server", func() {
 			fakeMetrics,
 		).Times(1)
 
-		consumer = kafka.CreateConsumer("", "", fakeReaderFactory, fakeRepoFactory, fakeMetricsFactory)
+		ctx, cancel = context.WithCancel(context.Background())
+		consumer = kafka.CreateConsumer(ctx, "", "", fakeReaderFactory, fakeRepoFactory, fakeMetricsFactory)
 	})
 
 	It("should create a consumer", func() {
 		Expect(consumer).NotTo(BeNil())
+	})
+
+	It("should consume an event", func() {
+		ss := domain.StatefulSet{
+			ID:         "276797fa-b207-11e9-8527-000d3af9d6b6",
+			Name:       "queue-node",
+			Generation: 7,
+			Namespace:  "amida",
+			Labels: map[string]string{
+				"HEAD":                   "569de2ecd9f9357b3380664f43c90d07ec6acaff",
+				"app":                    "nats",
+				"fluxcd.io/sync-gc-mark": "sha256.0fRlq9kqkh2eSDRqXANMzgN8_8jeguja3eDLoE5E0Xo",
+			},
+			Containers: map[string]string{
+				"nats-exporter":  "synadia/prometheus-nats-exporter:0.4.0",
+				"nats-streaming": "nats-streaming:0.15.1",
+			},
+		}
+
+		ssbytes, _ := json.Marshal(ss)
+
+		message := kafgo.Message{
+			Topic:     "_katalog.artifact.created",
+			Partition: 1,
+			Offset:    5,
+			Key:       []byte("/statefulsets/276797fa-b207-11e9-8527-000d3af9d6b6"),
+			Value:     ssbytes,
+			Headers:   nil,
+			Time:      time.Now(),
+		}
+
+		fakeReader.EXPECT().Close().AnyTimes()
+		fakeRepo.EXPECT().UpdateResource(gomock.Any()).AnyTimes()
+		fakeRepo.EXPECT().CreateResource(gomock.Any()).AnyTimes()
+		fakeRepo.EXPECT().GetResource(gomock.Any()).AnyTimes()
+		fakeReader.EXPECT().ReadMessage(ctx).Return(message, nil).AnyTimes().Do(
+			func(c context.Context) {
+				sendCancelIfAllTopicsActivated(consumer)
+			},
+		)
+		consumer.Run()
+		// Expect(consumer).NotTo(BeNil())
 	})
 
 	AfterEach(func() {
