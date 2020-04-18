@@ -255,15 +255,30 @@ func (f MemoryPersistenceFactory) Create() persistence.Persistence {
 }
 
 func mainConsumer(wg *sync.WaitGroup, doCheck bool) {
+	consumerWg := new(sync.WaitGroup)
+
 	defer wg.Done()
+
 	log.Info("kafka consumer starting...")
 	memFactory := MemoryPersistenceFactory{}
-	consumerServer := kafkaServer.CreateConsumer(context.Background(), *kafkaURL, *kafkaTopicPrefix, KafkaReaderFactory{}, ResourceRepositoryFactory{persistenceFactory: memFactory}, PrometheusMetricsFactory{})
+	service := server.MakeService(ResourceRepositoryFactory{persistenceFactory: memFactory}.Create(), PrometheusMetricsFactory{})
+
+	created := kafkaServer.CreateConsumer(context.Background(), consumerWg, *kafkaURL, *kafkaTopicPrefix, "created", KafkaReaderFactory{}, &service)
+	updated := kafkaServer.CreateConsumer(context.Background(), consumerWg, *kafkaURL, *kafkaTopicPrefix, "updated", KafkaReaderFactory{}, &service)
+	deleted := kafkaServer.CreateConsumer(context.Background(), consumerWg, *kafkaURL, *kafkaTopicPrefix, "deleted", KafkaReaderFactory{}, &service)
+
 	if doCheck {
-		check(consumerServer)
+		check(created)
+		check(updated)
+		check(deleted)
 	}
-	consumerServer.Run()
-	log.Info("kafka consumer started...")
+
+	consumerWg.Add(3)
+	go created.Run()
+	go updated.Run()
+	go deleted.Run()
+	log.Info("kafka consumers started...")
+	consumerWg.Wait()
 }
 
 type routerWrapper struct {
