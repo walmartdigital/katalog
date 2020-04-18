@@ -181,6 +181,53 @@ var _ = Describe("run consumer", func() {
 		go consumer.Run()
 	})
 
+	It("should create a Service", func() {
+		var testwg sync.WaitGroup
+		testwg.Add(1)
+		defer testwg.Wait()
+		wg.Add(1)
+		defer wg.Wait()
+
+		i := domain.Instance{Address: "hello"}
+		ss := domain.Service{
+			ID:         "276797fa-b207-11e9-8527-000d3af9d6b6",
+			Name:       "queue-node",
+			Port:       1212,
+			Address:    "someservice",
+			Generation: 7,
+			Namespace:  "amida",
+			Instances:  []domain.Instance{i},
+		}
+
+		ssbytes, _ := json.Marshal(ss)
+
+		message := kafgo.Message{
+			Topic:     "_katalog.artifact.created",
+			Partition: 1,
+			Offset:    5,
+			Key:       []byte("/services/276797fa-b207-11e9-8527-000d3af9d6b6"),
+			Value:     ssbytes,
+			Headers:   nil,
+			Time:      time.Now(),
+		}
+
+		resource := domain.Resource{K8sResource: &ss}
+
+		fakeReader.EXPECT().Close().Times(1)
+		fakeRepo.EXPECT().CreateResource(resource).Times(1).Do(
+			func(r domain.Resource) {
+				testwg.Done()
+			},
+		)
+		fakeReader.EXPECT().ReadMessage(ctx).Return(message, nil).Times(1).Do(
+			func(c context.Context) {
+				cancel()
+			},
+		)
+		Expect(consumer).NotTo(BeNil())
+		go consumer.Run()
+	})
+
 	AfterEach(func() {
 	})
 })
