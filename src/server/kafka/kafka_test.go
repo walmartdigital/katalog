@@ -17,13 +17,11 @@ import (
 	"github.com/walmartdigital/katalog/src/mocks/mock_kafka"
 	"github.com/walmartdigital/katalog/src/mocks/mock_repositories"
 	"github.com/walmartdigital/katalog/src/mocks/mock_server"
+	"github.com/walmartdigital/katalog/src/server"
 	"github.com/walmartdigital/katalog/src/server/kafka"
 )
 
 var ctrl *gomock.Controller
-var ctx context.Context
-var cancel context.CancelFunc
-var wg sync.WaitGroup
 
 func TestAll(t *testing.T) {
 	os.Setenv("LOG_LEVEL", "DEBUG")
@@ -32,12 +30,6 @@ func TestAll(t *testing.T) {
 
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Server")
-}
-
-func sendCancelIfAllTopicsActivated(c *kafka.Consumer) {
-	if c.IsTopicActive("created") && c.IsTopicActive("deleted") && c.IsTopicActive("updated") {
-		cancel()
-	}
 }
 
 var _ = Describe("run consumer", func() {
@@ -49,6 +41,10 @@ var _ = Describe("run consumer", func() {
 		fakeMetricsFactory *mock_server.MockMetricsFactory
 		fakeMetrics        *mock_server.MockMetrics
 		consumer           *kafka.Consumer
+		ctx                context.Context
+		cancel             context.CancelFunc
+		wg                 *sync.WaitGroup
+		service            server.Service
 	)
 
 	BeforeEach(func() {
@@ -57,7 +53,7 @@ var _ = Describe("run consumer", func() {
 		fakeReader = mock_kafka.NewMockReader(ctrl)
 		fakeReaderFactory.EXPECT().Create(gomock.Any(), gomock.Any()).Return(
 			fakeReader,
-		).Times(3)
+		).Times(1)
 
 		// Initialize the mocked Repository related objects
 		fakeRepoFactory = mock_repositories.NewMockRepositoryFactory(ctrl)
@@ -75,14 +71,16 @@ var _ = Describe("run consumer", func() {
 		).Times(1)
 
 		ctx, cancel = context.WithCancel(context.Background())
-		consumer = kafka.CreateConsumer(ctx, "", "", fakeReaderFactory, fakeRepoFactory, fakeMetricsFactory)
+		service = server.MakeService(fakeRepoFactory.Create(), fakeMetricsFactory)
+		wg = new(sync.WaitGroup)
+		consumer = kafka.CreateConsumer(ctx, wg, "", "", "created", fakeReaderFactory, &service)
 	})
 
 	It("should create a consumer", func() {
 		Expect(consumer).NotTo(BeNil())
 	})
 
-	It("should consume an event", func() {
+	It("should create a StatefulSet", func() {
 		ss := domain.StatefulSet{
 			ID:         "276797fa-b207-11e9-8527-000d3af9d6b6",
 			Name:       "queue-node",
@@ -111,17 +109,20 @@ var _ = Describe("run consumer", func() {
 			Time:      time.Now(),
 		}
 
-		fakeReader.EXPECT().Close().AnyTimes()
-		fakeRepo.EXPECT().UpdateResource(gomock.Any()).AnyTimes()
-		fakeRepo.EXPECT().CreateResource(gomock.Any()).AnyTimes()
-		fakeRepo.EXPECT().GetResource(gomock.Any()).AnyTimes()
-		fakeReader.EXPECT().ReadMessage(ctx).Return(message, nil).AnyTimes().Do(
+		resource := domain.Resource{K8sResource: &ss}
+
+		fakeReader.EXPECT().Close().Times(1)
+		fakeRepo.EXPECT().CreateResource(resource).Times(1)
+		fakeReader.EXPECT().ReadMessage(ctx).Return(message, nil).Times(1).Do(
 			func(c context.Context) {
-				sendCancelIfAllTopicsActivated(consumer)
+				cancel()
 			},
 		)
-		consumer.Run()
-		// Expect(consumer).NotTo(BeNil())
+		Expect(consumer).NotTo(BeNil())
+
+		wg.Add(1)
+		go consumer.Run()
+		wg.Wait()
 	})
 
 	AfterEach(func() {
