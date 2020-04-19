@@ -606,101 +606,58 @@ var _ = Describe("Run Consumer on 'deleted' topic", func() {
 		go consumer.Run()
 	})
 
-	// It("should delete a StatefulSet", func() {
-	// 	wg.Add(1)
-	// 	defer wg.Wait()
+	It("should delete a Service", func() {
+		wg.Add(1)
+		defer wg.Wait()
 
-	// 	var testwg sync.WaitGroup
-	// 	testwg.Add(1)
-	// 	defer testwg.Wait()
+		var testwg sync.WaitGroup
+		testwg.Add(1)
+		defer testwg.Wait()
 
-	// 	ss := domain.StatefulSet{
-	// 		ID:         "276797fa-b207-11e9-8527-000d3af9d6b6",
-	// 		Name:       "queue-node",
-	// 		Generation: 7,
-	// 		Namespace:  "amida",
-	// 		Labels: map[string]string{
-	// 			"HEAD":                   "569de2ecd9f9357b3380664f43c90d07ec6acaff",
-	// 			"app":                    "nats",
-	// 			"fluxcd.io/sync-gc-mark": "sha256.0fRlq9kqkh2eSDRqXANMzgN8_8jeguja3eDLoE5E0Xo",
-	// 		},
-	// 		Containers: map[string]string{
-	// 			"nats-exporter":  "synadia/prometheus-nats-exporter:0.4.0",
-	// 			"nats-streaming": "nats-streaming:0.15.1",
-	// 		},
-	// 	}
+		i := domain.Instance{Address: "hello"}
+		ss := domain.Service{
+			ID:         "276797fa-b207-11e9-8527-000d3af9d6b6",
+			Name:       "queue-node",
+			Port:       1212,
+			Address:    "someservice",
+			Generation: 7,
+			Namespace:  "amida",
+			Instances:  []domain.Instance{i},
+		}
 
-	// 	ssbytes, _ := json.Marshal(ss)
+		ssbytes, _ := json.Marshal(ss)
 
-	// 	message := kafgo.Message{
-	// 		Topic:     "_katalog.artifact.deleted",
-	// 		Partition: 1,
-	// 		Offset:    5,
-	// 		Key:       []byte("/statefulsets/276797fa-b207-11e9-8527-000d3af9d6b6"),
-	// 		Value:     ssbytes,
-	// 		Headers:   nil,
-	// 		Time:      time.Now(),
-	// 	}
+		message := kafgo.Message{
+			Topic:     "_katalog.artifact.deleted",
+			Partition: 1,
+			Offset:    5,
+			Key:       []byte("/services/276797fa-b207-11e9-8527-000d3af9d6b6"),
+			Value:     ssbytes,
+			Headers:   nil,
+			Time:      time.Now(),
+		}
 
-	// 	fakeReader.EXPECT().Close().Times(1)
-	// 	fakeRepo.EXPECT().DeleteResource("276797fa-b207-11e9-8527-000d3af9d6b6").Times(1).Do(
-	// 		func(r domain.Resource) {
-	// 			testwg.Done()
-	// 		},
-	// 	)
-	// 	fakeReader.EXPECT().ReadMessage(ctx).Return(message, nil).Times(1).Do(
-	// 		func(c context.Context) {
-	// 			cancel()
-	// 		},
-	// 	)
-	// 	Expect(consumer).NotTo(BeNil())
-	// 	go consumer.Run()
-	// })
+		resource := domain.Resource{K8sResource: &ss}
 
-	// It("should create a Service", func() {
-	// 	wg.Add(1)
-	// 	defer wg.Wait()
+		fakeReader.EXPECT().Close().Times(1)
+		id := "276797fa-b207-11e9-8527-000d3af9d6b6"
 
-	// 	var testwg sync.WaitGroup
-	// 	testwg.Add(1)
-	// 	defer testwg.Wait()
+		fakeRepo.EXPECT().GetResource(id).Return(resource, nil).Times(1)
 
-	// 	i := domain.Instance{Address: "hello"}
-	// 	ss := domain.Service{
-	// 		ID:         "276797fa-b207-11e9-8527-000d3af9d6b6",
-	// 		Name:       "queue-node",
-	// 		Port:       1212,
-	// 		Address:    "someservice",
-	// 		Generation: 7,
-	// 		Namespace:  "amida",
-	// 		Instances:  []domain.Instance{i},
-	// 	}
+		fakeRepo.EXPECT().DeleteResource(id).Return(nil).Times(1).Do(
+			func(id string) {
+				testwg.Done()
+			},
+		)
 
-	// 	ssbytes, _ := json.Marshal(ss)
+		fakeReader.EXPECT().ReadMessage(ctx).Return(message, nil).Times(1).Do(
+			func(c context.Context) {
+				cancel()
+			},
+		)
 
-	// 	message := kafgo.Message{
-	// 		Topic:     "_katalog.artifact.deleted",
-	// 		Partition: 1,
-	// 		Offset:    5,
-	// 		Key:       []byte("/services/276797fa-b207-11e9-8527-000d3af9d6b6"),
-	// 		Value:     ssbytes,
-	// 		Headers:   nil,
-	// 		Time:      time.Now(),
-	// 	}
-
-	// 	fakeReader.EXPECT().Close().Times(1)
-	// 	fakeRepo.EXPECT().DeleteResource("276797fa-b207-11e9-8527-000d3af9d6b6").Times(1).Do(
-	// 		func(r domain.Resource) {
-	// 			testwg.Done()
-	// 		},
-	// 	)
-	// 	fakeReader.EXPECT().ReadMessage(ctx).Return(message, nil).Times(1).Do(
-	// 		func(c context.Context) {
-	// 			cancel()
-	// 		},
-	// 	)
-	// 	go consumer.Run()
-	// })
+		go consumer.Run()
+	})
 
 	AfterEach(func() {
 	})
