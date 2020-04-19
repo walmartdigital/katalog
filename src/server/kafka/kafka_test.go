@@ -78,11 +78,12 @@ var _ = Describe("Run Consumer on 'created' topic", func() {
 	})
 
 	It("should create a Deployment", func() {
+		wg.Add(1)
+		defer wg.Wait()
+
 		var testwg sync.WaitGroup
 		testwg.Add(1)
 		defer testwg.Wait()
-		wg.Add(1)
-		defer wg.Wait()
 
 		ss := domain.Deployment{
 			ID:         "276797fa-b207-11e9-8527-000d3af9d6b6",
@@ -130,11 +131,12 @@ var _ = Describe("Run Consumer on 'created' topic", func() {
 	})
 
 	It("should create a StatefulSet", func() {
+		wg.Add(1)
+		defer wg.Wait()
+
 		var testwg sync.WaitGroup
 		testwg.Add(1)
 		defer testwg.Wait()
-		wg.Add(1)
-		defer wg.Wait()
 
 		ss := domain.StatefulSet{
 			ID:         "276797fa-b207-11e9-8527-000d3af9d6b6",
@@ -182,11 +184,12 @@ var _ = Describe("Run Consumer on 'created' topic", func() {
 	})
 
 	It("should create a Service", func() {
+		wg.Add(1)
+		defer wg.Wait()
+
 		var testwg sync.WaitGroup
 		testwg.Add(1)
 		defer testwg.Wait()
-		wg.Add(1)
-		defer wg.Wait()
 
 		i := domain.Instance{Address: "hello"}
 		ss := domain.Service{
@@ -281,9 +284,13 @@ var _ = Describe("Run Consumer on 'updated' topic", func() {
 	})
 
 	It("should update a Deployment", func() {
+		wg.Add(1)
+		defer wg.Wait()
+
 		var testwg sync.WaitGroup
 		testwg.Add(1)
 		defer testwg.Wait()
+
 		ss := domain.Deployment{
 			ID:         "276797fa-b207-11e9-8527-000d3af9d6b6",
 			Name:       "queue-node",
@@ -325,9 +332,110 @@ var _ = Describe("Run Consumer on 'updated' topic", func() {
 				cancel()
 			},
 		)
-		wg.Add(1)
 		go upconsumer.Run()
-		wg.Wait()
+	})
+
+	It("should update a Statefulset", func() {
+		wg.Add(1)
+		defer wg.Wait()
+
+		var testwg sync.WaitGroup
+		testwg.Add(1)
+		defer testwg.Wait()
+
+		ss := domain.StatefulSet{
+			ID:         "276797fa-b207-11e9-8527-000d3af9d6b6",
+			Name:       "queue-node",
+			Generation: 8,
+			Namespace:  "amida",
+			Labels: map[string]string{
+				"HEAD":                   "569de2ecd9f9357b3380664f43c90d07ec6acaff",
+				"app":                    "nats",
+				"fluxcd.io/sync-gc-mark": "sha256.0fRlq9kqkh2eSDRqXANMzgN8_8jeguja3eDLoE5E0Xo",
+				"some":                   "change",
+			},
+			Containers: map[string]string{
+				"nats-exporter":  "synadia/prometheus-nats-exporter:0.4.0",
+				"nats-streaming": "nats-streaming:0.15.1",
+			},
+		}
+
+		ssbytes, _ := json.Marshal(ss)
+
+		message := kafgo.Message{
+			Topic:     "_katalog.artifact.updated",
+			Partition: 1,
+			Offset:    5,
+			Key:       []byte("/statefulsets/276797fa-b207-11e9-8527-000d3af9d6b6"),
+			Value:     ssbytes,
+			Headers:   nil,
+			Time:      time.Now(),
+		}
+
+		resource := domain.Resource{K8sResource: &ss}
+
+		fakeReader.EXPECT().Close().Times(1)
+
+		fakeRepo.EXPECT().UpdateResource(resource).Return(&resource, nil).Times(1).Do(
+			func(r domain.Resource) {
+				testwg.Done()
+			},
+		)
+
+		fakeReader.EXPECT().ReadMessage(ctx).Return(message, nil).Times(1).Do(
+			func(c context.Context) {
+				cancel()
+			},
+		)
+		go upconsumer.Run()
+	})
+
+	It("should update a Service", func() {
+		wg.Add(1)
+		defer wg.Wait()
+
+		var testwg sync.WaitGroup
+		testwg.Add(1)
+		defer testwg.Wait()
+
+		i := domain.Instance{Address: "hello"}
+		ss := domain.Service{
+			ID:         "276797fa-b207-11e9-8527-000d3af9d6b6",
+			Name:       "queue-node",
+			Port:       1212,
+			Address:    "someservice",
+			Generation: 7,
+			Namespace:  "amida",
+			Instances:  []domain.Instance{i},
+		}
+
+		ssbytes, _ := json.Marshal(ss)
+
+		message := kafgo.Message{
+			Topic:     "_katalog.artifact.updated",
+			Partition: 1,
+			Offset:    5,
+			Key:       []byte("/services/276797fa-b207-11e9-8527-000d3af9d6b6"),
+			Value:     ssbytes,
+			Headers:   nil,
+			Time:      time.Now(),
+		}
+
+		resource := domain.Resource{K8sResource: &ss}
+
+		fakeReader.EXPECT().Close().Times(1)
+		fakeRepo.EXPECT().UpdateResource(resource).Return(&resource, nil).Times(1).Do(
+			func(r domain.Resource) {
+				testwg.Done()
+			},
+		)
+		fakeReader.EXPECT().ReadMessage(ctx).Return(message, nil).Times(1).Do(
+			func(c context.Context) {
+				cancel()
+			},
+		)
+
+		go upconsumer.Run()
 	})
 
 	AfterEach(func() {
