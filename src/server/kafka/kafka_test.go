@@ -26,7 +26,7 @@ func TestAll(t *testing.T) {
 	ctrl = gomock.NewController(t)
 	defer ctrl.Finish()
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Server")
+	RunSpecs(t, "Kafka")
 }
 
 var _ = Describe("Run Consumer on 'created' topic", func() {
@@ -375,13 +375,11 @@ var _ = Describe("Run Consumer on 'updated' topic", func() {
 		resource := domain.Resource{K8sResource: &ss}
 
 		fakeReader.EXPECT().Close().Times(1)
-
 		fakeRepo.EXPECT().UpdateResource(resource).Return(&resource, nil).Times(1).Do(
 			func(r domain.Resource) {
 				testwg.Done()
 			},
 		)
-
 		fakeReader.EXPECT().ReadMessage(ctx).Return(message, nil).Times(1).Do(
 			func(c context.Context) {
 				cancel()
@@ -434,7 +432,6 @@ var _ = Describe("Run Consumer on 'updated' topic", func() {
 				cancel()
 			},
 		)
-
 		go upconsumer.Run()
 	})
 
@@ -527,24 +524,20 @@ var _ = Describe("Run Consumer on 'deleted' topic", func() {
 		}
 
 		resource := domain.Resource{K8sResource: &ss}
+		id := "276797fa-b207-11e9-8527-000d3af9d6b6"
 
 		fakeReader.EXPECT().Close().Times(1)
-
-		id := "276797fa-b207-11e9-8527-000d3af9d6b6"
 		fakeRepo.EXPECT().GetResource(id).Return(resource, nil).Times(1)
-
 		fakeRepo.EXPECT().DeleteResource(id).Return(nil).Times(1).Do(
 			func(id string) {
 				testwg.Done()
 			},
 		)
-
 		fakeReader.EXPECT().ReadMessage(ctx).Return(message, nil).Times(1).Do(
 			func(c context.Context) {
 				cancel()
 			},
 		)
-
 		go consumer.Run()
 	})
 
@@ -585,12 +578,10 @@ var _ = Describe("Run Consumer on 'deleted' topic", func() {
 		}
 
 		resource := domain.Resource{K8sResource: &ss}
+		id := "276797fa-b207-11e9-8527-000d3af9d6b6"
 
 		fakeReader.EXPECT().Close().Times(1)
-
-		id := "276797fa-b207-11e9-8527-000d3af9d6b6"
 		fakeRepo.EXPECT().GetResource(id).Return(resource, nil).Times(1)
-
 		fakeRepo.EXPECT().DeleteResource(id).Return(nil).Times(1).Do(
 			func(id string) {
 				testwg.Done()
@@ -602,7 +593,6 @@ var _ = Describe("Run Consumer on 'deleted' topic", func() {
 				cancel()
 			},
 		)
-
 		go consumer.Run()
 	})
 
@@ -638,24 +628,20 @@ var _ = Describe("Run Consumer on 'deleted' topic", func() {
 		}
 
 		resource := domain.Resource{K8sResource: &ss}
-
-		fakeReader.EXPECT().Close().Times(1)
 		id := "276797fa-b207-11e9-8527-000d3af9d6b6"
 
+		fakeReader.EXPECT().Close().Times(1)
 		fakeRepo.EXPECT().GetResource(id).Return(resource, nil).Times(1)
-
 		fakeRepo.EXPECT().DeleteResource(id).Return(nil).Times(1).Do(
 			func(id string) {
 				testwg.Done()
 			},
 		)
-
 		fakeReader.EXPECT().ReadMessage(ctx).Return(message, nil).Times(1).Do(
 			func(c context.Context) {
 				cancel()
 			},
 		)
-
 		go consumer.Run()
 	})
 
