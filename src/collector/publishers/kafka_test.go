@@ -79,7 +79,72 @@ var _ = Describe("Run Consumer on 'created' topic", func() {
 
 		fakeWriter.EXPECT().WriteMessages(ctx, message).Return(
 			nil,
-		).AnyTimes()
+		).Times(1)
+		publisher.Publish(operation)
+	})
+
+	It("should publish a StatefulSet creation event", func() {
+		ss := domain.StatefulSet{
+			ID:         "276797fa-b207-11e9-8527-000d3af9d6b6",
+			Name:       "queue-node",
+			Generation: 7,
+			Namespace:  "amida",
+			Labels: map[string]string{
+				"HEAD":                   "569de2ecd9f9357b3380664f43c90d07ec6acaff",
+				"app":                    "nats",
+				"fluxcd.io/sync-gc-mark": "sha256.0fRlq9kqkh2eSDRqXANMzgN8_8jeguja3eDLoE5E0Xo",
+			},
+			Containers: map[string]string{
+				"nats-exporter":  "synadia/prometheus-nats-exporter:0.4.0",
+				"nats-streaming": "nats-streaming:0.15.1",
+			},
+		}
+
+		operation := domain.Operation{
+			Kind:     domain.OperationTypeAdd,
+			Resource: domain.Resource{K8sResource: &ss},
+		}
+
+		ssbytes, _ := json.Marshal(ss)
+
+		message := kafka.Message{
+			Key:   []byte("/statefulsets/276797fa-b207-11e9-8527-000d3af9d6b6"),
+			Value: ssbytes,
+		}
+
+		fakeWriter.EXPECT().WriteMessages(ctx, message).Return(
+			nil,
+		).Times(1)
+		publisher.Publish(operation)
+	})
+
+	It("should publish a Service creation event", func() {
+		i := domain.Instance{Address: "hello"}
+		ss := domain.Service{
+			ID:         "276797fa-b207-11e9-8527-000d3af9d6b6",
+			Name:       "queue-node",
+			Port:       1212,
+			Address:    "someservice",
+			Generation: 7,
+			Namespace:  "amida",
+			Instances:  []domain.Instance{i},
+		}
+
+		operation := domain.Operation{
+			Kind:     domain.OperationTypeAdd,
+			Resource: domain.Resource{K8sResource: &ss},
+		}
+
+		ssbytes, _ := json.Marshal(ss)
+
+		message := kafka.Message{
+			Key:   []byte("/services/276797fa-b207-11e9-8527-000d3af9d6b6"),
+			Value: ssbytes,
+		}
+
+		fakeWriter.EXPECT().WriteMessages(ctx, message).Return(
+			nil,
+		).Times(1)
 		publisher.Publish(operation)
 	})
 
