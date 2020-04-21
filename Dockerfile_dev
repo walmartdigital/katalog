@@ -5,6 +5,7 @@ RUN mkdir -p /go/src/katalog
 # ADD ./Gopkg.toml /go/src/katalog
 ADD ./vendor /go/src/
 COPY ./src /go/src/github.com/walmartdigital/katalog/src
+COPY ./health.sh /go/src/github.com/walmartdigital/katalog/src
 # WORKDIR /go/src/katalog
 # RUN dep ensure
 WORKDIR /go/src/github.com/walmartdigital/katalog/src

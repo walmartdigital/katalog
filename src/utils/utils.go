@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"reflect"
 
@@ -105,7 +106,7 @@ func LogInit(log *logrus.Logger) error {
 			log.SetLevel(logrus.WarnLevel)
 
 		case "INFO":
-			log.Info("Setting log level to WARN")
+			log.Info("Setting log level to INFO")
 			log.SetLevel(logrus.InfoLevel)
 
 		case "ERROR":
@@ -124,7 +125,9 @@ func LogInit(log *logrus.Logger) error {
 			log.Info("Failed to log to file, using default stderr")
 			return err
 		}
-		log.Out = file
+
+		mw := io.MultiWriter(os.Stdout, file)
+		log.SetOutput(mw)
 	}
 
 	return nil

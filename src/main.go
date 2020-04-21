@@ -144,25 +144,27 @@ var done chan bool
 
 func check(checkable server.Checkable) {
 	// Liveness probe
-	ticker = time.NewTicker(30 * time.Second)
 	done = make(chan bool)
 	go func() {
-		select {
-		case <-done:
-			return
-		case t := <-ticker.C:
+		for now := range time.Tick(30 * time.Second) {
 			if checkable.Check() {
-				log.Debug("(LIVE) Health check at " + t.Local().String())
+				log.Debug("(LIVE) Health check at " + now.Local().String())
 				_, errOpen := os.OpenFile("/tmp/imalive", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 				if errOpen != nil {
 					log.Error("Error opening health check file", errOpen)
 				}
 
+				log.Debug("(TOUCH) Health check at " + now.Local().String())
+				currentTime := time.Now().Local()
+				errTouching := os.Chtimes("/tmp/imalive", currentTime, currentTime)
+				if errTouching != nil {
+					log.Fatal(errTouching.Error())
+				}
 			} else {
-				log.Debug("(DEAD) Health check at " + t.Local().String())
+				log.Debug("(DEAD) Health check at " + now.Local().String())
 				errRemove := os.Remove("/tmp/imalive")
 				if errRemove != nil {
-					log.Error("Error removing health check file", errRemove)
+					log.Fatal("Error removing health check file", errRemove)
 				}
 			}
 		}

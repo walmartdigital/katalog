@@ -26,6 +26,8 @@ spec:
           value: "kafka.kafka:9092"
         - name: LOG_LEVEL
           value: "DEBUG"
+        - name: LOG_FILE
+          value: katalog.log
         - name: ROLE
           value: "SERVER"
         resources:
@@ -39,8 +41,7 @@ spec:
             failureThreshold: 3
             exec:
               command:
-                - /bin/stat
-                - /tmp/imalive
+                - /app/health.sh
             initialDelaySeconds: 5
             periodSeconds: 30
             
