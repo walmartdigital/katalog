@@ -8,7 +8,7 @@ build:
   artifacts:
   - image: katalog
     docker:
-      dockerfile: Dockerfile_dev
+      dockerfile: Dockerfile
 deploy:
   kubectl:
     manifests:
