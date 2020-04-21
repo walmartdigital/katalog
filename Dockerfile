@@ -11,5 +11,4 @@ FROM alpine
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /go/src/github.com/walmartdigital/katalog/src/main /app/
 COPY --from=builder /go/src/github.com/walmartdigital/katalog/health.sh /app/
-WORKDIR /
-ENTRYPOINT ["./main"]
+ENTRYPOINT ["/app/main"]
