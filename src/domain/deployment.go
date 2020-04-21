@@ -1,6 +1,9 @@
 package domain
 
-import "reflect"
+import (
+	"reflect"
+	"time"
+)
 
 // Deployment ...
 type Deployment struct {
@@ -11,6 +14,7 @@ type Deployment struct {
 	Labels      map[string]string `json:",omitempty"`
 	Annotations map[string]string `json:",omitempty"`
 	Containers  map[string]string `json:",omitempty"`
+	Timestamp   time.Time         `json:"Timestamp"`
 }
 
 // GetID ...
@@ -56,4 +60,9 @@ func (s *Deployment) GetAnnotations() map[string]string {
 // GetContainers ...
 func (s *Deployment) GetContainers() map[string]string {
 	return s.Containers
+}
+
+// GetTimestamp ...
+func (s *Deployment) GetTimestamp() time.Time {
+	return s.Timestamp
 }

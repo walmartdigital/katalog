@@ -1,7 +1,6 @@
 package publishers
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -31,11 +30,12 @@ type KafkaPublisher struct {
 	topicPrefix   string //katalog.artifact.[created|deleted|updated]
 	kafkaWriters  map[string]*Writer
 	healthCounter int
+	context       context.Context
 }
 
 // BuildKafkaPublisher ...
-func BuildKafkaPublisher(url string, topicPrefix string, factory WriterFactory) Publisher {
-	publisher := &KafkaPublisher{url: url, topicPrefix: topicPrefix}
+func BuildKafkaPublisher(ctx context.Context, url string, topicPrefix string, factory WriterFactory) Publisher {
+	publisher := &KafkaPublisher{context: ctx, url: url, topicPrefix: topicPrefix}
 	err := publisher.CreateProducers(factory)
 	if err != nil {
 		logrus.Fatal(err)
@@ -102,40 +102,26 @@ func (c *KafkaPublisher) getWriter(operation domain.Operation) *Writer {
 }
 
 // getPayload ...
-func (c *KafkaPublisher) getPayload(resource domain.Resource) (string, error) {
-	payloadBytes := new(bytes.Buffer)
-
+func (c *KafkaPublisher) getPayload(resource domain.Resource) ([]byte, error) {
+	var payload []byte
+	var err error
 	switch v := resource.GetType(); v {
 	case reflect.TypeOf(new(domain.Service)):
 		service := resource.GetK8sResource().(*domain.Service)
-		err := json.NewEncoder(payloadBytes).Encode(*service)
-		if err != nil {
-			log.Error(err)
-			return "", err
-		}
-
+		payload, err = json.Marshal(service)
 	case reflect.TypeOf(new(domain.Deployment)):
 		deployment := resource.GetK8sResource().(*domain.Deployment)
-		err := json.NewEncoder(payloadBytes).Encode(*deployment)
-		if err != nil {
-			log.Error(err)
-			return "", err
-		}
-
+		payload, err = json.Marshal(deployment)
 	case reflect.TypeOf(new(domain.StatefulSet)):
 		statefulset := resource.GetK8sResource().(*domain.StatefulSet)
-		err := json.NewEncoder(payloadBytes).Encode(*statefulset)
-		if err != nil {
-			log.Error(err)
-			return "", err
-		}
-
+		payload, err = json.Marshal(statefulset)
 	default:
-		log.Errorf("Type %s not found", v)
-		panic(errors.New("Type %s not found"))
+		err = fmt.Errorf("Type %s not found", v)
 	}
-
-	return payloadBytes.String(), nil
+	if err != nil {
+		log.Error(err)
+	}
+	return payload, err
 }
 
 // getKey ...
@@ -202,10 +188,10 @@ func (c *KafkaPublisher) Publish(obj interface{}) error {
 	}).Debug("Sending message")
 
 	errWritingMessage := (*writer).WriteMessages(
-		context.Background(),
+		c.context,
 		kafka.Message{
 			Key:   []byte(key),
-			Value: []byte(value),
+			Value: value,
 		},
 	)
 	if errWritingMessage != nil {

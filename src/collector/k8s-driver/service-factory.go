@@ -1,6 +1,8 @@
 package k8sdriver
 
 import (
+	"time"
+
 	"github.com/walmartdigital/katalog/src/domain"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -18,6 +20,7 @@ func buildServiceFromK8sService(sourceService *corev1.Service) domain.Service {
 		Port:      port,
 		Namespace: sourceService.GetNamespace(),
 		Labels:    sourceService.GetLabels(),
+		Timestamp: time.Now(),
 	}
 
 	return *destinationService

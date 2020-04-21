@@ -187,7 +187,7 @@ func resolvePublisher() publishers.Publisher {
 	var current publishers.Publisher
 	switch *publisher {
 	case publisherKafka:
-		current = publishers.BuildKafkaPublisher(*kafkaURL, *kafkaTopicPrefix, KafkaWriterFactory{})
+		current = publishers.BuildKafkaPublisher(context.Background(), *kafkaURL, *kafkaTopicPrefix, KafkaWriterFactory{})
 	case publisherHTTP:
 		current = publishers.BuildHTTPPublisher(*httpURL, retry.Do)
 	default:

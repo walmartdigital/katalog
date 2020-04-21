@@ -2,6 +2,7 @@ package domain
 
 import (
 	"reflect"
+	"time"
 )
 
 // K8sResource ...
@@ -14,6 +15,7 @@ type K8sResource interface {
 	GetName() string
 	GetLabels() map[string]string
 	GetAnnotations() map[string]string
+	GetTimestamp() time.Time
 }
 
 // Resource ...
@@ -59,4 +61,9 @@ func (r *Resource) GetLabels() map[string]string {
 // GetAnnotations ...
 func (r *Resource) GetAnnotations() map[string]string {
 	return r.K8sResource.GetAnnotations()
+}
+
+// GetTimestamp ...
+func (r *Resource) GetTimestamp() time.Time {
+	return r.K8sResource.GetTimestamp()
 }
