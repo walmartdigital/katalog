@@ -1,6 +1,7 @@
 concourse
 deploy
 helm
+test
 .drone.yml
 .go_style
 .gitignore
@@ -8,4 +9,4 @@ helm
 .create_git_hooks.sh
 .pipeline.yaml
 .skaffold.yaml
-test
+.check.sh
