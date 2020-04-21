@@ -1,6 +1,8 @@
 package k8sdriver
 
 import (
+	"time"
+
 	"github.com/walmartdigital/katalog/src/domain"
 	appsv1 "k8s.io/api/apps/v1"
 )
@@ -19,6 +21,7 @@ func buildStatefulSetFromK8sStatefulSet(sourceStatefulSet *appsv1.StatefulSet) d
 		Namespace:  sourceStatefulSet.GetNamespace(),
 		Labels:     sourceStatefulSet.GetLabels(),
 		Containers: m,
+		Timestamp:  time.Now(),
 	}
 
 	return *destinationStatefulSet

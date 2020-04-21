@@ -3,6 +3,7 @@ package publishers_test
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/avast/retry-go"
 	"github.com/maxcnunes/httpfake"
@@ -60,6 +61,11 @@ func (s *DummyK8sResource) GetAnnotations() map[string]string {
 // GetLabels ...
 func (s *DummyK8sResource) GetLabels() map[string]string {
 	return s.GetLabels()
+}
+
+// GetLabels ...
+func (s *DummyK8sResource) GetTimestamp() time.Time {
+	return s.GetTimestamp()
 }
 
 func TestAll(t *testing.T) {

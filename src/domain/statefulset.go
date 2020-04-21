@@ -1,6 +1,9 @@
 package domain
 
-import "reflect"
+import (
+	"reflect"
+	"time"
+)
 
 // StatefulSet ...
 type StatefulSet struct {
@@ -11,6 +14,7 @@ type StatefulSet struct {
 	Labels      map[string]string `json:",omitempty"`
 	Annotations map[string]string `json:",omitempty"`
 	Containers  map[string]string `json:",omitempty"`
+	Timestamp   time.Time         `json:"Timestamp"`
 }
 
 // GetID ...
@@ -56,4 +60,9 @@ func (s *StatefulSet) GetContainers() map[string]string {
 // GetAnnotations ...
 func (s *StatefulSet) GetAnnotations() map[string]string {
 	return s.Annotations
+}
+
+// GetTimestamp ...
+func (s *StatefulSet) GetTimestamp() time.Time {
+	return s.Timestamp
 }

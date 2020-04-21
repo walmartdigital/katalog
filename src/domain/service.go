@@ -1,6 +1,9 @@
 package domain
 
-import "reflect"
+import (
+	"reflect"
+	"time"
+)
 
 // Service ...
 type Service struct {
@@ -13,6 +16,7 @@ type Service struct {
 	Instances   []Instance        `json:"Instances"`
 	Labels      map[string]string `json:",omitempty"`
 	Annotations map[string]string `json:",omitempty"`
+	Timestamp   time.Time         `json:"Timestamp"`
 }
 
 // AddInstance ...
@@ -58,4 +62,9 @@ func (s *Service) GetLabels() map[string]string {
 // GetAnnotations ...
 func (s *Service) GetAnnotations() map[string]string {
 	return s.Annotations
+}
+
+// GetTimestamp ...
+func (s *Service) GetTimestamp() time.Time {
+	return s.Timestamp
 }
