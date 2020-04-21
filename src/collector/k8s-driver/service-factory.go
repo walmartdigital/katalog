@@ -20,7 +20,7 @@ func buildServiceFromK8sService(sourceService *corev1.Service) domain.Service {
 		Port:      port,
 		Namespace: sourceService.GetNamespace(),
 		Labels:    sourceService.GetLabels(),
-		Timestamp: time.Now(),
+		Timestamp: time.Now().UTC(),
 	}
 
 	return *destinationService

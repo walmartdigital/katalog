@@ -21,7 +21,7 @@ func buildStatefulSetFromK8sStatefulSet(sourceStatefulSet *appsv1.StatefulSet) d
 		Namespace:  sourceStatefulSet.GetNamespace(),
 		Labels:     sourceStatefulSet.GetLabels(),
 		Containers: m,
-		Timestamp:  time.Now(),
+		Timestamp:  time.Now().UTC(),
 	}
 
 	return *destinationStatefulSet
