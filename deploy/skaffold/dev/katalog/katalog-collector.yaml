@@ -82,8 +82,7 @@ spec:
             failureThreshold: 3
             exec:
               command:
-                - /bin/stat
-                - /tmp/imalive
+                - /app/health.sh
             initialDelaySeconds: 5
             periodSeconds: 30
             
