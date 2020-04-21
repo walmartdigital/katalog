@@ -178,6 +178,36 @@ var _ = Describe("Run Consumer on 'created' topic", func() {
 		publisher.Publish(operation)
 	})
 
+	It("should publish a Service delete event", func() {
+		i := domain.Instance{Address: "hello"}
+		ss := domain.Service{
+			ID:         "276797fa-b207-11e9-8527-000d3af9d6b6",
+			Name:       "queue-node",
+			Port:       1212,
+			Address:    "someservice",
+			Generation: 7,
+			Namespace:  "amida",
+			Instances:  []domain.Instance{i},
+		}
+
+		operation := domain.Operation{
+			Kind:     domain.OperationTypeDelete,
+			Resource: domain.Resource{K8sResource: &ss},
+		}
+
+		ssbytes, _ := json.Marshal(ss)
+
+		message := kafka.Message{
+			Key:   []byte("/services/276797fa-b207-11e9-8527-000d3af9d6b6"),
+			Value: ssbytes,
+		}
+
+		fakeWriter.EXPECT().WriteMessages(ctx, message).Return(
+			nil,
+		).Times(1)
+		publisher.Publish(operation)
+	})
+
 	AfterEach(func() {
 	})
 })
