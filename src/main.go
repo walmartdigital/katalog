@@ -227,12 +227,17 @@ type KafkaReaderFactory struct{}
 
 // Create ...
 func (f KafkaReaderFactory) Create(kafkaURL string, topic string) kafkaServer.Reader {
+	consumerGroupID := "katalog-consumer"
+	if value, ok := os.LookupEnv("CONSUMER_GROUP_ID"); ok {
+		consumerGroupID = value
+	}
+
 	return kafka.NewReader(kafka.ReaderConfig{
-		Brokers:   []string{kafkaURL},
-		Topic:     topic,
-		Partition: 0,
-		MinBytes:  10e3, // 10KB
-		MaxBytes:  10e6, // 10MB
+		Brokers:  []string{kafkaURL},
+		Topic:    topic,
+		GroupID:  consumerGroupID,
+		MinBytes: 10e3, // 10KB
+		MaxBytes: 10e6, // 10MB
 	})
 }
 
