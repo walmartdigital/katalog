@@ -8,3 +8,8 @@ type Persistence interface {
 	Delete(id string) error
 	GetAll() ([]interface{}, error)
 }
+
+// Factory ...
+type Factory interface {
+	Create() Persistence
+}

@@ -12,3 +12,8 @@ type Repository interface {
 	GetAllResources() ([]interface{}, error)
 	GetResource(id string) (interface{}, error)
 }
+
+// RepositoryFactory ...
+type RepositoryFactory interface {
+	Create() Repository
+}

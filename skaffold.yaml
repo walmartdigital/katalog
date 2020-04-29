@@ -1,11 +1,20 @@
-apiVersion: skaffold/v1beta7
+apiVersion: skaffold/v2beta1
 kind: Config
+metadata:
+  name: katalog
 build:
+  local:
+    push: false
   artifacts:
-  - image: walmartdigital.azurecr.io/katalog
+  - image: katalog
     docker:
-      dockerfile: ./Dockerfile_dev
+      dockerfile: Dockerfile
 deploy:
   kubectl:
     manifests:
-    - deploy/skaffold/dev/*
+    - deploy/skaffold/dev/kafka/kafdrop.yaml
+    - deploy/skaffold/dev/kafka/kafka.yaml
+    - deploy/skaffold/dev/kafka/nginx.yaml
+    - deploy/skaffold/dev/kafka/zookeeper.yaml
+    - deploy/skaffold/dev/katalog/katalog-collector.yaml
+    - deploy/skaffold/dev/katalog/katalog-consumer.yaml

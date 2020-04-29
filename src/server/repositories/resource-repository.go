@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"errors"
+
 	"github.com/emirpasic/gods/lists/arraylist"
 	"github.com/mitchellh/mapstructure"
 	"github.com/sirupsen/logrus"
@@ -12,7 +14,10 @@ import (
 var log = logrus.New()
 
 func init() {
-	utils.LogInit(log)
+	err := utils.LogInit(log)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 // ResourceRepository ...
@@ -54,10 +59,26 @@ func (r *ResourceRepository) UpdateResource(resource interface{}) (*domain.Resou
 	if err != nil {
 		return nil, err
 	}
+
+	if savedResource == nil {
+		log.WithFields(logrus.Fields{
+			"id":   res.GetID(),
+			"name": res.GetName(),
+		}).Error("Saved Resource Null")
+
+		return nil, errors.New("Saved Resource Null")
+	}
+
 	sr := savedResource.(domain.Resource)
 	if &sr != nil {
 		if sr.GetGeneration() < res.GetGeneration() {
-			r.persistence.Update(res.GetID(), res)
+			err := r.persistence.Update(res.GetID(), res)
+			if err != nil {
+				log.WithFields(logrus.Fields{
+					"msg": err.Error(),
+				}).Debug("Saving Resource")
+				return nil, err
+			}
 			return &res, nil
 		}
 	}
@@ -83,7 +104,13 @@ func (r *ResourceRepository) GetAllResources() ([]interface{}, error) {
 	}
 	for _, item := range resources {
 		var resource domain.Resource
-		mapstructure.Decode(item, &resource)
+		err := mapstructure.Decode(item, &resource)
+		if err != nil {
+			log.WithFields(logrus.Fields{
+				"msg": err.Error(),
+			}).Debug("Saving Resource")
+			return nil, err
+		}
 		list.Add(resource)
 	}
 

@@ -10,5 +10,5 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflag
 FROM alpine
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /go/src/github.com/walmartdigital/katalog/src/main /app/
-WORKDIR /app
-ENTRYPOINT ["./main"]
+COPY --from=builder /go/src/github.com/walmartdigital/katalog/health.sh /app/
+ENTRYPOINT ["/app/main"]

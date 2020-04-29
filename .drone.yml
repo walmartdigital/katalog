@@ -1,5 +1,6 @@
 ---
 kind: pipeline
+type: docker
 name: default
 
 platform:
@@ -7,21 +8,73 @@ platform:
   arch: amd64
 
 steps:
-# - name: test
-#   pull: default
-#   image: golang:alpine
-#   commands:
-#     - apk update && apk --no-cache add git dep ca-certificates
-#     - mkdir /go/src/katalog
-#     - cp -R /drone/src/. /go/src/katalog/
-#     - cd /go/src/katalog
-#     - dep ensure
-#     - CGO_ENABLED=0 GOOS=linux go test ./... -v -cover
-#   when:
-#     branch:
-#     - master
-#     event:
-#     - push
+- name: lint
+  pull: default
+  image: golang:1.14
+  environment:
+    CGO_ENABLED: 0
+  commands:
+    - "go get -u golang.org/x/lint/golint"
+    - "/go/bin/golint -set_exit_status ./..."
+  when:
+    event: [push, tag, pull_request]
+- name: security
+  pull: default
+  image: golang:1.14
+  environment:
+    CGO_ENABLED: 0
+  commands:
+    - "go get github.com/securego/gosec/cmd/gosec"
+    - "apt-get update; apt-get install -y go-dep"
+    - "mkdir -p /go/src/github.com/walmartdigital/katalog"
+    - "cp -r * /go/src/github.com/walmartdigital/katalog/"
+    - "cd /go/src/github.com/walmartdigital/katalog/"
+    - "dep ensure"
+    - "/go/bin/gosec ./..."
+  when:
+    event: [push, tag, pull_request]
+- name: style
+  pull: default
+  image: golang:1.14
+  environment:
+    CGO_ENABLED: 0
+  commands:
+    - "go get github.com/qiniu/checkstyle/gocheckstyle"
+    - "/go/bin/gocheckstyle -config=.go_style ./ src/"
+  when:
+    event: [push, tag, pull_request]
+- name: naming
+  pull: default
+  image: golang:1.14
+  environment:
+    CGO_ENABLED: 0
+  commands:
+    - "go get -v github.com/quasilyte/go-namecheck"
+    - "/go/bin/go-namecheck -rules .go_naming_rules src/"
+  when:
+    event: [push, tag, pull_request]
+- name: code-duplicates
+  pull: default
+  image: golang:1.14
+  environment:
+    CGO_ENABLED: 0
+  commands:
+    - "go get -u github.com/mibk/dupl"
+    - "dupl -t 200"
+  when:
+    event: [push, tag, pull_request]
+- name: test
+  pull: default
+  image: golang:alpine
+  commands:
+    - apk update && apk --no-cache add git dep ca-certificates
+    - mkdir /go/src/katalog
+    - cp -R /drone/src/. /go/src/katalog/
+    - cd /go/src/katalog
+    - dep ensure
+    - CGO_ENABLED=0 GOOS=linux go test ./... -v -cover
+  when:
+    event: [push, tag, pull_request]
 - name: publish
   pull: default
   image: plugins/docker
@@ -30,19 +83,12 @@ steps:
     repo: walmartdigital.azurecr.io/katalog
     tags:
     - latest
-    - c-${DRONE_COMMIT_SHA}
-    - b-${DRONE_BUILD_NUMBER}
+    - ${DRONE_TAG}
   environment:
     DOCKER_PASSWORD:
       from_secret: docker_password
     DOCKER_USERNAME:
       from_secret: docker_username
   when:
-    branch:
-    - master
     event:
-    - push
-    - pull_request
     - tag
-
-

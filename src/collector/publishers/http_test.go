@@ -3,8 +3,10 @@ package publishers_test
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/avast/retry-go"
+	"github.com/golang/mock/gomock"
 	"github.com/maxcnunes/httpfake"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -62,9 +64,18 @@ func (s *DummyK8sResource) GetLabels() map[string]string {
 	return s.GetLabels()
 }
 
+// GetLabels ...
+func (s *DummyK8sResource) GetTimestamp() time.Time {
+	return s.GetTimestamp()
+}
+
+var ctrl *gomock.Controller
+
 func TestAll(t *testing.T) {
+	ctrl = gomock.NewController(t)
+	defer ctrl.Finish()
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "memory persistence")
+	RunSpecs(t, "Publishers")
 }
 
 func createCreateFakeServer(path string, statusCode int, body string) *httpfake.HTTPFake {

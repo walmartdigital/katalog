@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: katalog-consumer
+  namespace: katalog
+  labels:
+    app: katalog-consumer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: katalog-consumer
+  template:
+    metadata:
+      labels:
+        app: katalog-consumer
+    spec:
+      serviceAccount: katalog
+      containers:
+      - name: katalog-consumer
+        image: katalog
+        env:
+        - name: PUBLISHER
+          value: "kafka"
+        - name: KAFKA_URL
+          value: "kafka.kafka:9092"
+        - name: LOG_LEVEL
+          value: "DEBUG"
+        - name: LOG_FILE
+          value: katalog.log
+        - name: ROLE
+          value: "SERVER"
+        resources:
+            limits:
+              memory: 200Mi
+              cpu: "100m"
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmp
+        livenessProbe:
+            failureThreshold: 3
+            exec:
+              command:
+                - /app/health.sh
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            
+      volumes:
+      - name: tmp
+        emptyDir: {}
