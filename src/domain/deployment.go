@@ -15,6 +15,7 @@ type Deployment struct {
 	Annotations map[string]string `json:",omitempty"`
 	Containers  map[string]string `json:",omitempty"`
 	Timestamp   time.Time         `json:"Timestamp"`
+	Status      map[string]string `json:",omitempty"`
 }
 
 // GetID ...
@@ -65,4 +66,9 @@ func (s *Deployment) GetContainers() map[string]string {
 // GetTimestamp ...
 func (s *Deployment) GetTimestamp() time.Time {
 	return s.Timestamp
+}
+
+// GetStatusGeneration ...
+func (s *Deployment) GetStatusGeneration() string {
+	return s.Status["ObservedGeneration"]
 }

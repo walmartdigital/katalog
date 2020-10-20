@@ -16,6 +16,7 @@ type K8sResource interface {
 	GetLabels() map[string]string
 	GetAnnotations() map[string]string
 	GetTimestamp() time.Time
+	GetObserveGeneration() string
 }
 
 // Resource ...
@@ -66,4 +67,9 @@ func (r *Resource) GetAnnotations() map[string]string {
 // GetTimestamp ...
 func (r *Resource) GetTimestamp() time.Time {
 	return r.K8sResource.GetTimestamp()
+}
+
+// GetObserveGeneration ...
+func (r *Resource) GetObserveGeneration() string {
+	return r.K8sResource.GetObserveGeneration()
 }
