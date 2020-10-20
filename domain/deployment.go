@@ -67,11 +67,8 @@ func (s *Deployment) GetContainers() map[string]string {
 func (s *Deployment) GetTimestamp() time.Time {
 	return s.Timestamp
 }
-<<<<<<< HEAD:src/domain/deployment.go
-=======
 
 // GetObservedGeneration ...
 func (s *Deployment) GetObservedGeneration() int64 {
 	return s.ObservedGeneration
 }
->>>>>>> 13a3de9... refactor(gomod): convert from dep to gomod [CI SKIP]:domain/deployment.go
