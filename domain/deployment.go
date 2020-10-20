@@ -66,3 +66,8 @@ func (s *Deployment) GetContainers() map[string]string {
 func (s *Deployment) GetTimestamp() time.Time {
 	return s.Timestamp
 }
+
+// GetObservedGeneration ...
+func (s *Deployment) GetObservedGeneration() int64 {
+	return s.ObservedGeneration
+}

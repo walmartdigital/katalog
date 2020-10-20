@@ -15,14 +15,15 @@ func buildDeploymentFromK8sDeployment(sourceDeployment *appsv1.Deployment) domai
 	}
 
 	destinationDeployment := &domain.Deployment{
-		ID:          string(sourceDeployment.GetUID()),
-		Name:        sourceDeployment.GetName(),
-		Generation:  sourceDeployment.GetGeneration(),
-		Namespace:   sourceDeployment.GetNamespace(),
-		Labels:      sourceDeployment.GetLabels(),
-		Annotations: sourceDeployment.GetAnnotations(),
-		Containers:  m,
-		Timestamp:   time.Now().UTC(),
+		ID:                 string(sourceDeployment.GetUID()),
+		Name:               sourceDeployment.GetName(),
+		Generation:         sourceDeployment.GetGeneration(),
+		Namespace:          sourceDeployment.GetNamespace(),
+		Labels:             sourceDeployment.GetLabels(),
+		Annotations:        sourceDeployment.GetAnnotations(),
+		Containers:         m,
+		Timestamp:          time.Now().UTC(),
+		ObservedGeneration: sourceDeployment.Status.ObservedGeneration,
 	}
 
 	return *destinationDeployment
