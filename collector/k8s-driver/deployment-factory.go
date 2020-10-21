@@ -7,7 +7,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 )
 
-func buildDeploymentFromK8sDeployment(sourceDeployment *appsv1.Deployment) domain.Deployment {
+func BuildDeploymentFromK8sDeployment(sourceDeployment *appsv1.Deployment) domain.Deployment {
 	m := make(map[string]string)
 
 	for _, c := range sourceDeployment.Spec.Template.Spec.Containers {

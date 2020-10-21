@@ -22,7 +22,7 @@ func buildOperationFromK8sService(kind domain.OperationType, sourceService *core
 }
 
 func buildOperationFromK8sDeployment(kind domain.OperationType, sourceDeployment *appsv1.Deployment) domain.Operation {
-	destinationDeployment := buildDeploymentFromK8sDeployment(sourceDeployment)
+	destinationDeployment := BuildDeploymentFromK8sDeployment(sourceDeployment)
 	resource := &domain.Resource{
 		K8sResource: &destinationDeployment,
 	}
