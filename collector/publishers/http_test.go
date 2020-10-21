@@ -69,6 +69,10 @@ func (s *DummyK8sResource) GetTimestamp() time.Time {
 	return s.GetTimestamp()
 }
 
+func (s *DummyK8sResource) GetObservedGeneration() int64 {
+	return s.GetObservedGeneration()
+}
+
 var ctrl *gomock.Controller
 
 func TestAll(t *testing.T) {
