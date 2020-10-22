@@ -1,20 +1,21 @@
 package k8sdriver_test
 
 import (
+	"time"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/walmartdigital/katalog/collector/k8s-driver"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"time"
 )
 
 var _ = Describe("Deployment builder struct", func() {
 
 	BeforeEach(func() {})
 
-	It("should build a Deployment when pass k8Deployment", func() {
+	It("should build a Deployment object when pass k8Deployment resource", func() {
 		deployment := BuildDeploymentFromK8sDeployment(buildDeployment())
 
 		Expect(deployment.GetID()).To(Equal("UIDExample"))
