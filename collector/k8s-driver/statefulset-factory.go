@@ -7,7 +7,8 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 )
 
-func buildStatefulSetFromK8sStatefulSet(sourceStatefulSet *appsv1.StatefulSet) domain.StatefulSet {
+// BuildStatefulSetFromK8sStatefulSet ...
+func BuildStatefulSetFromK8sStatefulSet(sourceStatefulSet *appsv1.StatefulSet) domain.StatefulSet {
 	m := make(map[string]string)
 
 	for _, c := range sourceStatefulSet.Spec.Template.Spec.Containers {

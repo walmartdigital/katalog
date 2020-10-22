@@ -1,9 +1,9 @@
 package k8sdriver
 
 import (
-	"time"
 	"github.com/walmartdigital/katalog/domain"
 	appsv1 "k8s.io/api/apps/v1"
+	"time"
 )
 
 // BuildDeploymentFromK8sDeployment ...

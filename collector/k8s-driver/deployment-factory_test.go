@@ -1,26 +1,20 @@
 package k8sdriver_test
 
 import (
-	"testing"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/walmartdigital/katalog/collector/k8s-driver"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"time"
 )
-
-func TestAll(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Factory")
-}
 
 var _ = Describe("Deployment builder struct", func() {
 
 	BeforeEach(func() {})
 
-	It("should build a deployment when pass k8Deployment", func() {
+	It("should build a Deployment when pass k8Deployment", func() {
 		deployment := BuildDeploymentFromK8sDeployment(buildDeployment())
 
 		Expect(deployment.GetID()).To(Equal("UIDExample"))
@@ -28,10 +22,10 @@ var _ = Describe("Deployment builder struct", func() {
 		Expect(deployment.GetGeneration()).To(Equal(int64(5)))
 		Expect(deployment.GetName()).To(Equal("NameExample"))
 		Expect(deployment.GetNamespace()).To(Equal("NameSpaceExample"))
-		Expect(deployment.GetLabels()).NotTo(BeNil())
-		Expect(deployment.GetAnnotations()).NotTo(BeNil())
+		Expect(deployment.GetLabels()).To(Equal(map[string]string{"keyLabelExample": "valueLabelExample"}))
+		Expect(deployment.GetAnnotations()).To(Equal(map[string]string{"keyAnnotationsExample": "valueAnnotationsExample"}))
 		Expect(deployment.GetContainers()).To(Equal(map[string]string{"containerNameExample": "containerImageExample"}))
-		Expect(deployment.GetTimestamp()).NotTo(BeNil())
+		Expect(deployment.GetTimestamp()).Should(BeTemporally(">", time.Time{}))
 	})
 
 })

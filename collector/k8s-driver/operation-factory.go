@@ -34,7 +34,7 @@ func buildOperationFromK8sDeployment(kind domain.OperationType, sourceDeployment
 }
 
 func buildOperationFromK8sStatefulSet(kind domain.OperationType, sourceStatefulSet *appsv1.StatefulSet) domain.Operation {
-	destinationStatefulSet := buildStatefulSetFromK8sStatefulSet(sourceStatefulSet)
+	destinationStatefulSet := BuildStatefulSetFromK8sStatefulSet(sourceStatefulSet)
 	resource := &domain.Resource{
 		K8sResource: &destinationStatefulSet,
 	}
