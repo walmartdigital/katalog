@@ -55,6 +55,16 @@ func (s *Service) GetName() string {
 	return s.Name
 }
 
+// GetAddress ...
+func (s *Service) GetAddress() string {
+	return s.Address
+}
+
+// GetPort ...
+func (s *Service) GetPort() int {
+	return s.Port
+}
+
 // GetLabels ...
 func (s *Service) GetLabels() map[string]string {
 	return s.Labels

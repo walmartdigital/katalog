@@ -7,7 +7,7 @@ import (
 )
 
 func buildOperationFromK8sService(kind domain.OperationType, sourceService *corev1.Service, endpoints corev1.Endpoints) domain.Operation {
-	destinationService := buildServiceFromK8sService(sourceService)
+	destinationService := BuildServiceFromK8sService(sourceService)
 	for _, endpoint := range buildEndpointFromK8sEndpoints(endpoints) {
 		destinationService.AddInstance(endpoint)
 	}

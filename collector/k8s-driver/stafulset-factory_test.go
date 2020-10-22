@@ -21,7 +21,7 @@ var _ = Describe("StatefulSet builder struct", func() {
 
 	BeforeEach(func() {})
 
-	It("should build a StatefulSet when pass k8StatefulSet", func() {
+	It("should build a StatefulSet object when pass k8StatefulSet resource", func() {
 		statefulSet := BuildStatefulSetFromK8sStatefulSet(buildStatefulSet())
 
 		Expect(statefulSet.GetID()).To(Equal("UIDExample"))
