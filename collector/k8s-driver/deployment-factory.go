@@ -2,11 +2,11 @@ package k8sdriver
 
 import (
 	"time"
-
 	"github.com/walmartdigital/katalog/domain"
 	appsv1 "k8s.io/api/apps/v1"
 )
 
+// BuildDeploymentFromK8sDeployment ...
 func BuildDeploymentFromK8sDeployment(sourceDeployment *appsv1.Deployment) domain.Deployment {
 	m := make(map[string]string)
 
