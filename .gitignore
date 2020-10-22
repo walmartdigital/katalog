@@ -4,3 +4,4 @@ vendor/
 .vscode/
 sandbox/
 main
+.idea/

@@ -9,6 +9,7 @@ require (
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/mitchellh/mapstructure v1.3.3
 	github.com/prometheus/client_golang v1.8.0
+	github.com/qiniu/checkstyle v0.0.0-20181122073030-e47d31cae315 // indirect
 	github.com/segmentio/kafka-go v0.4.6
 	github.com/sirupsen/logrus v1.7.0
 	k8s.io/api v0.16.14

@@ -7,15 +7,14 @@ import (
 
 // StatefulSet ...
 type StatefulSet struct {
-	ID                 string            `json:",omitempty"`
-	Name               string            `json:",omitempty"`
-	Generation         int64             `json:",omitempty"`
-	Namespace          string            `json:",omitempty"`
-	Labels             map[string]string `json:",omitempty"`
-	Annotations        map[string]string `json:",omitempty"`
-	Containers         map[string]string `json:",omitempty"`
-	Timestamp          time.Time         `json:"Timestamp"`
-	ObservedGeneration int64             `json:",omitempty"`
+	ID          string            `json:",omitempty"`
+	Name        string            `json:",omitempty"`
+	Generation  int64             `json:",omitempty"`
+	Namespace   string            `json:",omitempty"`
+	Labels      map[string]string `json:",omitempty"`
+	Annotations map[string]string `json:",omitempty"`
+	Containers  map[string]string `json:",omitempty"`
+	Timestamp   time.Time         `json:"Timestamp"`
 }
 
 // GetID ...
@@ -66,9 +65,4 @@ func (s *StatefulSet) GetAnnotations() map[string]string {
 // GetTimestamp ...
 func (s *StatefulSet) GetTimestamp() time.Time {
 	return s.Timestamp
-}
-
-// GetObservedGeneration ...
-func (s *StatefulSet) GetObservedGeneration() int64 {
-	return s.ObservedGeneration
 }
