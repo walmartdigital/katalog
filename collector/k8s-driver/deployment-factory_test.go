@@ -1,13 +1,14 @@
 package k8sdriver_test
 
 import (
+	"testing"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/walmartdigital/katalog/collector/k8s-driver"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"testing"
 )
 
 func TestAll(t *testing.T) {
@@ -50,15 +51,20 @@ var _ = Describe("Deployment builder struct", func() {
 				ProgressDeadlineSeconds: nil,
 			},
 			Status: appsv1.DeploymentStatus{
-				ObservedGeneration:  1,
+				ObservedGeneration: 1,
 			},
 		}
 		deployment := BuildDeploymentFromK8sDeployment(sourceDeployment)
 
-		Expect(deployment.GetID()).NotTo(BeNil())
-		Expect(deployment.GetObservedGeneration()).NotTo(BeNil())
+		Expect(deployment.GetID()).To(Equal("UIDExample"))
+		Expect(deployment.GetObservedGeneration()).To(Equal(int64(1)))
+		Expect(deployment.GetGeneration()).To(Equal(int64(5)))
+		Expect(deployment.GetName()).To(Equal("NameExample"))
+		Expect(deployment.GetNamespace()).To(Equal("NameSpaceExample"))
+		Expect(deployment.GetLabels()).NotTo(BeNil())
+		Expect(deployment.GetAnnotations()).NotTo(BeNil())
+		Expect(deployment.GetContainers()).To(Equal(map[string]string{"containerNameExample": "containerImageExample"}))
+		Expect(deployment.GetTimestamp()).NotTo(BeNil())
 	})
 
-	AfterEach(func() {
-	})
 })
