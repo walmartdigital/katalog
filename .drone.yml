@@ -39,7 +39,7 @@ steps:
     CGO_ENABLED: 0
   commands:
     - "go get github.com/qiniu/checkstyle/gocheckstyle"
-    - "/go/bin/gocheckstyle -config=.go_style ./ /"
+    - "/go/bin/gocheckstyle -config=.go_style ./ ."
   when:
     event: [push, tag, pull_request]
 - name: naming
