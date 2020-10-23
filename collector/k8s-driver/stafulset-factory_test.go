@@ -1,4 +1,4 @@
-package k8sdriver_test
+package k8sdriver
 
 import (
 	"testing"
@@ -6,7 +6,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/walmartdigital/katalog/collector/k8s-driver"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,7 +21,7 @@ var _ = Describe("StatefulSet builder struct", func() {
 	BeforeEach(func() {})
 
 	It("should build a StatefulSet object when pass k8StatefulSet resource", func() {
-		statefulSet := BuildStatefulSetFromK8sStatefulSet(buildStatefulSet())
+		statefulSet := buildStatefulSetFromK8sStatefulSet(buildStatefulSet())
 
 		Expect(statefulSet.GetID()).To(Equal("UIDExample"))
 		Expect(statefulSet.GetObservedGeneration()).To(Equal(int64(1)))

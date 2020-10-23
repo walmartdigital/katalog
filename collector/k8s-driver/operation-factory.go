@@ -7,7 +7,7 @@ import (
 )
 
 func buildOperationFromK8sService(kind domain.OperationType, sourceService *corev1.Service, endpoints corev1.Endpoints) domain.Operation {
-	destinationService := BuildServiceFromK8sService(sourceService)
+	destinationService := buildServiceFromK8sService(sourceService)
 	for _, endpoint := range buildEndpointFromK8sEndpoints(endpoints) {
 		destinationService.AddInstance(endpoint)
 	}
@@ -22,7 +22,7 @@ func buildOperationFromK8sService(kind domain.OperationType, sourceService *core
 }
 
 func buildOperationFromK8sDeployment(kind domain.OperationType, sourceDeployment *appsv1.Deployment) domain.Operation {
-	destinationDeployment := BuildDeploymentFromK8sDeployment(sourceDeployment)
+	destinationDeployment := buildDeploymentFromK8sDeployment(sourceDeployment)
 	resource := &domain.Resource{
 		K8sResource: &destinationDeployment,
 	}
@@ -34,7 +34,7 @@ func buildOperationFromK8sDeployment(kind domain.OperationType, sourceDeployment
 }
 
 func buildOperationFromK8sStatefulSet(kind domain.OperationType, sourceStatefulSet *appsv1.StatefulSet) domain.Operation {
-	destinationStatefulSet := BuildStatefulSetFromK8sStatefulSet(sourceStatefulSet)
+	destinationStatefulSet := buildStatefulSetFromK8sStatefulSet(sourceStatefulSet)
 	resource := &domain.Resource{
 		K8sResource: &destinationStatefulSet,
 	}

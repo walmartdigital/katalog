@@ -8,7 +8,7 @@ import (
 )
 
 // BuildServiceFromK8sService ...
-func BuildServiceFromK8sService(sourceService *corev1.Service) domain.Service {
+func buildServiceFromK8sService(sourceService *corev1.Service) domain.Service {
 	port := 0
 	if len(sourceService.Spec.Ports) > 0 {
 		port = int(sourceService.Spec.Ports[0].Port)

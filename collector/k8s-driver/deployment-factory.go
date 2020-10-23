@@ -8,7 +8,7 @@ import (
 )
 
 // BuildDeploymentFromK8sDeployment ...
-func BuildDeploymentFromK8sDeployment(sourceDeployment *appsv1.Deployment) domain.Deployment {
+func buildDeploymentFromK8sDeployment(sourceDeployment *appsv1.Deployment) domain.Deployment {
 	m := make(map[string]string)
 
 	for _, c := range sourceDeployment.Spec.Template.Spec.Containers {

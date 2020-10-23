@@ -8,7 +8,7 @@ import (
 )
 
 // BuildStatefulSetFromK8sStatefulSet ...
-func BuildStatefulSetFromK8sStatefulSet(sourceStatefulSet *appsv1.StatefulSet) domain.StatefulSet {
+func buildStatefulSetFromK8sStatefulSet(sourceStatefulSet *appsv1.StatefulSet) domain.StatefulSet {
 	m := make(map[string]string)
 
 	for _, c := range sourceStatefulSet.Spec.Template.Spec.Containers {
