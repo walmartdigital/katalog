@@ -28,7 +28,6 @@ steps:
     - "mkdir -p /go/src/github.com/walmartdigital/katalog"
     - "cp -r * /go/src/github.com/walmartdigital/katalog/"
     - "cd /go/src/github.com/walmartdigital/katalog/"
-    - "go mod vendor"
     - "/go/bin/gosec ./..."
   when:
     event: [push, tag, pull_request]
@@ -70,7 +69,6 @@ steps:
     - mkdir /go/src/katalog
     - cp -R /drone/src/. /go/src/katalog/
     - cd /go/src/katalog
-    - go mod vendor
     - CGO_ENABLED=0 GOOS=linux go test ./... -v -cover
   when:
     event: [push, tag, pull_request]

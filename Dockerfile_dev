@@ -7,7 +7,6 @@ ADD ./vendor /go/src/
 COPY ./src /go/src/github.com/walmartdigital/katalog
 COPY ./health.sh /go/src/github.com/walmartdigital/katalog
 # WORKDIR /go/src/katalog
-# RUN go mod vendor
 WORKDIR /go/src/github.com/walmartdigital/katalog
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o main .
 

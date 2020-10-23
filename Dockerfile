@@ -3,7 +3,6 @@ RUN apk --no-cache add git ca-certificates
 RUN mkdir -p /go/src/github.com/walmartdigital/katalog
 ADD . /go/src/github.com/walmartdigital/katalog
 WORKDIR /go/src/github.com/walmartdigital/katalog
-RUN go mod vendor
 WORKDIR /go/src/github.com/walmartdigital/katalog
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o main .
 
