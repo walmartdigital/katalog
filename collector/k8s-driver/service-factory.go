@@ -15,13 +15,14 @@ func BuildServiceFromK8sService(sourceService *corev1.Service) domain.Service {
 	}
 
 	destinationService := &domain.Service{
-		ID:        string(sourceService.GetUID()),
-		Name:      sourceService.GetName(),
-		Address:   sourceService.Spec.ClusterIP,
-		Port:      port,
-		Namespace: sourceService.GetNamespace(),
-		Labels:    sourceService.GetLabels(),
-		Timestamp: time.Now().UTC(),
+		ID:                 string(sourceService.GetUID()),
+		Name:               sourceService.GetName(),
+		Address:            sourceService.Spec.ClusterIP,
+		Port:               port,
+		Namespace:          sourceService.GetNamespace(),
+		Labels:             sourceService.GetLabels(),
+		Timestamp:          time.Now().UTC(),
+		ObservedGeneration: 0,
 	}
 
 	return *destinationService

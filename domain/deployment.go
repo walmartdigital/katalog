@@ -7,14 +7,15 @@ import (
 
 // Deployment ...
 type Deployment struct {
-	ID          string            `json:",omitempty"`
-	Name        string            `json:",omitempty"`
-	Generation  int64             `json:",omitempty"`
-	Namespace   string            `json:",omitempty"`
-	Labels      map[string]string `json:",omitempty"`
-	Annotations map[string]string `json:",omitempty"`
-	Containers  map[string]string `json:",omitempty"`
-	Timestamp   time.Time         `json:"Timestamp"`
+	ID                 string            `json:",omitempty"`
+	Name               string            `json:",omitempty"`
+	Generation         int64             `json:",omitempty"`
+	Namespace          string            `json:",omitempty"`
+	Labels             map[string]string `json:",omitempty"`
+	Annotations        map[string]string `json:",omitempty"`
+	Containers         map[string]string `json:",omitempty"`
+	Timestamp          time.Time         `json:"Timestamp"`
+	ObservedGeneration int64             `json:",omitempty"`
 }
 
 // GetID ...

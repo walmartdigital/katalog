@@ -16,13 +16,14 @@ func BuildStatefulSetFromK8sStatefulSet(sourceStatefulSet *appsv1.StatefulSet) d
 	}
 
 	destinationStatefulSet := &domain.StatefulSet{
-		ID:         string(sourceStatefulSet.GetUID()),
-		Name:       sourceStatefulSet.GetName(),
-		Generation: sourceStatefulSet.GetGeneration(),
-		Namespace:  sourceStatefulSet.GetNamespace(),
-		Labels:     sourceStatefulSet.GetLabels(),
-		Containers: m,
-		Timestamp:  time.Now().UTC(),
+		ID:                 string(sourceStatefulSet.GetUID()),
+		Name:               sourceStatefulSet.GetName(),
+		Generation:         sourceStatefulSet.GetGeneration(),
+		Namespace:          sourceStatefulSet.GetNamespace(),
+		Labels:             sourceStatefulSet.GetLabels(),
+		Containers:         m,
+		Timestamp:          time.Now().UTC(),
+		ObservedGeneration: sourceStatefulSet.Status.ObservedGeneration,
 	}
 
 	return *destinationStatefulSet
