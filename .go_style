@@ -8,7 +8,8 @@
     "camel_name":true,
     "ignore":[
         "a/*",
-        "b/*/c/*.go"
+        "b/*/c/*.go",
+        "vendor/*"
     ],
     "fatal":[
         "formated"

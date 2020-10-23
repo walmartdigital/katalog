@@ -25,11 +25,9 @@ steps:
     CGO_ENABLED: 0
   commands:
     - "go get github.com/securego/gosec/cmd/gosec"
-    - "apt-get update; apt-get install -y go-dep"
     - "mkdir -p /go/src/github.com/walmartdigital/katalog"
     - "cp -r * /go/src/github.com/walmartdigital/katalog/"
     - "cd /go/src/github.com/walmartdigital/katalog/"
-    - "dep ensure"
     - "/go/bin/gosec ./..."
   when:
     event: [push, tag, pull_request]
@@ -40,7 +38,7 @@ steps:
     CGO_ENABLED: 0
   commands:
     - "go get github.com/qiniu/checkstyle/gocheckstyle"
-    - "/go/bin/gocheckstyle -config=.go_style ./ src/"
+    - "/go/bin/gocheckstyle -config=.go_style ./ ."
   when:
     event: [push, tag, pull_request]
 - name: naming
@@ -50,7 +48,7 @@ steps:
     CGO_ENABLED: 0
   commands:
     - "go get -v github.com/quasilyte/go-namecheck"
-    - "/go/bin/go-namecheck -rules .go_naming_rules src/"
+    - "/go/bin/go-namecheck -rules .go_naming_rules /"
   when:
     event: [push, tag, pull_request]
 - name: code-duplicates
@@ -67,11 +65,10 @@ steps:
   pull: default
   image: golang:alpine
   commands:
-    - apk update && apk --no-cache add git dep ca-certificates
+    - apk update && apk --no-cache add git ca-certificates
     - mkdir /go/src/katalog
     - cp -R /drone/src/. /go/src/katalog/
     - cd /go/src/katalog
-    - dep ensure
     - CGO_ENABLED=0 GOOS=linux go test ./... -v -cover
   when:
     event: [push, tag, pull_request]
