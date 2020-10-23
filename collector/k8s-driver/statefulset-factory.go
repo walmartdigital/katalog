@@ -7,6 +7,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 )
 
+// BuildStatefulSetFromK8sStatefulSet ...
 func buildStatefulSetFromK8sStatefulSet(sourceStatefulSet *appsv1.StatefulSet) domain.StatefulSet {
 	m := make(map[string]string)
 
@@ -15,13 +16,14 @@ func buildStatefulSetFromK8sStatefulSet(sourceStatefulSet *appsv1.StatefulSet) d
 	}
 
 	destinationStatefulSet := &domain.StatefulSet{
-		ID:         string(sourceStatefulSet.GetUID()),
-		Name:       sourceStatefulSet.GetName(),
-		Generation: sourceStatefulSet.GetGeneration(),
-		Namespace:  sourceStatefulSet.GetNamespace(),
-		Labels:     sourceStatefulSet.GetLabels(),
-		Containers: m,
-		Timestamp:  time.Now().UTC(),
+		ID:                 string(sourceStatefulSet.GetUID()),
+		Name:               sourceStatefulSet.GetName(),
+		Generation:         sourceStatefulSet.GetGeneration(),
+		Namespace:          sourceStatefulSet.GetNamespace(),
+		Labels:             sourceStatefulSet.GetLabels(),
+		Containers:         m,
+		Timestamp:          time.Now().UTC(),
+		ObservedGeneration: sourceStatefulSet.Status.ObservedGeneration,
 	}
 
 	return *destinationStatefulSet

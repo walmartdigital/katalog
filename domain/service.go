@@ -7,16 +7,17 @@ import (
 
 // Service ...
 type Service struct {
-	ID          string            `json:"ID"`
-	Name        string            `json:"Name"`
-	Port        int               `json:"Port"`
-	Address     string            `json:"Address"`
-	Generation  int64             `json:"Generation"`
-	Namespace   string            `json:"Namespace"`
-	Instances   []Instance        `json:"Instances"`
-	Labels      map[string]string `json:",omitempty"`
-	Annotations map[string]string `json:",omitempty"`
-	Timestamp   time.Time         `json:"Timestamp"`
+	ID                 string            `json:"ID"`
+	Name               string            `json:"Name"`
+	Port               int               `json:"Port"`
+	Address            string            `json:"Address"`
+	Generation         int64             `json:"Generation"`
+	Namespace          string            `json:"Namespace"`
+	Instances          []Instance        `json:"Instances"`
+	Labels             map[string]string `json:",omitempty"`
+	Annotations        map[string]string `json:",omitempty"`
+	Timestamp          time.Time         `json:"Timestamp"`
+	ObservedGeneration int64             `json:",omitempty"`
 }
 
 // AddInstance ...
@@ -54,6 +55,16 @@ func (s *Service) GetName() string {
 	return s.Name
 }
 
+// GetAddress ...
+func (s *Service) GetAddress() string {
+	return s.Address
+}
+
+// GetPort ...
+func (s *Service) GetPort() int {
+	return s.Port
+}
+
 // GetLabels ...
 func (s *Service) GetLabels() map[string]string {
 	return s.Labels
@@ -67,4 +78,9 @@ func (s *Service) GetAnnotations() map[string]string {
 // GetTimestamp ...
 func (s *Service) GetTimestamp() time.Time {
 	return s.Timestamp
+}
+
+// GetObservedGeneration ...
+func (s *Service) GetObservedGeneration() int64 {
+	return s.ObservedGeneration
 }
