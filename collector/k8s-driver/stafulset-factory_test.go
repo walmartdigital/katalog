@@ -2,7 +2,6 @@ package k8sdriver
 
 import (
 	"testing"
-	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -30,7 +29,7 @@ var _ = Describe("StatefulSet builder struct", func() {
 		Expect(statefulSet.GetNamespace()).To(Equal("NameSpaceExample"))
 		Expect(statefulSet.GetLabels()).To(Equal(map[string]string{"keyLabelExample": "valueLabelExample"}))
 		Expect(statefulSet.GetContainers()).To(Equal(map[string]string{"containerNameExample": "containerImageExample"}))
-		Expect(statefulSet.GetTimestamp()).Should(BeTemporally(">", time.Time{}))
+		Expect(statefulSet.GetTimestamp()).Should(MatchRegexp(`^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}`))
 	})
 
 })

@@ -23,7 +23,7 @@ func buildDeploymentFromK8sDeployment(sourceDeployment *appsv1.Deployment) domai
 		Labels:             sourceDeployment.GetLabels(),
 		Annotations:        sourceDeployment.GetAnnotations(),
 		Containers:         m,
-		Timestamp:          time.Now().UTC(),
+		Timestamp:          time.Now().UTC().Format(timestampFormat),
 		ObservedGeneration: sourceDeployment.Status.ObservedGeneration,
 	}
 
