@@ -3,7 +3,6 @@ package publishers_test
 import (
 	"reflect"
 	"testing"
-	"time"
 
 	"github.com/avast/retry-go"
 	"github.com/golang/mock/gomock"
@@ -65,7 +64,7 @@ func (s *DummyK8sResource) GetLabels() map[string]string {
 }
 
 // GetLabels ...
-func (s *DummyK8sResource) GetTimestamp() time.Time {
+func (s *DummyK8sResource) GetTimestamp() string {
 	return s.GetTimestamp()
 }
 

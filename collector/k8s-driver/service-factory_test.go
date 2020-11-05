@@ -1,8 +1,6 @@
 package k8sdriver
 
 import (
-	"time"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
@@ -23,7 +21,7 @@ var _ = Describe("Service builder struct", func() {
 		Expect(service.GetAddress()).To(Equal("127.0.0.1"))
 		Expect(service.GetNamespace()).To(Equal("ServiceNameSpaceExample"))
 		Expect(service.GetLabels()).To(Equal(map[string]string{"keyLabelExample": "valueLabelExample"}))
-		Expect(service.GetTimestamp()).Should(BeTemporally(">", time.Time{}))
+		Expect(service.GetTimestamp()).Should(MatchRegexp(`^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}`))
 	})
 
 })

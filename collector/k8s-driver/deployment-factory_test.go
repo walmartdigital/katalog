@@ -1,8 +1,6 @@
 package k8sdriver
 
 import (
-	"time"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
@@ -25,7 +23,8 @@ var _ = Describe("Deployment builder struct", func() {
 		Expect(deployment.GetLabels()).To(Equal(map[string]string{"keyLabelExample": "valueLabelExample"}))
 		Expect(deployment.GetAnnotations()).To(Equal(map[string]string{"keyAnnotationsExample": "valueAnnotationsExample"}))
 		Expect(deployment.GetContainers()).To(Equal(map[string]string{"containerNameExample": "containerImageExample"}))
-		Expect(deployment.GetTimestamp()).Should(BeTemporally(">", time.Time{}))
+		Expect(deployment.GetTimestamp()).Should(MatchRegexp(`^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}`))
+
 	})
 
 })

@@ -2,7 +2,6 @@ package domain
 
 import (
 	"reflect"
-	"time"
 )
 
 // Deployment ...
@@ -14,7 +13,7 @@ type Deployment struct {
 	Labels             map[string]string `json:",omitempty"`
 	Annotations        map[string]string `json:",omitempty"`
 	Containers         map[string]string `json:",omitempty"`
-	Timestamp          time.Time         `json:"Timestamp"`
+	Timestamp          string            `json:"Timestamp"`
 	ObservedGeneration int64             `json:",omitempty"`
 }
 
@@ -64,7 +63,7 @@ func (s *Deployment) GetContainers() map[string]string {
 }
 
 // GetTimestamp ...
-func (s *Deployment) GetTimestamp() time.Time {
+func (s *Deployment) GetTimestamp() string {
 	return s.Timestamp
 }
 
